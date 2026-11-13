@@ -211,5 +211,7 @@
   "custom.personalCenter.modifyBasicInfo": "修改基本信息",
   "custom.personalCenter.changePassword": "修改密码",
   "custom.personalCenter.nameFieldNotEmpty": "姓名字段不能为空",
-  "custom.auth.authFailedPleaseLogin": "无法验证身份或获取权限，请重新登录。"
+  "custom.auth.authFailedPleaseLogin": "无法验证身份或获取权限，请重新登录。",
+  "custom.device_details.logicalMessageCounts": "上行与存储按消息累计统计",
+  "custom.device_details.diagnosticsPending": "处理中"
 }

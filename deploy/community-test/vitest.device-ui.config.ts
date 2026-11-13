@@ -8,6 +8,7 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     include: [
+      'deploy/community-test/device-diagnostics-state.test.ts',
       'deploy/community-test/automation-preview.test.ts',
       'src/__tests__/unit/automation-command-identifier.test.ts',
       'src/__tests__/unit/device-command-rows.test.ts',

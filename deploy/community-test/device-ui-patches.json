@@ -554,6 +554,98 @@
           "count": 1
         }
       ]
+    },
+    {
+      "path": "src/views/device/details/modules/device-diagnosis.vue",
+      "base_sha256": "7845531ca60d45fbd3b40ae487c6c18656467d7cb514375c0e658bc182d00de7",
+      "patched_sha256": "00a4fc4c5473079581e90efca471f027bc3dfb4422c80fff5d5522d746322342",
+      "changes": [
+        {
+          "before": "import { h, onMounted, onUnmounted, nextTick, ref } from 'vue'",
+          "after": "import { h, onMounted, onUnmounted, nextTick, ref, watch } from 'vue'",
+          "count": 1
+        },
+        {
+          "before": "import { demoDebugLogs, demoDiagnostics, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'",
+          "after": "import { demoDebugLogs, demoDiagnostics, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'\nimport { diagnosticMetricView, emptyDiagnosticMetrics } from '@/utils/device-diagnostics-view'",
+          "count": 1
+        },
+        {
+          "before": "// 类型定义\ninterface StatisticsItem {\n  success: number\n  total: number\n  rate: number\n}\n\n// 统计数据类型\ninterface Statistics {\n  uplink: StatisticsItem\n  downlink: StatisticsItem\n  storage: StatisticsItem\n}\n\n",
+          "after": "",
+          "count": 1
+        },
+        {
+          "before": "  success_rate?: number\n}",
+          "after": "  success_rate?: number\n  failed?: number\n  pending?: number\n}",
+          "count": 1
+        },
+        {
+          "before": "  stats?: DiagnosticsStats\n",
+          "after": "  stats?: DiagnosticsStats\n  observation?: { schema_version?: number; count_unit?: string; applies_to?: string[]; counter_window?: string }\n",
+          "count": 1
+        },
+        {
+          "before": "// 统计数据\nconst statistics = ref<Statistics>({\n  uplink: {\n    success: 0,\n    total: 0,\n    rate: 0\n  },\n  downlink: {\n    success: 0,\n    total: 0,\n    rate: 0\n  },\n  storage: {\n    success: 0,\n    total: 0,\n    rate: 0\n  }\n})\n\n",
+          "after": "const statistics = ref(emptyDiagnosticMetrics())\nconst diagnosticError = ref(false)\nconst logicalMessageCounts = ref(false)\nlet diagnosticsSequence = 0\n\n",
+          "count": 1
+        },
+        {
+          "before": "// 获取诊断数据\nconst fetchDiagnostics = async () => {\n  try {\n    const response = (await deviceDiagnostics(props.id)) as DiagnosticsResponse\n    const data = response?.data || (response as unknown as DiagnosticsData)\n    const demo = isDeviceDetailDemo(props.id) && !data?.recent_failures?.length\n    const displayData = demo ? demoDiagnostics() : data\n\n    if (displayData && displayData.stats) {\n      // 更新统计数据\n      statistics.value = {\n        uplink: {\n          success: displayData.stats.uplink?.success ?? 0,\n          total: displayData.stats.uplink?.total ?? 0,\n          rate: displayData.stats.uplink?.success_rate ?? 0\n        },\n        downlink: {\n          success: displayData.stats.downlink?.success ?? 0,\n          total: displayData.stats.downlink?.total ?? 0,\n          rate: displayData.stats.downlink?.success_rate ?? 0\n        },\n        storage: {\n          success: displayData.stats.storage?.success ?? 0,\n          total: displayData.stats.storage?.total ?? 0,\n          rate: displayData.stats.storage?.success_rate ?? 0\n        }\n      }\n\n      // 更新失败记录\n      if (Array.isArray(displayData.recent_failures)) {\n        failureRecords.value = displayData.recent_failures.map(failure => ({\n          timestamp: String(failure.timestamp ?? ''),\n          direction: (failure.direction ?? 'uplink') as 'uplink' | 'downlink',\n          stage: failure.stage ?? '',\n          error: failure.error ?? ''\n        }))\n      } else {\n        failureRecords.value = []\n      }\n    }\n  } catch (error) {\n    // Keep the existing empty-state behavior when the diagnostics endpoint is unavailable.\n  }\n}\n\n",
+          "after": "// Failed or superseded requests must not leave another device's successful counters on screen.\nconst fetchDiagnostics = async () => {\n  const sequence = ++diagnosticsSequence\n  const deviceID = props.id\n  statistics.value = emptyDiagnosticMetrics()\n  failureRecords.value = []\n  diagnosticError.value = false\n  logicalMessageCounts.value = false\n  try {\n    const response = (await deviceDiagnostics(deviceID)) as DiagnosticsResponse\n    if (sequence !== diagnosticsSequence || deviceID !== props.id) return\n    const data = response?.data || (response as unknown as DiagnosticsData)\n    const demo = isDeviceDetailDemo(deviceID) && !data?.recent_failures?.length\n    const displayData: DiagnosticsData = demo ? demoDiagnostics() : data\n    if (!displayData?.stats) throw new Error('diagnostics unavailable')\n    statistics.value = {\n      uplink: diagnosticMetricView(displayData.stats.uplink),\n      downlink: diagnosticMetricView(displayData.stats.downlink),\n      storage: diagnosticMetricView(displayData.stats.storage)\n    }\n    logicalMessageCounts.value = displayData.observation?.schema_version === 2 &&\n      displayData.observation.count_unit === 'logical_device_message' &&\n      displayData.observation.counter_window === 'since_last_idle_expiry' &&\n      displayData.observation.applies_to?.includes('uplink') === true &&\n      displayData.observation.applies_to?.includes('storage') === true\n    failureRecords.value = (displayData.recent_failures || []).map(failure => ({\n      timestamp: String(failure.timestamp ?? ''),\n      direction: failure.direction ?? 'uplink',\n      stage: failure.stage ?? '',\n      error: failure.error ?? ''\n    }))\n  } catch {\n    if (sequence !== diagnosticsSequence || deviceID !== props.id) return\n    statistics.value = emptyDiagnosticMetrics()\n    failureRecords.value = []\n    diagnosticError.value = true\n    logicalMessageCounts.value = false\n  }\n}\n\nwatch(() => props.id, () => { void fetchDiagnostics() })\n\n",
+          "count": 1
+        },
+        {
+          "before": "      <NFlex :gap=\"16\" class=\"mt-4\">",
+          "after": "      <NAlert v-if=\"diagnosticError\" type=\"warning\" class=\"mt-3\">{{ $t('common.loadFailure') }}</NAlert>\n      <NText v-if=\"logicalMessageCounts\" :depth=\"3\" class=\"text-12px\">{{ $t('custom.device_details.logicalMessageCounts') }}</NText>\n      <NFlex :gap=\"16\" class=\"mt-4\">",
+          "count": 1
+        },
+        {
+          "before": "<NNumberAnimation :from=\"0\" :to=\"statistics.uplink.rate\" :precision=\"1\" />\n              <span>%</span>",
+          "after": "{{ statistics.uplink.rate }}",
+          "count": 1
+        },
+        {
+          "before": "{{ statistics.uplink.success }}/{{ statistics.uplink.total }}条",
+          "after": "{{ statistics.uplink.counts }}",
+          "count": 1
+        },
+        {
+          "before": "{{ statistics.uplink.counts }}",
+          "after": "{{ statistics.uplink.counts }}<span v-if=\"statistics.uplink.pending !== null && statistics.uplink.pending > 0\"> · {{ $t('custom.device_details.diagnosticsPending') }} {{ statistics.uplink.pending }}</span>",
+          "count": 1
+        },
+        {
+          "before": "<NNumberAnimation :from=\"0\" :to=\"statistics.downlink.rate\" :precision=\"1\" />\n              <span>%</span>",
+          "after": "{{ statistics.downlink.rate }}",
+          "count": 1
+        },
+        {
+          "before": "{{ statistics.downlink.success }}/{{ statistics.downlink.total }}条",
+          "after": "{{ statistics.downlink.counts }}",
+          "count": 1
+        },
+        {
+          "before": "{{ statistics.downlink.counts }}",
+          "after": "{{ statistics.downlink.counts }}<span v-if=\"statistics.downlink.pending !== null && statistics.downlink.pending > 0\"> · {{ $t('custom.device_details.diagnosticsPending') }} {{ statistics.downlink.pending }}</span>",
+          "count": 1
+        },
+        {
+          "before": "<NNumberAnimation :from=\"0\" :to=\"statistics.storage.rate\" :precision=\"1\" />\n              <span>%</span>",
+          "after": "{{ statistics.storage.rate }}",
+          "count": 1
+        },
+        {
+          "before": "{{ statistics.storage.success }}/{{ statistics.storage.total }}条",
+          "after": "{{ statistics.storage.counts }}",
+          "count": 1
+        },
+        {
+          "before": "{{ statistics.storage.counts }}",
+          "after": "{{ statistics.storage.counts }}<span v-if=\"statistics.storage.pending !== null && statistics.storage.pending > 0\"> · {{ $t('custom.device_details.diagnosticsPending') }} {{ statistics.storage.pending }}</span>",
+          "count": 1
+        }
+      ]
     }
   ]
 }

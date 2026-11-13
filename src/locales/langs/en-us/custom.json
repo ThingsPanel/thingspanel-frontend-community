@@ -211,5 +211,7 @@
   "custom.personalCenter.modifyBasicInfo": "Modify Basic Information",
   "custom.personalCenter.changePassword": "Change Password",
   "custom.personalCenter.nameFieldNotEmpty": "Name field cannot be empty",
-  "custom.auth.authFailedPleaseLogin": "Authentication failed or insufficient permissions. Please login again."
+  "custom.auth.authFailedPleaseLogin": "Authentication failed or insufficient permissions. Please login again.",
+  "custom.device_details.logicalMessageCounts": "Cumulative message counts for uplink and storage",
+  "custom.device_details.diagnosticsPending": "Pending"
 }
