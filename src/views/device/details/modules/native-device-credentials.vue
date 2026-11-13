@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { v4 as uuidv4 } from 'uuid'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import { useMessage } from 'naive-ui'
@@ -187,11 +188,15 @@ async function submitCreate() {
   if (!createAttempt.value) {
     const payload = buildPayload()
     if (!payload) return
-    if (!globalThis.crypto?.randomUUID) {
+    if (!globalThis.crypto?.getRandomValues) {
       createError.value = '当前环境无法安全提交凭据创建请求。'
       return
     }
-    createAttempt.value = createNativeCredentialAttempt(props.id, payload, globalThis.crypto.randomUUID())
+    createAttempt.value = createNativeCredentialAttempt(
+      props.id,
+      payload,
+      uuidv4({ random: globalThis.crypto.getRandomValues(new Uint8Array(16)) })
+    )
   }
   const attempt = createAttempt.value
   if (!attempt) return
