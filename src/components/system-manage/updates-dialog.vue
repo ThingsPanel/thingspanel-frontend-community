@@ -14,6 +14,7 @@ import {
 import type { CatalogItem } from '@/service/api/plugin-install'
 import { createPluginUpgrader, isUpgradeBusy, upgradablePlugins } from '@/utils/plugin-upgrade'
 import type { PluginUpgradeRowState } from '@/utils/plugin-upgrade'
+import { hasSystemErrorText } from '@/utils/system-error'
 import { useSystemManageStore } from '@/store/modules/system-manage'
 
 defineOptions({ name: 'UpdatesDialog' })
@@ -111,6 +112,8 @@ function upgrade(item: UpdateItem) {
         if (e instanceof SystemApiError && e.maintenance) show.value = false
         else if (e instanceof SystemApiError && e.detailCode === 'system_busy')
           actionError.value = $t('system-manage.common.busy')
+        else if (e instanceof SystemApiError && hasSystemErrorText(e.detailCode))
+          actionError.value = $t(`system-manage.errors.${e.detailCode}`)
         else actionError.value = e instanceof Error ? e.message : $t('system-manage.common.failed')
       } finally {
         upgrading.value = false

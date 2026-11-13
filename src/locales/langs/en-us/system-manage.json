@@ -40,7 +40,7 @@
     "error": {
       "updates_manifest_rejected": "The update manifest failed verification and was rejected",
       "updates_fetch_failed": "Could not fetch update information; check the network",
-      "updates_not_configured": "No update source is configured",
+      "updates_not_configured": "No update source is configured: this site has no release source (update manifest URL) set, so updates cannot be checked. Ask an administrator to configure the release source in the install directory and retry.",
       "unknown": "Could not check platform updates ({code})"
     },
     "plugins": {
@@ -62,6 +62,9 @@
         "REQUEST_FAILED": "Request failed"
       }
     }
+  },
+  "errors": {
+    "upgrade_helper_image_unavailable": "The upgrade helper image (default docker:27-cli) could not be pulled; nothing was changed on this site. Run docker pull docker:27-cli on the server and retry. On an offline host, import it with docker save / docker load; the exact image name is in the UPGRADE-HELPER-IMAGE line of the install-directory log."
   },
   "backup": {
     "title": "Backups",
