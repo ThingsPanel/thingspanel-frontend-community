@@ -24,14 +24,28 @@ export async function readDeviceConfigMetadata(id: string) {
 
 export async function saveDeviceConfigMetadata(data: { id: string; [field: string]: unknown }, etag: string | null) {
   if (!etag || !strongTag.test(etag)) return { data: null, error: new Error(templateVersionUnavailable) }
-  return request.put<any>('/device_config', data, { headers: { 'If-Match': etag }, silentError: true })
+  try {
+    return await request.put<any>('/device_config', data, { headers: { 'If-Match': etag }, silentError: true })
+  } catch (error) {
+    // The shared flat transport rejects with { data: null, error }. Keep this
+    // metadata API's result contract for every editor without changing transport.
+    return { data: null, error: unwrapTemplateRequestError(error) }
+  }
+}
+
+function unwrapTemplateRequestError(error: unknown): unknown {
+  if (error && typeof error === 'object' && 'error' in error) return error.error
+  return error
 }
 
 export function templateSaveError(error: unknown): string {
-  const response = (error as { response?: { status?: number; data?: { data?: { reason?: string } } } })?.response
+  const actual = unwrapTemplateRequestError(error)
+  type Failure = { status?: number; data?: { data?: { reason?: string } } }
+  const failure = actual as (Failure & { response?: Failure }) | null | undefined
+  const response = failure?.response || failure
   if (response?.status === 412 || response?.data?.data?.reason === 'template_revision_conflict') {
     return '模板已被其他操作修改，请重新加载后再保存'
   }
-  if (error instanceof Error && error.message === templateVersionUnavailable) return templateVersionUnavailable
+  if (actual instanceof Error && actual.message === templateVersionUnavailable) return templateVersionUnavailable
   return '模板保存失败，请稍后重试'
 }
