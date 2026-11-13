@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nanoid } from '@sa/utils'
+import { v4 as uuidv4 } from 'uuid'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { NButton, NDrawer, NDrawerContent, NEmpty, NIcon, NSpin, NSwitch, NTag } from 'naive-ui'
 import { RefreshOutline, TimeOutline } from '@vicons/ionicons5'
@@ -319,7 +319,7 @@ async function changeSwitch(device: DeviceRow, reading: Reading, target: boolean
         parameters: JSON.parse(buildSwitchCommandValue(binding, target)),
         timeoutSeconds: 8
       },
-      nanoid()
+      uuidv4({ random: globalThis.crypto.getRandomValues(new Uint8Array(16)) })
     )
     if (!current()) return
     if (receipt.deviceId !== device.id || receipt.identifier !== binding.identify)
