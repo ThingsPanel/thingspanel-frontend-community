@@ -91,6 +91,28 @@
       "backup": "创建备份",
       "restore": "恢复备份",
       "upgrade": "升级系统"
+    },
+    "steps": {
+      "preflight": "预检查",
+      "staging_release": "下载并校验新版本",
+      "snapshot": "创建升级前快照",
+      "stopping": "停止服务",
+      "applying": "应用新版本文件",
+      "starting_new_version": "启动新版本",
+      "verifying": "健康检查",
+      "rolling_back": "正在回退到旧状态",
+      "maintenance_on": "进入维护模式",
+      "starting": "启动服务",
+      "verifying_backup": "校验备份",
+      "safety_snapshot": "创建安全快照",
+      "restoring_databases": "恢复数据库",
+      "restoring_files": "恢复文件",
+      "restoring_config": "恢复配置",
+      "collecting": "收集数据",
+      "dumping": "导出数据库",
+      "packaging": "打包备份",
+      "retention": "清理过期备份",
+      "done": "完成"
     }
   }
 }

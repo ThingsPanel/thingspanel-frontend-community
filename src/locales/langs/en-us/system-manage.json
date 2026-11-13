@@ -91,6 +91,28 @@
       "backup": "Creating backup",
       "restore": "Restoring backup",
       "upgrade": "Upgrading system"
+    },
+    "steps": {
+      "preflight": "Pre-flight checks",
+      "staging_release": "Downloading and verifying the new release",
+      "snapshot": "Taking the pre-upgrade snapshot",
+      "stopping": "Stopping services",
+      "applying": "Applying the new version files",
+      "starting_new_version": "Starting the new version",
+      "verifying": "Health check",
+      "rolling_back": "Rolling back to the previous state",
+      "maintenance_on": "Entering maintenance mode",
+      "starting": "Starting services",
+      "verifying_backup": "Verifying the backup",
+      "safety_snapshot": "Taking a safety snapshot",
+      "restoring_databases": "Restoring databases",
+      "restoring_files": "Restoring files",
+      "restoring_config": "Restoring configuration",
+      "collecting": "Collecting data",
+      "dumping": "Dumping databases",
+      "packaging": "Packaging the backup",
+      "retention": "Applying backup retention",
+      "done": "Done"
     }
   }
 }

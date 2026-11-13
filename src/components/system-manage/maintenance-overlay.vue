@@ -17,6 +17,34 @@ const title = computed(() => {
     ? $t(`system-manage.maintenance.kind.${kind}`)
     : $t('system-manage.maintenance.title')
 })
+const STEPS = [
+  'preflight',
+  'staging_release',
+  'snapshot',
+  'stopping',
+  'applying',
+  'starting_new_version',
+  'verifying',
+  'rolling_back',
+  'maintenance_on',
+  'starting',
+  'verifying_backup',
+  'safety_snapshot',
+  'restoring_databases',
+  'restoring_files',
+  'restoring_config',
+  'collecting',
+  'dumping',
+  'packaging',
+  'retention',
+  'done'
+]
+/** Known steps get a translated label; unknown ones are shown as reported. */
+const stepLabel = computed(() => {
+  const step = status.value?.step
+  if (!step) return '-'
+  return STEPS.includes(step) ? $t(`system-manage.maintenance.steps.${step}`) : step
+})
 const failed = computed(() => ['rolled_back', 'needs_human', 'failed'].includes(outcome.value))
 </script>
 
@@ -36,7 +64,7 @@ const failed = computed(() => ['rolled_back', 'needs_human', 'failed'].includes(
             <NProgress type="line" :percentage="percent" indicator-placement="inside" processing />
             <p class="maintenance-row">
               <span>{{ $t('system-manage.maintenance.step') }}:</span>
-              <b data-test="step">{{ status.step || '-' }}</b>
+              <b data-test="step">{{ stepLabel }}</b>
             </p>
             <p v-if="status.component" class="maintenance-row">
               <span>{{ $t('system-manage.maintenance.component') }}:</span>
