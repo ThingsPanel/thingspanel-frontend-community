@@ -64,7 +64,7 @@ describe('plugin install state view', () => {
       { id: 1, op_id: 'old', step: 'health', outcome: 'ok', code: '', created_at: '' }
     ] as any
     const p = stepProgress(base({}), events)
-    expect(p.map(s => s.status)).toEqual(['done', 'done', 'todo', 'todo', 'todo'])
+    expect(p.map(s => s.status)).toEqual(['done', 'done', 'active', 'todo', 'todo'])
     const failed = stepProgress(base({ state: 'failed', op_step: 'agent_grant', error_code: 'agent_rejected' }), events)
     expect(failed.find(s => s.step === 'agent')?.status).toBe('failed')
     expect(stepProgress(base({ state: 'enabled' }), []).every(s => s.status === 'done')).toBe(true)
@@ -73,5 +73,37 @@ describe('plugin install state view', () => {
   it('maps backend error codes to readable text and never echoes unknown payloads', () => {
     expect(errorText('health_failed', tx)).toContain('健康检查')
     expect(errorText('', tx)).toBe('')
+  })
+})
+
+describe('operation-specific progress', () => {
+  it('does not show install steps while stopping or uninstalling', () => {
+    expect(stepProgress(base({ desired: 'disabled' }))).toEqual([{ step: 'disable', status: 'active' }])
+    expect(stepProgress(base({ desired: 'absent', state: 'uninstalling' }))).toEqual([
+      { step: 'uninstall', status: 'active' }
+    ])
+    expect(stepProgress(base({ desired: 'absent', state: 'failed', op_step: 'identity_revoke' }))).toEqual([
+      { step: 'uninstall', status: 'failed' }
+    ])
+  })
+  it('keeps agent waits distinct from failures and ignores old operations', () => {
+    const event = {
+      id: 1,
+      op_id: 'op1',
+      step: 'agent_revoke',
+      outcome: 'waiting' as const,
+      code: 'agent_offline',
+      created_at: ''
+    }
+    expect(stepProgress(base({ desired: 'disabled' }), [event])).toEqual([{ step: 'disable', status: 'waiting' }])
+    expect(stepProgress(base({ desired: 'disabled', op_id: 'op2' }), [event])).toEqual([
+      { step: 'disable', status: 'active' }
+    ])
+  })
+  it('handles configuration and maintenance without a misleading successful installation', () => {
+    expect(stepProgress(base({ state: 'pending_config' }))).toEqual([])
+    expect(stepProgress(base({ state: 'failed', op_step: 'maintain' }))).toEqual([
+      { step: 'maintain', status: 'failed' }
+    ])
   })
 })

@@ -15,9 +15,11 @@ vi.mock('@/service/api/plugin-install', () => ({
   installErrorCode: (e: any) => e?.code || '',
   installErrorMessage: (e: any) => e?.message || ''
 }))
+vi.mock('vue-router', () => ({ useRouter: () => ({ hasRoute: () => true, push: vi.fn() }) }))
 vi.mock('vue-i18n', () => ({ useI18n: () => ({ locale: { value: 'en-us' } }) }))
 
 import InstallPlugins from '@/views/apply/plugin/InstallPlugins.vue'
+import { NDropdown } from 'naive-ui'
 
 const field = { required: true, secret: false, description: 'Home Assistant URL', validate: 'url' }
 const secret = { required: true, secret: true, description: 'Long-lived token' }
@@ -76,7 +78,7 @@ describe('plugin install page', () => {
       await flushPromises()
       await w.find('[data-testid="plugin-homeassistant"] button').trigger('click')
       await flushPromises()
-      expect(document.body.querySelector('.n-drawer')).not.toBeNull()
+      expect(document.body.querySelector('.n-modal')).not.toBeNull()
       expect(api.getInstallation).toHaveBeenCalledWith('i1')
     } finally {
       w.unmount()
@@ -111,7 +113,7 @@ describe('plugin install page', () => {
     token.dispatchEvent(new Event('input'))
     await flushPromises()
     const install = Array.from(document.body.querySelectorAll('button')).find(
-      b => b.textContent?.trim() === 'Install' && b.closest('.n-drawer')
+      b => b.textContent?.trim() === 'Install and enable' && b.closest('.n-modal')
     )!
     install.click()
     install.click()
@@ -142,11 +144,124 @@ describe('plugin install page', () => {
     inputs[1].dispatchEvent(new Event('input'))
     await flushPromises()
     Array.from(document.body.querySelectorAll('button'))
-      .find(b => b.textContent?.trim() === 'Install' && b.closest('.n-drawer'))!
+      .find(b => b.textContent?.trim() === 'Install and enable' && b.closest('.n-modal'))!
       .click()
     await flushPromises()
     expect(api.submitInstall).not.toHaveBeenCalled()
     expect(document.body.textContent).toContain('http(s)')
     w.unmount()
+  })
+})
+
+const modalButton = (label: string) =>
+  Array.from(document.body.querySelectorAll<HTMLButtonElement>('.n-modal button')).find(
+    button => button.textContent?.trim() === label
+  )!
+
+describe('compact plugin management interactions', () => {
+  beforeEach(() => {
+    document.body.innerHTML = ''
+    Object.values(api).forEach(f => f.mockReset())
+    api.getInstallation.mockResolvedValue({ data: null, error: null })
+  })
+
+  it('collapses completed operations and offers no configuration action for a fieldless plugin', async () => {
+    const items = catalog(installed())
+    items[0].fields = {} as any
+    api.getInstallCatalog.mockResolvedValue({ data: items, error: null })
+    const w = mount(InstallPlugins, { attachTo: document.body })
+    try {
+      await flushPromises()
+      await w.find('[data-testid="plugin-homeassistant"] button').trigger('click')
+      await flushPromises()
+      expect(document.body.querySelector('.n-modal')).not.toBeNull()
+      expect(document.body.querySelector('.n-drawer')).toBeNull()
+      expect(document.body.querySelector('.n-modal')?.textContent).toContain('Latest operation')
+      expect(document.body.querySelector('.n-modal')?.textContent).not.toContain('Issue runtime identity')
+      expect(
+        w
+          .findAllComponents(NDropdown)
+          .flatMap(dropdown => dropdown.props('options'))
+          .some(option => option?.key === 'config')
+      ).toBe(false)
+    } finally {
+      w.unmount()
+    }
+  })
+
+  it('confirms disable in the same modal and submits the action once', async () => {
+    api.getInstallCatalog.mockResolvedValue({ data: catalog(installed()), error: null })
+    let release: (value: unknown) => void = () => {}
+    api.installAction.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          release = resolve
+        })
+    )
+    const w = mount(InstallPlugins, { attachTo: document.body })
+    try {
+      await flushPromises()
+      w.findComponent(NDropdown).vm.$emit('select', 'disable')
+      await flushPromises()
+      expect(document.body.querySelectorAll('.n-modal')).toHaveLength(1)
+      expect(document.body.textContent).toContain('interrupts communication')
+      const button = modalButton('Disable')
+      button.click()
+      button.click()
+      await flushPromises()
+      expect(api.installAction).toHaveBeenCalledTimes(1)
+      expect(api.installAction).toHaveBeenCalledWith('i1', 'disable')
+      expect(modalButton('Cancel').disabled).toBe(true)
+      api.getInstallCatalog.mockResolvedValue({
+        data: catalog(installed({ state: 'installed', desired: 'disabled' })),
+        error: null
+      })
+      release({ data: installed({ state: 'installed', desired: 'disabled' }), error: null })
+      await flushPromises()
+      expect(modalButton('Enable')).toBeTruthy()
+      expect(document.body.querySelector('.n-modal')?.textContent).not.toContain('Issue runtime identity')
+    } finally {
+      w.unmount()
+    }
+  })
+
+  it('makes configuration activation explicit and leaves stored secrets unchanged', async () => {
+    api.getInstallCatalog.mockResolvedValue({
+      data: catalog(installed({ state: 'installed', desired: 'disabled' })),
+      error: null
+    })
+    api.updateInstallConfig.mockResolvedValue({ data: installed({ state: 'installing' }), error: null })
+    const w = mount(InstallPlugins, { attachTo: document.body })
+    try {
+      await flushPromises()
+      w.findComponent(NDropdown).vm.$emit('select', 'config')
+      await flushPromises()
+      expect(document.body.textContent).toContain('Saving will enable the plugin')
+      modalButton('Save and enable').click()
+      await flushPromises()
+      expect(api.updateInstallConfig).toHaveBeenCalledWith('i1', { HA_BASE_URL: 'http://ha:8123' })
+    } finally {
+      w.unmount()
+    }
+  })
+
+  it('keeps polling a running operation after the modal closes', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+    api.getInstallCatalog.mockResolvedValue({ data: catalog(installed({ state: 'installing' })), error: null })
+    const w = mount(InstallPlugins, { attachTo: document.body })
+    try {
+      await flushPromises()
+      await w.find('[data-testid="plugin-homeassistant"] button').trigger('click')
+      await flushPromises()
+      modalButton('Close').click()
+      await flushPromises()
+      const count = api.getInstallCatalog.mock.calls.length
+      await vi.advanceTimersByTimeAsync(3000)
+      await flushPromises()
+      expect(api.getInstallCatalog.mock.calls.length).toBeGreaterThan(count)
+    } finally {
+      w.unmount()
+      vi.useRealTimers()
+    }
   })
 })

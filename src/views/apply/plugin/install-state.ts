@@ -12,7 +12,7 @@ export function stateView(state: InstallState | undefined, tx: Tx): { label: str
     case 'installing':
       return { label: tx('处理中', 'Working'), type: 'info' }
     case 'installed':
-      return { label: tx('已安装（未启用）', 'Installed (not enabled)'), type: 'default' }
+      return { label: tx('已停用', 'Disabled'), type: 'default' }
     case 'enabled':
       return { label: tx('已启用', 'Enabled'), type: 'success' }
     case 'failed':
@@ -61,7 +61,8 @@ export function stepLabel(step: string, tx: Tx): string {
     register: ['在平台登记服务', 'Register the service on the platform'],
     health: ['健康检查', 'Health check'],
     disable: ['停用', 'Disable'],
-    uninstall: ['卸载', 'Uninstall']
+    uninstall: ['卸载', 'Uninstall'],
+    maintain: ['运行维护', 'Runtime maintenance']
   }
   const l = labels[step]
   return l ? tx(l[0], l[1]) : step
@@ -74,18 +75,28 @@ export function stepProgress(
   install: Installation,
   events: InstallEvent[] = []
 ): { step: string; status: StepStatus }[] {
+  if (install.state === 'pending_config') return []
+  // Stop operations have different backend steps; never render the installation checklist for them.
+  const stopStep = install.desired === 'absent' ? 'uninstall' : install.desired === 'disabled' ? 'disable' : ''
+  const normalize = (step: string) => stopStep || (step.startsWith('agent') ? 'agent' : step)
   const outcome: Record<string, InstallEvent> = {}
-  for (const e of events.filter(ev => ev.op_id === install.op_id).reverse()) {
-    const key = e.step.startsWith('agent') ? 'agent' : e.step
-    outcome[key] = e
+  for (const e of events
+    .filter(ev => ev.op_id === install.op_id)
+    .slice()
+    .reverse()) {
+    outcome[normalize(e.step)] = e
   }
-  const current = install.op_step.startsWith('agent') ? 'agent' : install.op_step
-  return STEPS.map(step => {
+  const current = normalize(install.op_step)
+  const steps: readonly string[] = stopStep ? [stopStep] : current === 'maintain' ? ['maintain'] : STEPS
+  const terminal = ['enabled', 'installed', 'uninstalled'].includes(install.state)
+  // The backend often records only completed steps. Highlight the next unfinished stage in that case.
+  const next = steps.find(step => outcome[step]?.outcome !== 'ok')
+  return steps.map(step => {
     const e = outcome[step]
     if (install.state === 'failed' && current === step) return { step, status: 'failed' as StepStatus }
-    if (install.state === 'installing' && e?.outcome === 'waiting') return { step, status: 'waiting' as StepStatus }
-    if (install.state === 'enabled') return { step, status: 'done' as StepStatus }
-    if (e?.outcome === 'ok') return { step, status: 'done' as StepStatus }
+    if (isBusy(install) && e?.outcome === 'waiting') return { step, status: 'waiting' as StepStatus }
+    if (terminal || e?.outcome === 'ok') return { step, status: 'done' as StepStatus }
+    if (isBusy(install) && step === next) return { step, status: 'active' as StepStatus }
     return { step, status: 'todo' as StepStatus }
   })
 }
