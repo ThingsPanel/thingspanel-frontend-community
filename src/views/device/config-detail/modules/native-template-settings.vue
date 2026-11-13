@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { nanoid } from '@sa/utils'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import {
@@ -189,14 +190,7 @@ async function startAttempt(scope: TemplatePatchScope, bodyJson: string) {
     return
   }
   const generation = getTemplateConfigurationSessionGeneration()
-  const attempt = createTemplateConfigurationAttempt(
-    props.id,
-    scope,
-    bodyJson,
-    etag.value,
-    globalThis.crypto.randomUUID(),
-    generation
-  )
+  const attempt = createTemplateConfigurationAttempt(props.id, scope, bodyJson, etag.value, nanoid(), generation)
   pendingAttempt.value = attempt
   await sendAttempt(attempt)
 }
@@ -250,7 +244,7 @@ async function uploadCover(file: File) {
   const generation = getTemplateConfigurationSessionGeneration()
   uploading.value = true
   try {
-    const { asset } = await fileAssetsNative.upload(file, globalThis.crypto.randomUUID())
+    const { asset } = await fileAssetsNative.upload(file, nanoid())
     if (!currentSessionIs(generation, templateId)) return
     await startAttempt('imageAssetId', buildImageAssetPatch(asset.id))
   } catch (error) {

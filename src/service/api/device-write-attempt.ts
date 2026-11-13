@@ -1,3 +1,5 @@
+import { nanoid } from '@sa/utils'
+
 /**
  * A write attempt is frozen the first time it is sent: same path, body, If-Match and
  * Idempotency-Key. When the outcome is unknown (network failure) only that exact request
@@ -10,7 +12,7 @@ export interface FrozenWriteAttempt<TBody> {
   readonly key: string
 }
 
-export function newIdempotencyKey(random: () => string = () => globalThis.crypto.randomUUID()): string {
+export function newIdempotencyKey(random: () => string = nanoid): string {
   return `dev-${random()}`
 }
 

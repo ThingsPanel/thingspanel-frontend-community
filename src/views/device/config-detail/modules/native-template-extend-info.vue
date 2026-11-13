@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { nanoid } from '@sa/utils'
 import { computed, h, onBeforeUnmount, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import type { DataTableColumns } from 'naive-ui'
@@ -326,13 +327,7 @@ async function beginSave(payload: ReturnType<typeof makeCustomFieldChanges>) {
     return
   }
   const generation = getTemplateCustomFieldSessionGeneration()
-  const attempt = createTemplateCustomFieldAttempt(
-    props.id,
-    payload,
-    etag.value,
-    globalThis.crypto.randomUUID(),
-    generation
-  )
+  const attempt = createTemplateCustomFieldAttempt(props.id, payload, etag.value, nanoid(), generation)
   pendingAttempt.value = attempt
   await sendAttempt(attempt)
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { nanoid } from '@sa/utils'
 import { computed, onMounted, ref, watch } from 'vue'
 import type { FormInst } from 'naive-ui'
 import { useDialog, useMessage } from 'naive-ui'
@@ -272,7 +273,7 @@ function handleValidateClick(e: MouseEvent) {
               deviceKind: template?.configuration.deviceKind ?? 'standalone',
               ...(templateId ? { templateId } : {})
             },
-            globalThis.crypto.randomUUID()
+            nanoid()
           )
         }
 

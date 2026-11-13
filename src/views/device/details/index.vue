@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { nanoid } from '@sa/utils'
 import { computed, defineAsyncComponent, getCurrentInstance, markRaw, nextTick, onBeforeMount, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLoading } from '@sa/hooks'
@@ -484,11 +485,11 @@ const save = async () => {
     pendingDeviceUpdate.etag !== deviceETag ||
     pendingDeviceUpdate.payloadJSON !== payloadJSON
   ) {
-    if (!globalThis.crypto?.randomUUID) {
+    if (!globalThis.crypto?.getRandomValues) {
       updateError.value = '当前环境无法安全提交修改，请稍后重试。'
       return
     }
-    pendingDeviceUpdate = { id, etag: deviceETag, key: globalThis.crypto.randomUUID(), payloadJSON }
+    pendingDeviceUpdate = { id, etag: deviceETag, key: nanoid(), payloadJSON }
   }
 
   updateError.value = ''

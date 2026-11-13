@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { nanoid } from '@sa/utils'
+import { v4 as uuidv4 } from 'uuid'
 import { computed, h, onBeforeUnmount, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import type { DataTableColumns } from 'naive-ui'
@@ -185,7 +187,7 @@ async function loadTemplate(templateId = props.id) {
 }
 
 function openCreate() {
-  form.value = { ...emptyForm(), id: globalThis.crypto.randomUUID() }
+  form.value = { ...emptyForm(), id: uuidv4({ random: globalThis.crypto.getRandomValues(new Uint8Array(16)) }) }
   editingId.value = null
   formError.value = ''
   editorVisible.value = true
@@ -245,13 +247,7 @@ async function beginSave(next: TopicMapping[]) {
     return
   }
   const generation = getTemplateTopicSessionGeneration()
-  const attempt = createTemplateTopicAttempt(
-    props.id,
-    configurationJson,
-    etag.value,
-    globalThis.crypto.randomUUID(),
-    generation
-  )
+  const attempt = createTemplateTopicAttempt(props.id, configurationJson, etag.value, nanoid(), generation)
   pendingAttempt.value = attempt
   await sendAttempt(attempt)
 }
