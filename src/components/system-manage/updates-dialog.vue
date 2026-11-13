@@ -1,15 +1,66 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { NAlert, NButton, NModal, NSpace, NSpin, NTag } from 'naive-ui'
 import { $t } from '@/locales'
 import { SystemApiError, systemApi } from '@/service/api/system'
 import type { UpdateItem, UpdatesResult } from '@/service/api/system'
+import {
+  getInstallCatalog,
+  getInstallation,
+  installAction,
+  installErrorCode,
+  upgradeInstall
+} from '@/service/api/plugin-install'
+import type { CatalogItem } from '@/service/api/plugin-install'
+import { createPluginUpgrader, isUpgradeBusy, upgradablePlugins } from '@/utils/plugin-upgrade'
+import type { PluginUpgradeRowState } from '@/utils/plugin-upgrade'
 import { useSystemManageStore } from '@/store/modules/system-manage'
 
 defineOptions({ name: 'UpdatesDialog' })
 const show = defineModel<boolean>('show', { required: true })
 
 const store = useSystemManageStore()
+
+// R7: plugin rows. A failing catalog (503 not configured / agent offline / 403) only hides these rows.
+const plugins = ref<CatalogItem[]>([])
+const pluginState = reactive<Record<string, PluginUpgradeRowState>>({})
+const upgrader = createPluginUpgrader({
+  upgrade: upgradeInstall,
+  retry: id => installAction(id, 'retry'),
+  getInstallation,
+  errorCode: installErrorCode,
+  onChange: (id, st) => {
+    pluginState[id] = st
+  }
+})
+onBeforeUnmount(() => upgrader.dispose())
+
+async function loadPlugins() {
+  plugins.value = []
+  const { data, error } = await getInstallCatalog()
+  if (!error) plugins.value = upgradablePlugins(data)
+}
+
+function pluginErrorText(code?: string) {
+  if (!code) return ''
+  return ['UP_TO_DATE', 'BAD_STATE', 'AGENT_OFFLINE', 'REQUEST_FAILED'].includes(code)
+    ? $t(`system-manage.updates.plugins.errors.${code}`)
+    : $t('system-manage.updates.plugins.errorCode', { code })
+}
+
+function upgradePlugin(item: CatalogItem) {
+  const id = item.installation?.id
+  if (!id) return
+  window.$dialog?.warning({
+    title: $t('system-manage.updates.upgrade'),
+    content: $t('system-manage.updates.plugins.upgradeConfirm', { name: item.display_name, to: item.version }),
+    positiveText: $t('system-manage.common.confirm'),
+    negativeText: $t('system-manage.common.cancel'),
+    onPositiveClick() {
+      void upgrader.start(id)
+    }
+  })
+}
 const loading = ref(false)
 const result = ref<UpdatesResult | undefined>()
 const loadError = ref('')
@@ -31,6 +82,7 @@ watch(show, async open => {
   loadError.value = ''
   actionError.value = ''
   loading.value = true
+  void loadPlugins()
   try {
     result.value = await systemApi.updates()
   } catch (e) {
@@ -97,6 +149,59 @@ const isInstallerOnly = (item: UpdateItem) => item.instructions === 'upgrade_wit
               {{ $t('system-manage.updates.upgrade') }}
             </NButton>
             <div class="update-hint">{{ $t('system-manage.updates.upgradeHint') }}</div>
+          </template>
+        </div>
+        <div v-for="item in plugins" :key="item.id" class="update-row" :data-test="`row-plugin-${item.id}`">
+          <div class="update-main">
+            <b>{{ $t('system-manage.updates.plugins.row', { name: item.display_name }) }}</b>
+            <span>
+              {{
+                $t('system-manage.updates.plugins.versions', {
+                  from: item.installation?.version || '-',
+                  to: item.version
+                })
+              }}
+            </span>
+          </div>
+          <template v-for="st in [pluginState[item.installation?.id ?? '']]" :key="'s'">
+            <NButton
+              v-if="!st || st.phase === 'idle' || isUpgradeBusy(st.phase) || st.phase === 'success' || st.apiError"
+              type="primary"
+              size="small"
+              :disabled="isUpgradeBusy(st?.phase) || st?.phase === 'success'"
+              :loading="isUpgradeBusy(st?.phase)"
+              data-test="plugin-upgrade-button"
+              @click="upgradePlugin(item)"
+            >
+              {{ $t('system-manage.updates.upgrade') }}
+            </NButton>
+            <NButton
+              v-else
+              type="warning"
+              size="small"
+              data-test="plugin-retry-button"
+              @click="item.installation && upgrader.start(item.installation.id, 'retry')"
+            >
+              {{ $t('system-manage.updates.plugins.retry') }}
+            </NButton>
+            <div
+              v-if="st?.phase === 'installing' || st?.phase === 'starting'"
+              class="update-hint"
+              data-test="plugin-installing"
+            >
+              {{ $t('system-manage.updates.plugins.installing') }}
+              <span v-if="st.opStep">({{ st.opStep }})</span>
+            </div>
+            <div v-else-if="st?.phase === 'success'" class="update-hint" data-test="plugin-success">
+              {{ $t('system-manage.updates.plugins.success', { version: st.version || item.version }) }}
+            </div>
+            <div v-else-if="st?.phase === 'failed'" class="update-hint" data-test="plugin-failed">
+              {{ $t('system-manage.updates.plugins.failed') }} — {{ pluginErrorText(st.errorCode) }}
+              <span v-if="st.opStep">· {{ $t('system-manage.updates.plugins.step', { step: st.opStep }) }}</span>
+            </div>
+            <div v-else-if="st?.phase === 'timeout'" class="update-hint">
+              {{ $t('system-manage.updates.plugins.timeout') }}
+            </div>
           </template>
         </div>
       </NSpace>

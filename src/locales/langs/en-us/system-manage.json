@@ -42,6 +42,25 @@
       "updates_fetch_failed": "Could not fetch update information; check the network",
       "updates_not_configured": "No update source is configured",
       "unknown": "Could not check platform updates ({code})"
+    },
+    "plugins": {
+      "row": "Plugin: {name}",
+      "versions": "Current {from} → new {to}",
+      "upgradeConfirm": "Upgrade {name} to {to}? The upgrade briefly stops the plugin and device connections will be interrupted.",
+      "installing": "Upgrading…",
+      "success": "Upgraded, now at {version}",
+      "failed": "Upgrade failed; the version is unchanged",
+      "errorCode": "Error code: {code}",
+      "step": "Step: {step}",
+      "retry": "Retry",
+      "timeout": "Timed out waiting; the outcome is unknown. Check the plugin page.",
+      "retryHint": "Retry runs the install flow again",
+      "errors": {
+        "UP_TO_DATE": "Already up to date",
+        "BAD_STATE": "The plugin is not running; enable it first",
+        "AGENT_OFFLINE": "The host agent is offline",
+        "REQUEST_FAILED": "Request failed"
+      }
     }
   },
   "backup": {

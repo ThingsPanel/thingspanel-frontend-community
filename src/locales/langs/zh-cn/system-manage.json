@@ -42,6 +42,25 @@
       "updates_fetch_failed": "无法获取更新信息，请检查网络",
       "updates_not_configured": "未配置更新源",
       "unknown": "检查平台更新失败（{code}）"
+    },
+    "plugins": {
+      "row": "插件：{name}",
+      "versions": "当前版本 {from} → 新版本 {to}",
+      "upgradeConfirm": "升级 {name} 到 {to}？升级会短暂停止该插件，设备连接会中断。",
+      "installing": "升级中…",
+      "success": "升级成功，当前版本 {version}",
+      "failed": "升级失败，版本不变",
+      "errorCode": "错误码：{code}",
+      "step": "步骤：{step}",
+      "retry": "重试",
+      "timeout": "等待超时，结果未知，请到插件页面查看",
+      "retryHint": "重试会重新执行安装流程",
+      "errors": {
+        "UP_TO_DATE": "已是最新版本",
+        "BAD_STATE": "插件不在运行状态，请先启用",
+        "AGENT_OFFLINE": "主机上的安装代理不在线",
+        "REQUEST_FAILED": "请求失败"
+      }
     }
   },
   "backup": {
