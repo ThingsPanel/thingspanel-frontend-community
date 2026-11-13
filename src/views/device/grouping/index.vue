@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 // Import UI components from Naive UI
 import { useRouter } from 'vue-router'
-import { NTabs, NTabPane, NButton, NCard, NDataTable, NEmpty, NIcon, NInput, NPagination } from 'naive-ui'
+import { NButton, NCard, NDataTable, NEmpty, NIcon, NInput, NPagination } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { debounce } from 'lodash'
 import {
@@ -29,8 +29,6 @@ import { useAuthStore } from '@/store/modules/auth'
 import { canManageDeviceGroups } from '@/service/api/device-group-editor-state'
 import { AddOrEditDevices } from './components'
 
-import LegacyGroups from './components/legacy-groups.vue'
-const groupView = ref('native')
 const the_modal = ref()
 const searchValue = ref('')
 type DeviceGroupTableRow = DeviceGroup & { created_at: DeviceGroup['createdAt'] }
@@ -179,25 +177,9 @@ onMounted(getDevice) // Fetch device groups on component mount
 
 <template>
   <div class="h-full overflow-auto">
-    <NTabs v-model:value="groupView" type="line" class="mb-4">
-      <NTabPane name="native" tab="新版分组" />
-      <NTabPane name="legacy" tab="原有分组" />
-    </NTabs>
-    <LegacyGroups
-      v-if="groupView === 'legacy'"
-      :key="
-        String(
-          authStore.userInfo.tenantId ||
-            authStore.userInfo.tenant_id ||
-            authStore.userInfo.id ||
-            authStore.userInfo.userId ||
-            ''
-        )
-      "
-    />
     <!-- Add or edit device modal component with props for edit mode and data -->
     <AddOrEditDevices ref="the_modal" :is-edit="false" :refresh-data="getDevice" />
-    <NCard v-show="groupView === 'native'">
+    <NCard>
       <div v-if="pendingDeleteIntents.length" class="mb-3">
         <div
           v-for="intent in pendingDeleteIntents"
