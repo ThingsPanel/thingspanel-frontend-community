@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { h, onMounted, onUnmounted, nextTick, ref } from 'vue'
 import dayjs from 'dayjs'
+import { useI18n } from 'vue-i18n'
 
 import { $t } from '@/locales'
 import { Refresh, HelpCircleOutline } from '@vicons/ionicons5'
@@ -10,6 +11,35 @@ import { counterView, deviceDiagnosticsNative } from '@/service/api/device-diagn
 import type { DiagnosticCheck } from '@/service/api/device-diagnostics-native'
 import { deviceDebugNative, parseStoredDebugSession } from '@/service/api/device-debug-native'
 import { newIdempotencyKey } from '@/service/api/device-write-attempt'
+
+const { locale } = useI18n()
+const checkLabels: Record<string, [string, string]> = {
+  DEVICE_FOUND: ['设备资料可读取', 'Device metadata available'],
+  CONFIGURATION_INCOMPLETE: ['尚未配置接入方式', 'Access configuration missing'],
+  CONFIGURATION_PENDING: ['接入配置待生效', 'Access configuration pending'],
+  CONFIGURATION_SET: ['接入配置已设置', 'Access configuration set'],
+  RUNTIME_UNAVAILABLE: ['连接状态暂不可读取', 'Connectivity unavailable'],
+  DEVICE_ONLINE: ['设备在线', 'Device online'],
+  DEVICE_OFFLINE: ['设备离线', 'Device offline'],
+  NO_INGESTION_STATS: ['暂无完整上报统计', 'Complete ingestion statistics unavailable'],
+  MODEL_BOUND: ['物模型版本已绑定', 'Thing model version bound'],
+  MODEL_NOT_BOUND: ['尚未绑定物模型版本', 'No thing model version bound'],
+  NO_RECENT_COMMAND: ['当前时段无下发命令', 'No command in this period'],
+  LAST_COMMAND_ACKNOWLEDGED: [
+    '最近命令已回执（不代表物理动作已完成）',
+    'Last command acknowledged (physical effect unverified)'
+  ],
+  CREDENTIAL_ACTIVE: ['接入凭据可用', 'Access credential available'],
+  CREDENTIAL_PENDING: ['接入凭据待激活', 'Access credential activation pending'],
+  NO_CREDENTIAL: ['尚未创建接入凭据', 'No access credential created'],
+  CREDENTIAL_REVOKED: ['接入凭据已全部撤销', 'All access credentials revoked'],
+  CREDENTIAL_EXPIRED: ['接入凭据已全部过期', 'All access credentials expired'],
+  CREDENTIAL_UNAVAILABLE: ['暂无可用接入凭据', 'No usable access credential']
+}
+function checkLabel(check: DiagnosticCheck) {
+  const label = checkLabels[check.code]
+  return label ? label[locale.value.toLowerCase().startsWith('zh') ? 0 : 1] : check.message || check.code
+}
 
 // 失败记录类型
 interface FailureRecord {
@@ -262,9 +292,9 @@ onUnmounted(() => {
           v-for="check in diagnosticChecks"
           :key="check.stage"
           :type="check.state === 'pass' ? 'success' : check.state === 'fail' ? 'error' : 'default'"
-          :title="check.message"
+          :title="`${check.code}: ${checkLabel(check)}`"
         >
-          {{ check.stage }} · {{ check.state }} · {{ check.code }}
+          {{ checkLabel(check) }}
         </NTag>
       </NFlex>
       <NFlex :gap="16" class="mt-4">

@@ -51,7 +51,10 @@ const reading = (identifier: string, value: unknown) => ({
 async function mountPage() {
   const wrapper = mount(Telemetry, {
     props: { id: deviceId, deviceData: {} },
-    global: { plugins: [naive] },
+    global: {
+      plugins: [naive],
+      stubs: { NativeDeviceSimulator: { template: '<div data-test="simulator">模拟表单</div>' } }
+    },
     attachTo: document.body
   })
   await flushPromises()
@@ -109,11 +112,18 @@ describe('device telemetry page (native latest readings)', () => {
     expect(socket.open).not.toHaveBeenCalled()
   })
 
-  it('says plainly which telemetry features are not connected and offers no dead delete control', async () => {
+  it('keeps simulation collapsed until requested and offers no unavailable delete control', async () => {
     runtime.listReadings.mockResolvedValue(readings([reading('temperature', 21.5)]))
     const wrapper = await mountPage()
     const text = wrapper.text()
-    expect(text).toContain('删除最新值、历史曲线暂不可用')
+    expect(text).not.toContain('删除最新值、历史曲线暂不可用')
+    expect(wrapper.find('[data-test="simulator"]').exists()).toBe(false)
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === '模拟上报')!
+      .trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[data-test="simulator"]').exists()).toBe(true)
     // The simulator panel is real; unavailable features (delete latest value, history curve) get no control.
     const labels = wrapper.findAll('button').map(b => b.text())
     expect(labels.some(l => l.includes('删除'))).toBe(false)

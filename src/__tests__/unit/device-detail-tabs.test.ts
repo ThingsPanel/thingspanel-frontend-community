@@ -4,8 +4,9 @@ import { flushPromises, shallowMount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import DeviceDetail from '@/views/device/details/index.vue'
 
-const { detail, resolveModel, routeState } = vi.hoisted(() => ({
+const { detail, resolveModel, routeState, runtimeState } = vi.hoisted(() => ({
   detail: vi.fn(),
+  runtimeState: vi.fn(),
   resolveModel: vi.fn(),
   routeState: { current: null as any }
 }))
@@ -13,6 +14,7 @@ const { detail, resolveModel, routeState } = vi.hoisted(() => ({
 vi.mock('vue-router', () => ({ useRoute: () => routeState.current }))
 vi.mock('@/service/api/device', () => ({ deviceDetail: detail, deviceUpdate: vi.fn() }))
 vi.mock('@/service/api/device-native', () => ({ deviceNative: { get: detail } }))
+vi.mock('@/service/api/device-runtime-native', () => ({ deviceRuntimeNative: { readRuntimeState: runtimeState } }))
 vi.mock('@/service/api/template-native', () => ({ templateNative: { get: vi.fn() } }))
 vi.mock('@/views/device/native-model-consumption', () => ({ resolveDeviceNativeModel: resolveModel }))
 vi.mock('@/locales', () => ({ $t: (key: string) => key }))
@@ -68,6 +70,8 @@ function mountPage() {
         NSpace: true,
         NFlex: true,
         SvgIcon: true,
+        NAlert: true,
+        NTooltip: true,
         NSpin: true
       }
     }
@@ -86,6 +90,7 @@ describe('device detail initial tab', () => {
       device: { id, name: id, deviceKind: 'standalone', resourceVersion: 1, tags: [] },
       etag: '"1"'
     }))
+    runtimeState.mockReset().mockResolvedValue({ connectivity: 'online' })
     resolveModel.mockReset()
   })
 
@@ -93,6 +98,23 @@ describe('device detail initial tab', () => {
     wrapper?.unmount()
     vi.useRealTimers()
     vi.restoreAllMocks()
+  })
+
+  it('loads initial online status from native runtime state', async () => {
+    resolveModel.mockResolvedValue(null)
+    mountPage()
+    await flushPromises()
+    expect(runtimeState).toHaveBeenCalledWith('device-a')
+    expect((wrapper.vm as any).device_is_online).toBe(1)
+  })
+
+  it('keeps runtime failures visible without inventing an offline state', async () => {
+    resolveModel.mockResolvedValue(null)
+    runtimeState.mockRejectedValue(new Error('runtime unavailable'))
+    mountPage()
+    await flushPromises()
+    expect((wrapper.vm as any).device_is_online).toBeNull()
+    expect((wrapper.vm as any).runtimeStateError).toBe('runtime unavailable')
   })
 
   it('waits for chart availability before exposing any tabs, then opens chart directly', async () => {

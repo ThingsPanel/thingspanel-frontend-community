@@ -5,6 +5,7 @@ import { useLoading } from '@sa/hooks'
 import { useWebSocket } from '@vueuse/core'
 import { $t } from '@/locales'
 import { deviceNative, type Device, type UpdateDevice } from '@/service/api/device-native'
+import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
 import { templateNative } from '@/service/api/template-native'
 import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
 import { localStg } from '@/utils/storage'
@@ -200,9 +201,9 @@ const device_type = ref('')
 const name = ref('')
 const device_is_online = ref<number | null>(null)
 let wsUrl = getWebsocketServerUrl()
-const DEVICE_STATUS_INACTIVE_COLOR = '#ccc'
-const deviceAlarmActive = ref<boolean | null>(null)
-const deviceAlarmColor = computed(() => DEVICE_STATUS_INACTIVE_COLOR)
+const DEVICE_STATUS_INACTIVE_COLOR = 'var(--n-text-color)'
+const runtimeStateError = ref('')
+let onlineFrameVersion = 0
 
 wsUrl += `/device/online/status/ws`
 const normalizeOnlineStatus = (payload: unknown): number | null => {
@@ -244,6 +245,8 @@ const { send } = useWebSocket(wsUrl, {
       try {
         const status = normalizeOnlineStatus(JSON.parse(event.data))
         if (status !== null) {
+          onlineFrameVersion += 1
+          runtimeStateError.value = ''
           device_is_online.value = status
         }
       } catch {
@@ -303,6 +306,7 @@ const getDeviceDetail = async () => {
   detailError.value = ''
   relatedTemplateError.value = ''
   device_is_online.value = null
+  runtimeStateError.value = ''
   if (!id) {
     detailError.value = '缺少设备 ID。'
     deviceData.value = {}
@@ -314,6 +318,17 @@ const getDeviceDetail = async () => {
     const { device, etag } = await deviceNative.get(id)
     if (currentRequestId !== detailRequestId) return
     deviceETag = etag
+    const stateFrameVersion = onlineFrameVersion
+    void deviceRuntimeNative
+      .readRuntimeState(id)
+      .then(state => {
+        if (currentRequestId !== detailRequestId || stateFrameVersion !== onlineFrameVersion) return
+        device_is_online.value = state.connectivity === 'online' ? 1 : state.connectivity === 'offline' ? 0 : null
+      })
+      .catch(error => {
+        if (currentRequestId !== detailRequestId || stateFrameVersion !== onlineFrameVersion) return
+        runtimeStateError.value = error instanceof Error ? error.message : '设备状态读取失败'
+      })
 
     let templateName = ''
     if (device.templateId) {
@@ -518,7 +533,7 @@ const isEmbeddedHost = computed(() => {
         <div class="device-details-title-row">
           <span class="device-details-title">{{ name || '--' }}</span>
           <NTag v-if="isDemoDevice" size="small" type="warning" :bordered="false">演示数据</NTag>
-          <NButton v-show="true" type="primary" @click="editConfig">
+          <NButton secondary :disabled="!deviceData.id" @click="editConfig">
             {{ $t('common.edit') }}
           </NButton>
         </div>
@@ -585,7 +600,7 @@ const isEmbeddedHost = computed(() => {
             </span>
           </div>
           <!-- 在线/离线，弹窗展示详情 -->
-          <div class="device-details-status" @click="showStatusHistoryDialog = true">
+          <NButton quaternary size="small" @click="showStatusHistoryDialog = true">
             <!-- <span class="mr-2">{{ $t('generate.status') }}:</span> -->
             <SvgIcon
               local-icon="CellTowerRound"
@@ -609,26 +624,19 @@ const isEmbeddedHost = computed(() => {
 
             <!-- 历史记录 -->
             <SvgIcon local-icon="history" style="margin-left: 5px" class="text-18px text-primary" />
-          </div>
-          <div
-            class="device-details-status"
-            :class="{ 'device-details-status--alarm': deviceAlarmActive === true }"
-            @click="clickAlarmHistory"
-          >
-            <SvgIcon
-              local-icon="AlertFilled"
-              :style="{ color: deviceAlarmColor, marginRight: '5px' }"
-              class="text-20px text-primary"
-            />
-            <span :style="{ color: deviceAlarmColor }">查看告警</span>
-          </div>
+          </NButton>
+          <NButton quaternary size="small" @click="clickAlarmHistory">
+            <template #icon><SvgIcon local-icon="AlertFilled" /></template>
+            查看告警
+          </NButton>
+          <NTooltip v-if="runtimeStateError" trigger="hover">
+            <template #trigger><span class="device-details-state-error">状态读取失败</span></template>
+            {{ runtimeStateError }}
+          </NTooltip>
         </NFlex>
       </div>
       <NAlert v-if="detailError" type="error" :show-icon="false" class="mb-3">
         {{ detailError }}
-      </NAlert>
-      <NAlert v-else type="warning" :show-icon="false" class="mb-3">
-        可管理设备资料和凭据；连接信息、关系及部分设置正在完善。
       </NAlert>
       <NAlert v-if="relatedTemplateError" type="warning" :show-icon="false" class="mb-3">
         设备模板名称暂不可读取：{{ relatedTemplateError }}
@@ -739,8 +747,9 @@ const isEmbeddedHost = computed(() => {
   cursor: pointer;
 }
 
-.device-details-status--alarm {
-  cursor: pointer;
+.device-details-state-error {
+  color: var(--n-error-color, #d03050);
+  font-size: 12px;
 }
 
 .device-details-content {

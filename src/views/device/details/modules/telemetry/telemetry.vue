@@ -24,6 +24,8 @@ const telemetryData = ref<DeviceManagement.telemetryData[]>([])
 const nativeTelemetryFields = ref(new Map<string, any>())
 const nativeMetadataError = ref('')
 const truncated = ref(false)
+const showSimulator = ref(false)
+const fetching = ref(false)
 let nativeMetadataRequestId = 0
 const initTelemetryData = ref<any>()
 const numberAnimationInstRef = ref<NumberAnimationInst[] | []>([])
@@ -84,6 +86,7 @@ const fetchError = ref('')
 // 当前值来自原生 readings（latestOnly）；Community 适配器只提供最新值，没有历史、聚合或总数窗口。
 const fetchTelemetry = async () => {
   let page
+  fetching.value = true
   try {
     page = await deviceRuntimeNative.listReadings(props.id, {
       kind: 'telemetry',
@@ -94,6 +97,8 @@ const fetchTelemetry = async () => {
   } catch (error) {
     fetchError.value = error instanceof Error ? error.message : '遥测读取失败'
     return
+  } finally {
+    fetching.value = false
   }
   fetchError.value = ''
   const rows = latestRowsFromReadings(page, 'telemetry')
@@ -163,67 +168,90 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <n-card class="w-full">
+  <section class="telemetry-panel">
+    <div class="telemetry-toolbar">
+      <span class="telemetry-heading">当前遥测</span>
+      <n-space>
+        <n-button :loading="fetching" @click="fetchTelemetry">刷新</n-button>
+        <n-button :aria-expanded="showSimulator" @click="showSimulator = !showSimulator">
+          {{ showSimulator ? '收起模拟上报' : '模拟上报' }}
+        </n-button>
+      </n-space>
+    </div>
     <n-alert v-if="nativeMetadataError" type="error" :show-icon="false" class="mb-4">
       {{ nativeMetadataError }}
     </n-alert>
     <n-alert v-if="fetchError" type="warning" :show-icon="false" class="mb-4">{{ fetchError }}</n-alert>
     <n-alert v-if="truncated" type="info" :show-icon="false" class="mb-4">仅显示前 100 个遥测值。</n-alert>
-    <n-alert type="info" :show-icon="false" class="mb-4">
-      目前显示当前值和原始历史（单次最多 24 小时）；删除最新值、历史曲线暂不可用。
-    </n-alert>
-    <NativeDeviceSimulator :id="props.id" />
-
-    <!-- 第二行 -->
-    <n-card class="mb-4">
-      <n-grid :x-gap="cardMargin" :y-gap="cardMargin" cols="1 600:2 900:3 1200:4">
-        <n-gi v-for="(i, index) in telemetryData" :key="i.tenant_id">
-          <n-card header-class="border-b h-36px" hoverable :style="{ height: cardHeight + 'px' }">
-            <div class="telemetry-card-body">
-              <n-tooltip v-if="isTextTelemetry(i)" trigger="hover" placement="top">
-                <template #trigger>
-                  <span class="value-display-ellipsis" style="font-size: 24px">
-                    {{ getTelemetryDisplayValue(i) }}
-                  </span>
-                </template>
-                <div style="max-width: 300px; word-break: break-all">
+    <n-collapse-transition :show="showSimulator">
+      <NativeDeviceSimulator v-if="showSimulator" :id="props.id" />
+    </n-collapse-transition>
+    <n-empty v-if="!fetching && !fetchError && !telemetryData.length" description="暂无遥测数据" class="py-8" />
+    <n-grid :x-gap="cardMargin" :y-gap="cardMargin" cols="1 600:2 900:3 1200:4">
+      <n-gi v-for="(i, index) in telemetryData" :key="i.key">
+        <n-card header-class="border-b h-36px" hoverable :style="{ height: cardHeight + 'px' }">
+          <div class="telemetry-card-body">
+            <n-tooltip v-if="isTextTelemetry(i)" trigger="hover" placement="top">
+              <template #trigger>
+                <span class="value-display-ellipsis" style="font-size: 24px">
                   {{ getTelemetryDisplayValue(i) }}
-                  <template v-if="isEnumTelemetry(i)">（{{ i.value }}）</template>
-                </div>
-              </n-tooltip>
-              <MovingNumbers
-                v-else
-                :ref="setItemRef"
-                :data-index="index"
-                :m-num="i.value"
-                :quantile-show="true"
-              ></MovingNumbers>
-              <span v-if="i.unit">{{ i.unit }}</span>
+                </span>
+              </template>
+              <div style="max-width: 300px; word-break: break-all">
+                {{ getTelemetryDisplayValue(i) }}
+                <template v-if="isEnumTelemetry(i)">（{{ i.value }}）</template>
+              </div>
+            </n-tooltip>
+            <MovingNumbers
+              v-else
+              :ref="setItemRef"
+              :data-index="index"
+              :m-num="i.value"
+              :quantile-show="true"
+            ></MovingNumbers>
+            <span v-if="i.unit">{{ i.unit }}</span>
+          </div>
+          <template #header>
+            <div class="line1" :title="i.key">
+              <template v-if="i.label">
+                <span v-if="i.label">{{ i.label }}</span>
+                <span>({{ i.key }})</span>
+              </template>
+              <template v-else>
+                <span>{{ i.key }}</span>
+              </template>
             </div>
-            <template #header>
-              <div class="line1" :title="i.key">
-                <template v-if="i.label">
-                  <span v-if="i.label">{{ i.label }}</span>
-                  <span>({{ i.key }})</span>
-                </template>
-                <template v-else>
-                  <span>{{ i.key }}</span>
-                </template>
-              </div>
-            </template>
-            <template #footer>
-              <div class="flex justify-end">
-                {{ i.ts ? dayjs(i.ts).format('YYYY-MM-DD HH:mm:ss') : nowTime }}
-              </div>
-            </template>
-          </n-card>
-        </n-gi>
-      </n-grid>
-    </n-card>
-  </n-card>
+          </template>
+          <template #footer>
+            <div class="flex justify-end">
+              {{ i.ts ? dayjs(i.ts).format('YYYY-MM-DD HH:mm:ss') : nowTime }}
+            </div>
+          </template>
+        </n-card>
+      </n-gi>
+    </n-grid>
+  </section>
 </template>
 
 <style lang="scss">
+.telemetry-panel {
+  width: 100%;
+}
+
+.telemetry-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.telemetry-heading {
+  font-weight: 600;
+  font-size: 16px;
+}
+
 .line1 {
   overflow: hidden;
   text-overflow: ellipsis;

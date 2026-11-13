@@ -107,7 +107,7 @@ watch(() => props.id, load)
   <NCard title="模拟上报" size="small" class="mb-4">
     <NSpace vertical>
       <NAlert type="info" :show-icon="false">
-        以该设备的身份向平台发送遥测数据，用于调试。单次最多 {{ MAX_SYNC }} 条，连续发送，不按间隔；目前仅支持遥测。
+        调试数据会进入该设备的遥测记录。单次最多连续发送 {{ MAX_SYNC }} 条。
       </NAlert>
       <NAlert v-if="error" type="error" :show-icon="false">{{ error }}</NAlert>
       <NForm label-placement="left" label-width="80">
