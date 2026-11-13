@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { NButton, NProgress, NSpin } from 'naive-ui'
 import { $t } from '@/locales'
+import { hasSystemErrorText } from '@/utils/system-error'
 import { useSystemManageStore } from '@/store/modules/system-manage'
 import { clampPercent } from '@/utils/system-maintenance'
 
@@ -88,6 +89,9 @@ const failed = computed(() => ['rolled_back', 'needs_human', 'failed'].includes(
             <code class="maintenance-code">{{ $t('system-manage.maintenance.needsHumanCommand') }}</code>
           </template>
           <p v-else class="maintenance-error" data-test="failed">{{ $t('system-manage.maintenance.failed') }}</p>
+          <p v-if="status?.code && hasSystemErrorText(status.code)" class="maintenance-error" data-test="error-text">
+            {{ $t(`system-manage.errors.${status.code}`) }}
+          </p>
           <p v-if="status?.code" class="maintenance-sub">
             {{ $t('system-manage.maintenance.code', { code: status.code }) }}
           </p>

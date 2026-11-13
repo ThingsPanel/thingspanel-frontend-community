@@ -2,6 +2,7 @@ import { computed, onMounted, ref } from 'vue'
 import axios from 'axios'
 
 import { getSysVersion } from '@/service/api/system-data'
+import { compareVersions, isPrerelease, pickLatestVersion } from '@/utils/system-version'
 
 interface VersionInfoSnapshot {
   currentVersion: string
@@ -76,10 +77,11 @@ async function fetchVersionInfo(): Promise<VersionInfoSnapshot> {
       const currentVersion =
         currentResult.status === 'fulfilled' ? normalizeVersion(currentResult.value?.data?.version) : DEFAULT_VERSION
 
-      const latestVersion =
-        latestResult.status === 'fulfilled'
-          ? normalizeVersion(latestResult.value?.data?.[0]?.name)
-          : cachedLatestVersion
+      // GitHub's tag list is not version-ordered and includes betas: pick the highest by SemVer precedence.
+      const tagNames =
+        latestResult.status === 'fulfilled' ? (latestResult.value?.data ?? []).map((t: any) => t?.name) : []
+      const picked = pickLatestVersion(tagNames, isPrerelease(currentVersion))
+      const latestVersion = picked ? normalizeVersion(picked) : cachedLatestVersion
 
       setCachedLatestVersion(latestVersion)
 
@@ -101,11 +103,9 @@ export default function useVersionInfo() {
   const currentVersion = ref(DEFAULT_VERSION)
   const latestVersion = ref(DEFAULT_VERSION)
   const isLatestVersion = computed(() => {
-    return (
-      currentVersion.value !== DEFAULT_VERSION &&
-      latestVersion.value !== DEFAULT_VERSION &&
-      currentVersion.value === latestVersion.value
-    )
+    if (currentVersion.value === DEFAULT_VERSION || latestVersion.value === DEFAULT_VERSION) return false
+    const cmp = compareVersions(currentVersion.value, latestVersion.value)
+    return cmp === null ? currentVersion.value === latestVersion.value : cmp >= 0
   })
 
   async function loadVersionInfo() {
