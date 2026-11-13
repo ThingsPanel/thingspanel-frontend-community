@@ -48,6 +48,7 @@ const tree = computed(() => {
     if (!cycle && g.parent_id && nodes.has(g.parent_id)) nodes.get(g.parent_id)!.children!.push(node)
     else roots.push(node)
   }
+  for (const node of nodes.values()) node.isLeaf = !node.children?.length
   return roots
 })
 const columns = [
@@ -156,6 +157,10 @@ onMounted(loadGroups)
   display: grid;
   grid-template-columns: minmax(220px, 28%) minmax(0, 1fr);
   gap: 24px;
+}
+.legacy-tree {
+  max-height: 55vh;
+  overflow: auto;
 }
 .legacy-members {
   min-width: 0;
