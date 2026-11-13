@@ -237,6 +237,17 @@ function handleSaveError(apiError: AutomationApiError, options: { force?: boolea
     })
     return
   }
+  if (apiError.code === 'preview_stale' || apiError.code === 'preview_expired') {
+    impact.value = null
+    message.warning('预览已过期，请重新点击保存以确认最新影响范围')
+    return
+  }
+  if (apiError.code === 'binding_incompatible') {
+    impact.value = null
+    formError.value = apiError.message || '绑定参数已变化，请重新检查规则和影响范围'
+    message.warning('绑定参数不兼容，请修改后重新保存')
+    return
+  }
   if (apiError.code === 'version_conflict' || apiError.httpStatus === 409) {
     dialog.warning({
       title: '这条规则刚被改过',
@@ -255,25 +266,6 @@ function handleSaveError(apiError: AutomationApiError, options: { force?: boolea
       },
       onNegativeClick: () => {
         loadRule()
-      }
-    })
-    return
-  }
-  if (apiError.code === 'preview_stale' || apiError.code === 'preview_expired') {
-    message.warning('预览已过期，正在重新计算影响范围')
-    void save()
-    return
-  }
-  if (apiError.code === 'binding_incompatible') {
-    const affected = (apiError.detail as { affected?: number }).affected ?? 0
-    dialog.warning({
-      title: '设备上已存的值不再适用',
-      content: `有 ${affected} 台设备按旧参数保存过值，新规则里没有对应的参数槽。强行保存不会改动设备上的值，但这些值将不再被使用。`,
-      positiveText: '强行保存',
-      negativeText: '返回修改',
-      onPositiveClick: () => {
-        void persist({ force: true, previewToken: options.previewToken })
-        return true
       }
     })
     return
@@ -322,9 +314,25 @@ async function save() {
   }
 
   // Editing: show what the change would touch before writing it.
+  saving.value = true
   try {
     const preview = await previewRuleChange(ruleId.value, definition)
-    if (preview.device_count > 0) {
+    if (preview.issues?.length) {
+      fieldErrors.value = toFormFieldErrors(preview.issues)
+      formError.value = firstIssueMessage(preview.issues) ?? '规则没有通过校验'
+      return
+    }
+    if (
+      !preview.scope ||
+      !Number.isSafeInteger(preview.scope.deviceCount) ||
+      preview.scope.deviceCount < 0 ||
+      typeof preview.requiresConfirmation !== 'boolean' ||
+      !preview.token
+    ) {
+      formError.value = '未能获取完整的影响范围，请重试'
+      return
+    }
+    if (preview.requiresConfirmation || preview.scope.deviceCount > 0 || preview.bindingIssues?.length) {
       impact.value = preview
       impactVisible.value = true
       return
@@ -332,11 +340,13 @@ async function save() {
     await persist({ previewToken: preview.token })
   } catch (error) {
     handleSaveError(error as AutomationApiError, {})
+  } finally {
+    saving.value = false
   }
 }
 
 async function confirmImpact() {
-  if (!impact.value) return
+  if (saving.value || !impact.value || impact.value.bindingIssues?.length) return
   const token = impact.value.token
   impactVisible.value = false
   await persist({ previewToken: token })
@@ -544,26 +554,31 @@ onMounted(() => {
         <NSpace vertical :size="8">
           <div>
             共
-            <strong>{{ impact.device_count }}</strong>
+            <strong>{{ impact.scope.deviceCount }}</strong>
             台设备会按新规则执行。
           </div>
-          <div class="hint">下面最多列出 50 台；实际范围以服务端计算为准。</div>
+          <div v-if="impact.scope.truncated" class="hint">仅显示前 50 台设备。</div>
           <NSpace :size="6">
-            <NTag v-for="device in impact.devices.slice(0, 50)" :key="device.device_id" size="small" :bordered="false">
-              {{ device.device_id }}（{{
-                device.source === 'template' ? '来自模板' : device.source === 'device' ? '设备专属' : '条件匹配'
-              }}）
+            <NTag v-for="id in (impact.scope.deviceIds ?? []).slice(0, 50)" :key="id" size="small" :bordered="false">
+              {{ id }}
             </NTag>
           </NSpace>
-          <NAlert v-if="impact.issues?.length" type="warning" :bordered="false">
-            <div v-for="(issue, index) in impact.issues" :key="index">{{ issue.message }}</div>
+          <NAlert v-if="impact.bindingIssues?.length" type="warning" :bordered="false">
+            <div v-for="(issue, index) in impact.bindingIssues" :key="index">{{ issue.message }}</div>
           </NAlert>
         </NSpace>
       </template>
       <template #footer>
         <NFlex justify="end" :size="8">
           <NButton @click="impactVisible = false">返回修改</NButton>
-          <NButton type="primary" :loading="saving" @click="confirmImpact">确认保存</NButton>
+          <NButton
+            type="primary"
+            :loading="saving"
+            :disabled="Boolean(impact?.bindingIssues?.length)"
+            @click="confirmImpact"
+          >
+            确认保存
+          </NButton>
         </NFlex>
       </template>
     </NModal>

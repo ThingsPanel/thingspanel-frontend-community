@@ -357,20 +357,24 @@ export interface SimulateResponse {
   notes: string[]
 }
 
-export interface PreviewDevice {
-  device_id: string
-  source: string
-  overridden?: string[]
-}
-
 export interface ChangePreviewResponse {
-  rule_id: string
-  revision: number
-  definition_hash: string
-  devices: PreviewDevice[]
-  device_count: number
-  issues?: { field: string; code: string; message: string }[]
-  expires_at: string
+  ruleId: string
+  baseRevision: number
+  baseVersion: number
+  hashBefore: string
+  hashAfter: string
+  changed: boolean
+  scope: {
+    deviceIds?: string[]
+    deviceCount: number
+    templateIds?: string[]
+    templateDeviceCount: number
+    truncated: boolean
+  }
+  bindingIssues?: AutomationFieldError[]
+  requiresConfirmation: boolean
+  issues?: AutomationFieldError[]
+  expiresAt: string
   token: string
 }
 
