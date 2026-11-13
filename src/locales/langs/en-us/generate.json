@@ -1,4 +1,9 @@
 {
+  "generate.command-param-required": "Enter this parameter",
+  "generate.command-param-enum": "Select a valid option",
+  "generate.command-param-unknown": "Unknown parameter",
+  "generate.command-param-type": "Invalid parameter type",
+  "generate.command-schema-unavailable": "Command definition is unavailable; select the command again",
   "generate.inputRightJson": "Input is not a valid JSON format",
   "generate.customCommand": "Custom Command",
   "generate.addCustomCommand": "Add Custom Command",

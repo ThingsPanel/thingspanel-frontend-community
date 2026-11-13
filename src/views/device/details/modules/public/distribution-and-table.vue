@@ -31,6 +31,7 @@ import moment from 'moment'
 import { commandDataById, commandDataPub, deviceCustomCommandsIdList, getAttributeDataSet } from '@/service/api'
 import { $t } from '@/locales'
 import { createLogger } from '@/utils/logger'
+import { validateNativeCommandForm, type CommandParameterIssue } from '@/utils/native-command-form'
 import {
   demoAttributeLogs,
   demoAttributes,
@@ -107,6 +108,44 @@ const isTextArea = ref<any>(true)
 
 // 新增：管理页签切换
 const activeTab = ref('visual')
+const commandValidationAttempted = ref(false)
+const touchedCommandParameters = ref<Record<string, boolean>>({})
+const hasNativeCommandContract = computed(() => props.isCommand && (props.nativeCommandsResolved || props.nativeOnly))
+const commandPayload = () => {
+  if (activeTab.value === 'visual') {
+    return Object.fromEntries(paramsData.value.map((item: any) => [item.data_identifier, item[item.data_identifier]]))
+  }
+  try {
+    return JSON.parse(formModel.textValue)
+  } catch {
+    return null
+  }
+}
+const commandParameterIssues = computed(() =>
+  hasNativeCommandContract.value
+    ? validateNativeCommandForm(options.value, formModel.commandValue, commandPayload())
+    : []
+)
+const commandIssueFeedback = (issue?: CommandParameterIssue) => {
+  if (!issue) return ''
+  const label = issue.label || ''
+  switch (issue.reason) {
+    case 'required':
+      return `${label}：${$t('generate.command-param-required')}`
+    case 'enum':
+      return `${label}：${$t('generate.command-param-enum')}`
+    case 'unknown':
+      return `${label}：${$t('generate.command-param-unknown')}`
+    case 'type':
+      return `${label}：${$t('generate.command-param-type')}`
+    default:
+      return $t('generate.command-schema-unavailable')
+  }
+}
+const commandParameterFeedback = (item: any) =>
+  commandValidationAttempted.value || touchedCommandParameters.value[item.data_identifier]
+    ? commandIssueFeedback(commandParameterIssues.value.find(issue => issue.field === item.data_identifier))
+    : ''
 const rules = computed<FormRules>(() => {
   const r: FormRules = {}
   if (props.isCommand && isTextArea.value) {
@@ -156,6 +195,8 @@ const openDialog = async () => {
 }
 
 const closeDialog = () => {
+  commandValidationAttempted.value = false
+  touchedCommandParameters.value = {}
   showDialog.value = false
   formModel.textValue = ''
   paramsData.value = []
@@ -182,6 +223,11 @@ const isPayloadValid = (text: string) => {
 }
 
 const submit = async () => {
+  commandValidationAttempted.value = true
+  if (commandParameterIssues.value.length) {
+    window.$message?.error(commandIssueFeedback(commandParameterIssues.value[0]))
+    return
+  }
   try {
     await formRef.value?.validate()
 
@@ -190,7 +236,7 @@ const submit = async () => {
 
     // 处理可视化配置页签的参数
     if (activeTab.value === 'visual') {
-      if (props.isCommand && paramsData.value.length > 0) {
+      if (props.isCommand && (paramsData.value.length > 0 || hasNativeCommandContract.value)) {
         paramsData.value.forEach((item: any) => {
           params[item.data_identifier] = item[item.data_identifier]
         })
@@ -286,6 +332,9 @@ const getOptions = async show => {
 // 新增：处理命令标识符输入（支持输入和选择）
 const handleCommandInput = (value: string) => {
   formModel.commandValue = value
+  formModel.textValue = ''
+  commandValidationAttempted.value = false
+  touchedCommandParameters.value = {}
   // 如果输入的是现有选项，自动解析参数
   const option = options.value?.find((opt: any) => opt.data_identifier === value)
   if (option && option.params) {
@@ -333,6 +382,8 @@ const getPlatform = computed(() => {
   return proxy.getPlatform()
 })
 const validationJson = computed(() => {
+  if (hasNativeCommandContract.value && activeTab.value !== 'visual' && commandParameterIssues.value.length)
+    return 'error'
   // 按当前命令或属性合同校验 JSON 载荷。
   if (!isPayloadValid(formModel.textValue)) {
     return 'error'
@@ -340,6 +391,8 @@ const validationJson = computed(() => {
   return undefined
 })
 const inputFeedback = computed(() => {
+  if (hasNativeCommandContract.value && activeTab.value !== 'visual' && commandParameterIssues.value.length)
+    return commandIssueFeedback(commandParameterIssues.value[0])
   if (!isPayloadValid(formModel.textValue)) {
     return $t('generate.inputRightJson')
   }
@@ -579,16 +632,30 @@ const buildAttributePayload = () => {
                 <div v-if="formModel.commandValue !== ''">
                   <div v-for="item in paramsData" :key="item.id" class="form_box">
                     <div class="form_table">
-                      <NFormItem :label="item.data_name" label-placement="left" label-width="80px" label-align="left">
-                        <NInput v-if="item.param_type === 'string'" v-model:value="item[item.data_identifier]" />
+                      <NFormItem
+                        :label="item.data_name"
+                        label-placement="left"
+                        label-width="80px"
+                        label-align="left"
+                        :required="hasNativeCommandContract"
+                        :validation-status="commandParameterFeedback(item) ? 'error' : undefined"
+                        :feedback="commandParameterFeedback(item)"
+                      >
+                        <NInput
+                          v-if="item.param_type === 'string'"
+                          v-model:value="item[item.data_identifier]"
+                          @blur="touchedCommandParameters[item.data_identifier] = true"
+                        />
                         <n-input-number
                           v-else-if="item.param_type === 'Number'"
                           v-model:value="item[item.data_identifier]"
+                          @blur="touchedCommandParameters[item.data_identifier] = true"
                         />
                         <n-select
                           v-else-if="item.param_type === 'Boolean'"
                           v-model:value="item[item.data_identifier]"
                           :options="paramsSelect"
+                          @blur="touchedCommandParameters[item.data_identifier] = true"
                         />
                         <n-select
                           v-else-if="item.param_type === 'Enum'"
@@ -602,6 +669,7 @@ const buildAttributePayload = () => {
                             }) || []
                           "
                           :placeholder="$t('generate.please-select')"
+                          @blur="touchedCommandParameters[item.data_identifier] = true"
                         />
                         <div class="description">
                           {{ $t('generate.description-label') }}：{{

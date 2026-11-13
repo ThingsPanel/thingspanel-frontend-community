@@ -1,4 +1,9 @@
 {
+  "generate.command-param-required": "请填写此参数",
+  "generate.command-param-enum": "请选择有效选项",
+  "generate.command-param-unknown": "未知参数",
+  "generate.command-param-type": "参数类型不正确",
+  "generate.command-schema-unavailable": "命令定义尚未加载，请重新选择命令",
   "generate.inputRightJson": "输入的不是有效的JSON格式",
   "generate.customCommand": "自定义命令",
   "generate.addCustomCommand": "添加自定义命令",

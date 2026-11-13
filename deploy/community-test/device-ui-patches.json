@@ -188,7 +188,7 @@
     {
       "path": "src/views/device/details/modules/public/distribution-and-table.vue",
       "base_sha256": "ec55917edec4cfc76f6cd8e59fcca572058d8e89fd0112a6c23749d59a801d0f",
-      "patched_sha256": "1183a0d38d7796b41dc90f9c49487371ac557f4c8783cd199b62ca72daf6646e",
+      "patched_sha256": "af3a209c99ba97e408338b9e620f7a3033c7b07a03842f627a4c26e0c0691e78",
       "changes": [
         {
           "before": "  expect?: boolean\n  submitApi?:",
@@ -238,6 +238,111 @@
         {
           "before": "if (formModel.textValue && !isJSON(formModel.textValue)) {\n    return true",
           "after": "if (!isPayloadValid(formModel.textValue)) {\n    return true",
+          "count": 1
+        },
+        {
+          "before": "import { createLogger } from '@/utils/logger'",
+          "after": "import { createLogger } from '@/utils/logger'\nimport { validateNativeCommandForm, type CommandParameterIssue } from '@/utils/native-command-form'",
+          "count": 1
+        },
+        {
+          "before": "const activeTab = ref('visual')",
+          "after": "const activeTab = ref('visual')\nconst commandValidationAttempted = ref(false)\nconst touchedCommandParameters = ref<Record<string, boolean>>({})\nconst hasNativeCommandContract = computed(() => props.isCommand && (props.nativeCommandsResolved || props.nativeOnly))\nconst commandPayload = () => {\n  if (activeTab.value === 'visual') {\n    return Object.fromEntries(paramsData.value.map((item: any) => [item.data_identifier, item[item.data_identifier]]))\n  }\n  try { return JSON.parse(formModel.textValue) } catch { return null }\n}\nconst commandParameterIssues = computed(() => hasNativeCommandContract.value\n  ? validateNativeCommandForm(options.value, formModel.commandValue, commandPayload()) : [])\nconst commandIssueFeedback = (issue?: CommandParameterIssue) => {\n  if (!issue) return ''\n  const label = issue.label || ''\n  switch (issue.reason) {\n    case 'required': return `${label}：${$t('generate.command-param-required')}`\n    case 'enum': return `${label}：${$t('generate.command-param-enum')}`\n    case 'unknown': return `${label}：${$t('generate.command-param-unknown')}`\n    case 'type': return `${label}：${$t('generate.command-param-type')}`\n    default: return $t('generate.command-schema-unavailable')\n  }\n}\nconst commandParameterFeedback = (item: any) => commandValidationAttempted.value || touchedCommandParameters.value[item.data_identifier]\n  ? commandIssueFeedback(commandParameterIssues.value.find(issue => issue.field === item.data_identifier)) : ''",
+          "count": 1
+        },
+        {
+          "before": "const closeDialog = () => {\n  showDialog.value = false",
+          "after": "const closeDialog = () => {\n  commandValidationAttempted.value = false\n  touchedCommandParameters.value = {}\n  showDialog.value = false",
+          "count": 1
+        },
+        {
+          "before": "const submit = async () => {\n  try {",
+          "after": "const submit = async () => {\n  commandValidationAttempted.value = true\n  if (commandParameterIssues.value.length) {\n    window.$message?.error(commandIssueFeedback(commandParameterIssues.value[0]))\n    return\n  }\n  try {",
+          "count": 1
+        },
+        {
+          "before": "if (props.isCommand && paramsData.value.length > 0) {",
+          "after": "if (props.isCommand && (paramsData.value.length > 0 || hasNativeCommandContract.value)) {",
+          "count": 1
+        },
+        {
+          "before": "  formModel.commandValue = value\n  // 如果输入的是现有选项",
+          "after": "  formModel.commandValue = value\n  formModel.textValue = ''\n  commandValidationAttempted.value = false\n  touchedCommandParameters.value = {}\n  // 如果输入的是现有选项",
+          "count": 1
+        },
+        {
+          "before": "const validationJson = computed(() => {",
+          "after": "const validationJson = computed(() => {\n  if (hasNativeCommandContract.value && activeTab.value !== 'visual' && commandParameterIssues.value.length) return 'error'",
+          "count": 1
+        },
+        {
+          "before": "const inputFeedback = computed(() => {",
+          "after": "const inputFeedback = computed(() => {\n  if (hasNativeCommandContract.value && activeTab.value !== 'visual' && commandParameterIssues.value.length) return commandIssueFeedback(commandParameterIssues.value[0])",
+          "count": 1
+        },
+        {
+          "before": "<NFormItem :label=\"item.data_name\" label-placement=\"left\" label-width=\"80px\" label-align=\"left\">",
+          "after": "<NFormItem :label=\"item.data_name\" label-placement=\"left\" label-width=\"80px\" label-align=\"left\"\n                        :required=\"hasNativeCommandContract\"\n                        :validation-status=\"commandParameterFeedback(item) ? 'error' : undefined\"\n                        :feedback=\"commandParameterFeedback(item)\">",
+          "count": 1
+        },
+        {
+          "before": "<NInput v-if=\"item.param_type === 'string'\" v-model:value=\"item[item.data_identifier]\" />",
+          "after": "<NInput v-if=\"item.param_type === 'string'\" v-model:value=\"item[item.data_identifier]\" @blur=\"touchedCommandParameters[item.data_identifier] = true\" />",
+          "count": 1
+        },
+        {
+          "before": "v-else-if=\"item.param_type === 'Number'\"\n                          v-model:value=\"item[item.data_identifier]\"",
+          "after": "v-else-if=\"item.param_type === 'Number'\"\n                          v-model:value=\"item[item.data_identifier]\"\n                          @blur=\"touchedCommandParameters[item.data_identifier] = true\"",
+          "count": 1
+        },
+        {
+          "before": "v-else-if=\"item.param_type === 'Boolean'\"\n                          v-model:value=\"item[item.data_identifier]\"",
+          "after": "v-else-if=\"item.param_type === 'Boolean'\"\n                          v-model:value=\"item[item.data_identifier]\"\n                          @blur=\"touchedCommandParameters[item.data_identifier] = true\"",
+          "count": 1
+        },
+        {
+          "before": "v-else-if=\"item.param_type === 'Enum'\"\n                          v-model:value=\"item[item.data_identifier]\"",
+          "after": "v-else-if=\"item.param_type === 'Enum'\"\n                          v-model:value=\"item[item.data_identifier]\"\n                          @blur=\"touchedCommandParameters[item.data_identifier] = true\"",
+          "count": 1
+        },
+        {
+          "before": "                          v-model:value=\"item[item.data_identifier]\"\n                          @blur=\"touchedCommandParameters[item.data_identifier] = true\"\n                          :options=\"\n                            item.enum_config?.map(v => {\n                              return {\n                                ...v,\n                                label: v.desc\n",
+          "after": "                          v-model:value=\"item[item.data_identifier]\"\n                          @blur=\"touchedCommandParameters[item.data_identifier] = true\"\n                          :options=\"\n                            item.enum_config?.map((v) => {\n                              return {\n                                ...v,\n                                label: v.desc\n",
+          "count": 1
+        },
+        {
+          "before": "                <div v-if=\"formModel.commandValue !== ''\">\n                  <div v-for=\"item in paramsData\" :key=\"item.id\" class=\"form_box\">\n                    <div class=\"form_table\">\n                      <NFormItem :label=\"item.data_name\" label-placement=\"left\" label-width=\"80px\" label-align=\"left\"\n                        :required=\"hasNativeCommandContract\"\n                        :validation-status=\"commandParameterFeedback(item) ? 'error' : undefined\"\n                        :feedback=\"commandParameterFeedback(item)\">\n                        <NInput v-if=\"item.param_type === 'string'\" v-model:value=\"item[item.data_identifier]\" @blur=\"touchedCommandParameters[item.data_identifier] = true\" />\n                        <n-input-number\n                          v-else-if=\"item.param_type === 'Number'\"\n                          v-model:value=\"item[item.data_identifier]\"\n",
+          "after": "                <div v-if=\"formModel.commandValue !== ''\">\n                  <div v-for=\"item in paramsData\" :key=\"item.id\" class=\"form_box\">\n                    <div class=\"form_table\">\n                      <NFormItem\n                        :label=\"item.data_name\"\n                        label-placement=\"left\"\n                        label-width=\"80px\"\n                        label-align=\"left\"\n                        :required=\"hasNativeCommandContract\"\n                        :validation-status=\"commandParameterFeedback(item) ? 'error' : undefined\"\n                        :feedback=\"commandParameterFeedback(item)\"\n                      >\n                        <NInput\n                          v-if=\"item.param_type === 'string'\"\n                          v-model:value=\"item[item.data_identifier]\"\n                          @blur=\"touchedCommandParameters[item.data_identifier] = true\"\n                        />\n                        <n-input-number\n                          v-else-if=\"item.param_type === 'Number'\"\n                          v-model:value=\"item[item.data_identifier]\"\n",
+          "count": 1
+        },
+        {
+          "before": "const buildAttributePayload = () => {\n  const payload: Record<string, any> = {}\n  attributeList.value\n    .filter(item => item.checked)\n    .forEach(item => {\n      const key = item.key || item.data_identifier || item.data_name\n      if (!key) return\n      let value = item.inputValue\n",
+          "after": "const buildAttributePayload = () => {\n  const payload: Record<string, any> = {}\n  attributeList.value\n    .filter((item) => item.checked)\n    .forEach((item) => {\n      const key = item.key || item.data_identifier || item.data_name\n      if (!key) return\n      let value = item.inputValue\n",
+          "count": 1
+        },
+        {
+          "before": "  return undefined\n})\nconst inputFeedback = computed(() => {\n  if (hasNativeCommandContract.value && activeTab.value !== 'visual' && commandParameterIssues.value.length) return commandIssueFeedback(commandParameterIssues.value[0])\n  if (!isPayloadValid(formModel.textValue)) {\n    return $t('generate.inputRightJson')\n  }\n  return ''\n})\n\nconst hasAttributeSelection = computed(() => attributeList.value.some(item => item.checked))\nconst selectAllAttributes = computed({\n  get: () => attributeList.value.length > 0 && attributeList.value.every((item: any) => item.checked),\n  set: value => {\n    attributeList.value.forEach(item => {\n      item.checked = value\n    })\n  }\n})\nconst isAttributeIndeterminate = computed(() => {\n  const checkedCount = attributeList.value.filter(item => item.checked).length\n  return checkedCount > 0 && checkedCount < attributeList.value.length\n})\n\n",
+          "after": "  return undefined\n})\nconst inputFeedback = computed(() => {\n  if (hasNativeCommandContract.value && activeTab.value !== 'visual' && commandParameterIssues.value.length)\n    return commandIssueFeedback(commandParameterIssues.value[0])\n  if (!isPayloadValid(formModel.textValue)) {\n    return $t('generate.inputRightJson')\n  }\n  return ''\n})\n\nconst hasAttributeSelection = computed(() => attributeList.value.some((item) => item.checked))\nconst selectAllAttributes = computed({\n  get: () => attributeList.value.length > 0 && attributeList.value.every((item: any) => item.checked),\n  set: (value) => {\n    attributeList.value.forEach((item) => {\n      item.checked = value\n    })\n  }\n})\nconst isAttributeIndeterminate = computed(() => {\n  const checkedCount = attributeList.value.filter((item) => item.checked).length\n  return checkedCount > 0 && checkedCount < attributeList.value.length\n})\n\n",
+          "count": 1
+        },
+        {
+          "before": "  return proxy.getPlatform()\n})\nconst validationJson = computed(() => {\n  if (hasNativeCommandContract.value && activeTab.value !== 'visual' && commandParameterIssues.value.length) return 'error'\n  // 按当前命令或属性合同校验 JSON 载荷。\n  if (!isPayloadValid(formModel.textValue)) {\n    return 'error'\n",
+          "after": "  return proxy.getPlatform()\n})\nconst validationJson = computed(() => {\n  if (hasNativeCommandContract.value && activeTab.value !== 'visual' && commandParameterIssues.value.length)\n    return 'error'\n  // 按当前命令或属性合同校验 JSON 载荷。\n  if (!isPayloadValid(formModel.textValue)) {\n    return 'error'\n",
+          "count": 1
+        },
+        {
+          "before": "}\n\ndefineExpose({ refresh })\nconst getOptions = async show => {\n  if (show) {\n    if (props.nativeCommandsResolved) {\n      options.value = props.nativeCommandOptions || []\n",
+          "after": "}\n\ndefineExpose({ refresh })\nconst getOptions = async (show) => {\n  if (show) {\n    if (props.nativeCommandsResolved) {\n      options.value = props.nativeCommandOptions || []\n",
+          "count": 1
+        },
+        {
+          "before": "    const list = data?.value || data?.list || (Array.isArray(data) ? data : []) || []\n    if (list.length > 0 || !isDeviceDetailDemo(deviceId)) {\n      tableData.value = props.decorateRows ? props.decorateRows(list) : list\n    } else if (props.tableColumns?.some(column => column.key === 'identify')) {\n      const demoRows = props.isCommand ? demoCommands() : demoEvents()\n      tableData.value = props.decorateRows ? props.decorateRows(demoRows) : demoRows\n    } else if (props.tableColumns?.some(column => column.key === 'message_id')) {\n      tableData.value = demoAttributeLogs()\n    } else {\n      const demoRows = demoAttributes()\n",
+          "after": "    const list = data?.value || data?.list || (Array.isArray(data) ? data : []) || []\n    if (list.length > 0 || !isDeviceDetailDemo(deviceId)) {\n      tableData.value = props.decorateRows ? props.decorateRows(list) : list\n    } else if (props.tableColumns?.some((column) => column.key === 'identify')) {\n      const demoRows = props.isCommand ? demoCommands() : demoEvents()\n      tableData.value = props.decorateRows ? props.decorateRows(demoRows) : demoRows\n    } else if (props.tableColumns?.some((column) => column.key === 'message_id')) {\n      tableData.value = demoAttributeLogs()\n    } else {\n      const demoRows = demoAttributes()\n",
+          "count": 1
+        },
+        {
+          "before": "  if (activeTab.value === 'visual') {\n    return Object.fromEntries(paramsData.value.map((item: any) => [item.data_identifier, item[item.data_identifier]]))\n  }\n  try { return JSON.parse(formModel.textValue) } catch { return null }\n}\nconst commandParameterIssues = computed(() => hasNativeCommandContract.value\n  ? validateNativeCommandForm(options.value, formModel.commandValue, commandPayload()) : [])\nconst commandIssueFeedback = (issue?: CommandParameterIssue) => {\n  if (!issue) return ''\n  const label = issue.label || ''\n  switch (issue.reason) {\n    case 'required': return `${label}：${$t('generate.command-param-required')}`\n    case 'enum': return `${label}：${$t('generate.command-param-enum')}`\n    case 'unknown': return `${label}：${$t('generate.command-param-unknown')}`\n    case 'type': return `${label}：${$t('generate.command-param-type')}`\n    default: return $t('generate.command-schema-unavailable')\n  }\n}\nconst commandParameterFeedback = (item: any) => commandValidationAttempted.value || touchedCommandParameters.value[item.data_identifier]\n  ? commandIssueFeedback(commandParameterIssues.value.find(issue => issue.field === item.data_identifier)) : ''\nconst rules = computed<FormRules>(() => {\n  const r: FormRules = {}\n  if (props.isCommand && isTextArea.value) {\n",
+          "after": "  if (activeTab.value === 'visual') {\n    return Object.fromEntries(paramsData.value.map((item: any) => [item.data_identifier, item[item.data_identifier]]))\n  }\n  try {\n    return JSON.parse(formModel.textValue)\n  } catch {\n    return null\n  }\n}\nconst commandParameterIssues = computed(() =>\n  hasNativeCommandContract.value\n    ? validateNativeCommandForm(options.value, formModel.commandValue, commandPayload())\n    : []\n)\nconst commandIssueFeedback = (issue?: CommandParameterIssue) => {\n  if (!issue) return ''\n  const label = issue.label || ''\n  switch (issue.reason) {\n    case 'required':\n      return `${label}：${$t('generate.command-param-required')}`\n    case 'enum':\n      return `${label}：${$t('generate.command-param-enum')}`\n    case 'unknown':\n      return `${label}：${$t('generate.command-param-unknown')}`\n    case 'type':\n      return `${label}：${$t('generate.command-param-type')}`\n    default:\n      return $t('generate.command-schema-unavailable')\n  }\n}\nconst commandParameterFeedback = (item: any) =>\n  commandValidationAttempted.value || touchedCommandParameters.value[item.data_identifier]\n    ? commandIssueFeedback(commandParameterIssues.value.find((issue) => issue.field === item.data_identifier))\n    : ''\nconst rules = computed<FormRules>(() => {\n  const r: FormRules = {}\n  if (props.isCommand && isTextArea.value) {\n",
           "count": 1
         }
       ]

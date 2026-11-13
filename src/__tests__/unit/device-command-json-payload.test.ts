@@ -53,11 +53,18 @@ vi.mock('@/service/api', () => ({
 }))
 import Distribution from '@/views/device/details/modules/public/distribution-and-table.vue'
 
+const nativeOptions = [
+  {
+    data_identifier: 'switch',
+    data_name: 'Switch',
+    params: JSON.stringify([{ data_identifier: 'enabled', data_name: 'Enabled', param_type: 'Boolean' }])
+  }
+]
 const wrappers: ReturnType<typeof mount>[] = []
 afterEach(() => wrappers.splice(0).forEach(wrapper => wrapper.unmount()))
 
 async function page(extra = {}) {
-  const submitApi = vi.fn(async () => ({ data: {}, error: null }))
+  const submitApi = vi.fn(async (_params: any) => ({ data: {}, error: null }))
   const wrapper = mount(Distribution, {
     props: {
       id: 'qa',
@@ -66,6 +73,7 @@ async function page(extra = {}) {
       tableColumns: [],
       submitApi,
       fetchDataApi: async () => ({ data: [] }) as any,
+      nativeCommandOptions: nativeOptions,
       ...extra
     },
     global: {
@@ -78,7 +86,7 @@ async function page(extra = {}) {
   if (wrapper.props('isCommand')) wrapper.findComponent({ name: 'NSelect' }).vm.$emit('update:value', 'switch')
   wrapper.findComponent({ name: 'NTabs' }).vm.$emit('update:value', 'command')
   await flushPromises()
-  const input = wrapper.findComponent({ name: 'NInput' })
+  const input = wrapper.findAllComponents({ name: 'NInput' }).at(-1)!
   const send = () => wrapper.findAll('button').find(button => button.text() === 'page.irrigation.distribute')!
   return { wrapper, submitApi, input, send }
 }
@@ -106,7 +114,7 @@ it.each(['', '   ', '{broken', 'undefined'])('raw command input %j cannot submit
   expect(submitApi).not.toHaveBeenCalled()
 })
 
-it.each([{ nativeCommandsResolved: true }, { nativeOnly: true }, { isCommand: false }])(
+it.each([{ nativeCommandsResolved: true }, { nativeOnly: true, nativeCommandsResolved: true }, { isCommand: false }])(
   'typed and attribute payloads stay object-only: %j',
   async mode => {
     const { input, send, submitApi } = await page(mode)
@@ -125,3 +133,105 @@ it.each([{ nativeCommandsResolved: true }, { nativeOnly: true }, { isCommand: fa
     expect(submitApi).toHaveBeenCalledOnce()
   }
 )
+
+const requiredOptions = [
+  {
+    data_identifier: 'switch',
+    data_name: 'Switch',
+    params: JSON.stringify([
+      { data_identifier: 'enabled', data_name: 'Enabled', param_type: 'Boolean' },
+      { data_identifier: 'level', data_name: 'Level', param_type: 'Number' },
+      { data_identifier: 'reason', data_name: 'Reason', param_type: 'string' },
+      { data_identifier: 'mode', data_name: 'Mode', param_type: 'Enum', enum_config: [{ value: 'auto', desc: 'Auto' }] }
+    ])
+  }
+]
+
+it('empty visual parameters show inline errors and make no request', async () => {
+  const { wrapper, send, submitApi } = await page({
+    nativeCommandsResolved: true,
+    nativeCommandOptions: requiredOptions
+  })
+  wrapper.findComponent({ name: 'NTabs' }).vm.$emit('update:value', 'visual')
+  await flushPromises()
+  await send().trigger('click')
+  await flushPromises()
+  expect(submitApi).not.toHaveBeenCalled()
+  const feedback = wrapper.findAllComponents({ name: 'NFormItem' }).map(item => item.attributes('feedback'))
+  expect(feedback).toContain('Enabled：generate.command-param-required')
+  expect(feedback).toContain('Level：generate.command-param-required')
+  expect(feedback).toContain('Reason：generate.command-param-required')
+})
+
+it('visual false and zero are preserved and a required string must be entered', async () => {
+  const { wrapper, send, submitApi } = await page({
+    nativeCommandsResolved: true,
+    nativeCommandOptions: requiredOptions
+  })
+  wrapper.findComponent({ name: 'NTabs' }).vm.$emit('update:value', 'visual')
+  await flushPromises()
+  const selects = wrapper.findAllComponents({ name: 'NSelect' })
+  selects[1].vm.$emit('update:value', false)
+  selects[2].vm.$emit('update:value', 'auto')
+  wrapper.findComponent({ name: 'NInputNumber' }).vm.$emit('update:value', 0)
+  await send().trigger('click')
+  await flushPromises()
+  expect(submitApi).not.toHaveBeenCalled()
+  wrapper.findComponent({ name: 'NInput' }).vm.$emit('update:value', 'QA reason')
+  await flushPromises()
+  await send().trigger('click')
+  await flushPromises()
+  expect(submitApi).toHaveBeenCalledOnce()
+  expect(JSON.parse(submitApi.mock.calls[0][0].value)).toEqual({
+    enabled: false,
+    level: 0,
+    reason: 'QA reason',
+    mode: 'auto'
+  })
+})
+
+it.each(['{}', '{"enabled":"false"}', '{"enabled":false,"extra":1}'])(
+  'native raw parameters %s are rejected without transport',
+  async text => {
+    const { input, send, submitApi } = await page({ nativeCommandsResolved: true })
+    input.vm.$emit('update:value', text)
+    await flushPromises()
+    await send().trigger('click')
+    await flushPromises()
+    expect(submitApi).not.toHaveBeenCalled()
+  }
+)
+
+it('known zero-parameter native commands send an explicit empty object', async () => {
+  const { wrapper, send, submitApi } = await page({
+    nativeCommandsResolved: true,
+    nativeCommandOptions: [{ data_identifier: 'switch', params: '[]' }]
+  })
+  wrapper.findComponent({ name: 'NTabs' }).vm.$emit('update:value', 'visual')
+  await flushPromises()
+  await send().trigger('click')
+  await flushPromises()
+  expect(submitApi).toHaveBeenCalledWith({ device_id: 'qa', identify: 'switch', value: '{}' })
+})
+
+it('an unavailable native command definition cannot submit arbitrary JSON', async () => {
+  const { input, send, submitApi } = await page({ nativeCommandsResolved: true, nativeCommandOptions: [] })
+  input.vm.$emit('update:value', '{"enabled":true}')
+  await flushPromises()
+  await send().trigger('click')
+  await flushPromises()
+  expect(submitApi).not.toHaveBeenCalled()
+})
+
+it.each([
+  '{"enabled":false,"level":"0","reason":"QA","mode":"auto"}',
+  '{"enabled":false,"level":0,"reason":"QA","mode":"unknown"}',
+  '{"enabled":false,"level":0,"reason":null,"mode":"auto"}'
+])('native raw typed parameters %s never reach transport', async text => {
+  const { input, send, submitApi } = await page({ nativeCommandsResolved: true, nativeCommandOptions: requiredOptions })
+  input.vm.$emit('update:value', text)
+  await flushPromises()
+  await send().trigger('click')
+  await flushPromises()
+  expect(submitApi).not.toHaveBeenCalled()
+})
