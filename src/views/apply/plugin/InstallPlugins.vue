@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { catalogDescription, healthLabel } from './install-presentation'
+import { nanoid } from '@sa/utils'
 import {
   NAlert,
   NButton,
@@ -42,6 +44,8 @@ import {
 } from './install-state'
 
 const { locale } = useI18n()
+const description = (text: string) => catalogDescription(text, locale.value)
+const health = (value: string | undefined) => healthLabel(value, locale.value)
 const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
 
 const items = ref<CatalogItem[]>([])
@@ -114,7 +118,7 @@ function openInstall(item: CatalogItem) {
   drawer.item = item
   drawer.mode = item.installation && item.installation.state !== 'uninstalled' ? 'detail' : 'install'
   resetForm(item)
-  clickKey = crypto.randomUUID()
+  clickKey = nanoid()
   detail.value = item.installation
   drawer.open = true
   if (item.installation) void refreshDetail(item.installation.id)
@@ -162,7 +166,7 @@ async function onSubmit() {
     return
   }
   Object.keys(form).forEach(k => (form[k] = '')) // the secret is gone from the browser as soon as it is accepted
-  clickKey = crypto.randomUUID()
+  clickKey = nanoid()
   detail.value = result.data as Installation
   drawer.mode = 'detail'
   await load()
@@ -229,11 +233,11 @@ onBeforeUnmount(() => {
               {{ stateView(item.installation?.state, tx).label }}
             </NTag>
           </template>
-          <p class="desc">{{ item.description }}</p>
+          <p class="desc">{{ description(item.description) }}</p>
           <p class="meta">{{ tx('版本', 'Version') }} {{ item.version }}</p>
-          <NSpace justify="space-between" align="center">
+          <div class="card-footer">
             <span v-if="item.installation?.state === 'enabled'" class="meta">
-              {{ tx('健康', 'Health') }}: {{ item.installation.health || '-' }}
+              {{ tx('健康', 'Health') }}: {{ health(item.installation.health) }}
             </span>
             <span v-else />
             <NButton type="primary" size="small" @click="openInstall(item)">
@@ -243,12 +247,12 @@ onBeforeUnmount(() => {
                   : tx('管理', 'Manage')
               }}
             </NButton>
-          </NSpace>
+          </div>
         </NCard>
       </div>
     </NSpin>
 
-    <NDrawer :show="drawer.open" :width="460" @update:show="v => !v && closeDrawer()">
+    <NDrawer :show="drawer.open" :width="'min(460px, 100vw)'" @update:show="v => !v && closeDrawer()">
       <NDrawerContent :title="drawer.item?.display_name" closable>
         <div v-if="drawer.item">
           <div v-if="drawer.mode !== 'detail'" key="form">
@@ -282,7 +286,7 @@ onBeforeUnmount(() => {
           <div v-else-if="detail" key="detail">
             <NSpace align="center" class="mb-12px">
               <NTag :type="detailView.type">{{ detailView.label }}</NTag>
-              <span v-if="detail.state === 'enabled'">{{ tx('健康', 'Health') }}: {{ detail.health || '-' }}</span>
+              <span v-if="detail.state === 'enabled'">{{ tx('健康', 'Health') }}: {{ health(detail.health) }}</span>
             </NSpace>
             <NAlert v-if="detail.state === 'pending_config'" type="warning" :bordered="false" class="mb-12px">
               {{
@@ -385,11 +389,31 @@ onBeforeUnmount(() => {
 <style scoped>
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 16px;
+}
+.plugin-card {
+  min-width: 0;
+}
+.plugin-card :deep(.n-card__content) {
+  display: flex;
+  flex-direction: column;
+}
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+.card-footer .meta {
+  margin-bottom: 0;
 }
 .desc {
-  min-height: 40px;
+  flex: 1;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
   margin: 0 0 8px;
   color: var(--text-color-2, #666);
 }
