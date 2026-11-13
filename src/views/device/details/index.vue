@@ -206,33 +206,30 @@ const runtimeStateError = ref('')
 let onlineFrameVersion = 0
 
 wsUrl += `/device/online/status/ws`
-const normalizeOnlineStatus = (payload: unknown): number | null => {
-  if (Array.isArray(payload)) {
-    for (const item of payload) {
-      const status = normalizeOnlineStatus(item)
-      if (status !== null) return status
-    }
-    return null
-  }
-  if (!payload || typeof payload !== 'object') return null
+// Legacy websocket flags only invalidate the authoritative native runtime state.
+function isDeviceStatusFrame(payload: unknown, inheritedDeviceId?: unknown): boolean {
+  if (Array.isArray(payload)) return payload.some(item => isDeviceStatusFrame(item, inheritedDeviceId))
+  if (!payload || typeof payload !== 'object') return false
   const info = payload as Record<string, unknown>
-  if (info.data !== undefined) return normalizeOnlineStatus(info.data)
-  if (info.payload !== undefined) return normalizeOnlineStatus(info.payload)
+  const frameDeviceId = info.device_id ?? info.deviceId ?? inheritedDeviceId
+  if (frameDeviceId && String(frameDeviceId) !== String(getDeviceId())) return false
+  if (info.data !== undefined) return isDeviceStatusFrame(info.data, frameDeviceId)
+  if (info.payload !== undefined) return isDeviceStatusFrame(info.payload, frameDeviceId)
+  return Boolean(frameDeviceId) && (info.is_online !== undefined || info.isOnline !== undefined)
+}
 
-  const targetDeviceId = getDeviceId()
-  const frameDeviceId = info.device_id ?? info.deviceId
-  if (frameDeviceId && String(frameDeviceId) !== String(targetDeviceId)) return null
-
-  const rawStatus = info.is_online ?? info.isOnline
-  if (typeof rawStatus === 'boolean') return rawStatus ? 1 : 0
-  if (typeof rawStatus === 'number') return rawStatus === 1 ? 1 : 0
-  if (typeof rawStatus === 'string') {
-    const normalized = rawStatus.trim().toLowerCase()
-    if (normalized === '1' || normalized === 'true' || normalized === 'online') return 1
-    if (normalized === '0' || normalized === 'false' || normalized === 'offline') return 0
+async function refreshRuntimeState(id: string, currentRequestId = detailRequestId) {
+  const stateFrameVersion = ++onlineFrameVersion
+  try {
+    const state = await deviceRuntimeNative.readRuntimeState(id)
+    if (currentRequestId !== detailRequestId || stateFrameVersion !== onlineFrameVersion || id !== getDeviceId()) return
+    runtimeStateError.value = ''
+    device_is_online.value = state.connectivity === 'online' ? 1 : state.connectivity === 'offline' ? 0 : null
+  } catch (error) {
+    if (currentRequestId !== detailRequestId || stateFrameVersion !== onlineFrameVersion || id !== getDeviceId()) return
+    device_is_online.value = null
+    runtimeStateError.value = error instanceof Error ? error.message : '设备状态读取失败'
   }
-
-  return null
 }
 const { send } = useWebSocket(wsUrl, {
   heartbeat: {
@@ -243,11 +240,8 @@ const { send } = useWebSocket(wsUrl, {
   onMessage(_ws: WebSocket, event: MessageEvent) {
     if (event.data && event.data !== 'pong') {
       try {
-        const status = normalizeOnlineStatus(JSON.parse(event.data))
-        if (status !== null) {
-          onlineFrameVersion += 1
-          runtimeStateError.value = ''
-          device_is_online.value = status
+        if (isDeviceStatusFrame(JSON.parse(event.data))) {
+          void refreshRuntimeState(getDeviceId())
         }
       } catch {
         // ignore non-JSON frames
@@ -318,17 +312,7 @@ const getDeviceDetail = async () => {
     const { device, etag } = await deviceNative.get(id)
     if (currentRequestId !== detailRequestId) return
     deviceETag = etag
-    const stateFrameVersion = onlineFrameVersion
-    void deviceRuntimeNative
-      .readRuntimeState(id)
-      .then(state => {
-        if (currentRequestId !== detailRequestId || stateFrameVersion !== onlineFrameVersion) return
-        device_is_online.value = state.connectivity === 'online' ? 1 : state.connectivity === 'offline' ? 0 : null
-      })
-      .catch(error => {
-        if (currentRequestId !== detailRequestId || stateFrameVersion !== onlineFrameVersion) return
-        runtimeStateError.value = error instanceof Error ? error.message : '设备状态读取失败'
-      })
+    void refreshRuntimeState(id, currentRequestId)
 
     let templateName = ''
     if (device.templateId) {

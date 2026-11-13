@@ -4,7 +4,8 @@ import { flushPromises, shallowMount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import DeviceDetail from '@/views/device/details/index.vue'
 
-const { detail, resolveModel, routeState, runtimeState } = vi.hoisted(() => ({
+const { detail, resolveModel, routeState, runtimeState, websocket } = vi.hoisted(() => ({
+  websocket: { onMessage: null as any },
   detail: vi.fn(),
   runtimeState: vi.fn(),
   resolveModel: vi.fn(),
@@ -22,7 +23,12 @@ vi.mock('@/utils/storage', () => ({ localStg: { get: vi.fn() } }))
 vi.mock('@/hooks/common/router', () => ({ useRouterPush: () => ({ routerPushByKey: vi.fn() }) }))
 vi.mock('@/utils/common/tool', () => ({ getWebsocketServerUrl: () => 'ws://localhost' }))
 vi.mock('@/utils/common/discrete', () => ({ message: { error: vi.fn() } }))
-vi.mock('@vueuse/core', () => ({ useWebSocket: () => ({ send: vi.fn() }) }))
+vi.mock('@vueuse/core', () => ({
+  useWebSocket: (_url: string, options: any) => {
+    websocket.onMessage = options.onMessage
+    return { send: vi.fn() }
+  }
+}))
 vi.mock('@/views/device/details/modules/device-status.vue', () => ({ default: { render: () => null } }))
 vi.mock('@/views/device/details/modules/native-device-credentials.vue', () => ({ default: { render: () => null } }))
 vi.mock('@/views/device/details/modules/native-device-info.vue', () => ({ default: { render: () => null } }))
@@ -106,6 +112,44 @@ describe('device detail initial tab', () => {
     await flushPromises()
     expect(runtimeState).toHaveBeenCalledWith('device-a')
     expect((wrapper.vm as any).device_is_online).toBe(1)
+  })
+
+  it('uses legacy online frames only to refresh native unknown state', async () => {
+    resolveModel.mockResolvedValue(null)
+    mountPage()
+    await flushPromises()
+    runtimeState.mockResolvedValue({ connectivity: 'unknown' })
+    websocket.onMessage(null, { data: JSON.stringify({ device_id: 'device-a', is_online: 1 }) })
+    await flushPromises()
+    expect(runtimeState).toHaveBeenCalledTimes(2)
+    expect((wrapper.vm as any).device_is_online).toBeNull()
+    websocket.onMessage(null, { data: JSON.stringify({ device_id: 'another-device', is_online: 1 }) })
+    await flushPromises()
+    expect(runtimeState).toHaveBeenCalledTimes(2)
+  })
+
+  it('ignores stale runtime responses after a newer status frame', async () => {
+    resolveModel.mockResolvedValue(null)
+    const oldState = deferred<{ connectivity: string }>()
+    runtimeState.mockReturnValueOnce(oldState.promise).mockResolvedValue({ connectivity: 'unknown' })
+    mountPage()
+    await flushPromises()
+    websocket.onMessage(null, { data: JSON.stringify({ device_id: 'device-a', is_online: 1 }) })
+    await flushPromises()
+    oldState.resolve({ connectivity: 'online' })
+    await flushPromises()
+    expect((wrapper.vm as any).device_is_online).toBeNull()
+  })
+
+  it('clears previously online state when the triggered native refresh fails', async () => {
+    resolveModel.mockResolvedValue(null)
+    mountPage()
+    await flushPromises()
+    runtimeState.mockRejectedValue(new Error('runtime unavailable'))
+    websocket.onMessage(null, { data: JSON.stringify({ device_id: 'device-a', is_online: 1 }) })
+    await flushPromises()
+    expect((wrapper.vm as any).device_is_online).toBeNull()
+    expect((wrapper.vm as any).runtimeStateError).toBe('runtime unavailable')
   })
 
   it('keeps runtime failures visible without inventing an offline state', async () => {
