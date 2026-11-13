@@ -55,6 +55,8 @@ export interface CatalogItem {
   description: string
   service_identifier: string
   fields: Record<string, InstallField>
+  /** R7: a newer catalog version than the installed one exists. */
+  update_available?: boolean
   installation: Installation | null
 }
 
@@ -87,6 +89,11 @@ export async function submitInstall(pluginId: string, config: Record<string, str
 
 export async function updateInstallConfig(id: string, config: Record<string, string>) {
   return await request.put<Installation>(`/plugin/installs/${id}/config`, { config }, quiet)
+}
+
+/** R7: upgrade a running plugin to the catalog version. Async: poll getInstallation until enabled / failed. */
+export async function upgradeInstall(id: string) {
+  return await request.post<Installation>(`/plugin/installs/${id}/upgrade`, {}, quiet)
 }
 
 export async function installAction(id: string, action: 'enable' | 'disable' | 'retry') {
