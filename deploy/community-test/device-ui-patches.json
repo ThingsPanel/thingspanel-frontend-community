@@ -4,7 +4,7 @@
     {
       "path": "src/views/device/config-edit/index.vue",
       "base_sha256": "7b4c853b69c939667f4acdcf5ff82a95ceb07f9c673c8be7bf81dbc07dcfa435",
-      "patched_sha256": "f8bc973bf718fbf76c727af1f0005246057d0bf2e6b74af6bbdda5e10eecf7f1",
+      "patched_sha256": "e9b420b86be90c0788f35b73260eaff9cf9f9d4af4e4f4a802363c9767dd64a8",
       "changes": [
         {
           "before": "import { onMounted, ref, watch } from 'vue'",
@@ -95,6 +95,71 @@
           "before": "import type { AxiosError } from 'axios'\n",
           "after": "",
           "count": 1
+        },
+        {
+          "before": "import { onBeforeUnmount, ref, watch } from 'vue'",
+          "after": "import { onBeforeUnmount, ref, watch } from 'vue'\nimport { readDeviceConfigMetadata, saveDeviceConfigMetadata, templateSaveError, templateVersionUnavailable } from '@/service/api/device-config-metadata'\n",
+          "count": 1
+        },
+        {
+          "before": "  deviceConfigEdit,\n",
+          "after": "",
+          "count": 1
+        },
+        {
+          "before": "  deviceConfigInfo,\n",
+          "after": "",
+          "count": 1
+        },
+        {
+          "before": "const loadedConfigId = ref<string | null>(null)",
+          "after": "const loadedConfigId = ref<string | null>(null)\nconst loadedEtag = ref<string | null>(null)",
+          "count": 1
+        },
+        {
+          "before": "await deviceConfigEdit(postData)",
+          "after": "await saveDeviceConfigMetadata({ ...postData, id }, loadedEtag.value)",
+          "count": 1
+        },
+        {
+          "before": "else message.error($t(id ? 'generate.editFailed' : 'generate.addFailed'))",
+          "after": "else message.error(id ? templateSaveError(res.error) : $t('generate.addFailed'))",
+          "count": 1
+        },
+        {
+          "before": "const res = await deviceConfigInfo({ id })",
+          "after": "const res = await readDeviceConfigMetadata(id)",
+          "count": 1
+        },
+        {
+          "before": "if (res.error || !res.data || res.data.id !== id) throw new Error('Template unavailable')",
+          "after": "if (res.error || !res.data || res.data.id !== id) throw new Error('Template unavailable')\n  if (!res.etag) throw new Error(templateVersionUnavailable)\n  loadedEtag.value = res.etag",
+          "count": 1
+        },
+        {
+          "before": "  loadedConfigId.value = null\n  configForm.value",
+          "after": "  loadedConfigId.value = null\n  loadedEtag.value = null\n  configForm.value",
+          "count": 1
+        },
+        {
+          "before": "    loadedConfigId.value = null\n    message.error",
+          "after": "    loadedConfigId.value = null\n    loadedEtag.value = null\n    message.error",
+          "count": 1
+        },
+        {
+          "before": "NFlex, useMessage }",
+          "after": "NFlex, useMessage, useDialog }",
+          "count": 1
+        },
+        {
+          "before": "const message = useMessage()",
+          "after": "const message = useMessage()\nconst dialog = useDialog()\nconst reloadConfig = () => dialog.warning({\n  title: '重新加载模板', content: '重新加载将放弃未保存的修改。',\n  positiveText: '重新加载', negativeText: '取消',\n  onPositiveClick: () => window.location.reload()\n})\n",
+          "count": 1
+        },
+        {
+          "before": "          <NButton type=\"primary\" :loading=\"loading || schemaLoading\"",
+          "after": "          <NButton v-if=\"configId\" @click=\"reloadConfig\">重新加载</NButton>\n          <NButton type=\"primary\" :loading=\"loading || schemaLoading\"",
+          "count": 1
         }
       ]
     },
@@ -180,7 +245,7 @@
     {
       "path": "src/views/device/config-detail/index.vue",
       "base_sha256": "3b12b4a014729298204d96d1d7089627b7dd8271c64addb9a23fe14afb7cf198",
-      "patched_sha256": "d59de5851a4e88bb1276bc60747af2aabde87164ce26befe43a5a43b32a4efea",
+      "patched_sha256": "b5dd7c29a89e1d5847b69133b4bacb4ae7e9697a910fdde120a4e282a9936b71",
       "changes": [
         {
           "before": "import { ref } from 'vue'",
@@ -225,6 +290,162 @@
         {
           "before": "      <n-tabs v-model:value=\"activeName\" animated type=\"line\">",
           "after": "      <n-tabs v-if=\"!loading && configId && configForm.id === configId\" :key=\"configId\" v-model:value=\"activeName\" animated type=\"line\">",
+          "count": 1
+        },
+        {
+          "before": "import { deviceConfigInfo } from '@/service/api/device'",
+          "after": "import { readDeviceConfigMetadata } from '@/service/api/device-config-metadata'",
+          "count": 1
+        },
+        {
+          "before": "const modelName = ref('')",
+          "after": "const modelName = ref('')\nconst configEtag = ref<string | null>(null)",
+          "count": 1
+        },
+        {
+          "before": "  configForm.value = { id: '' }",
+          "after": "  configForm.value = { id: '' }\n  configEtag.value = null",
+          "count": 1
+        },
+        {
+          "before": "const res = await deviceConfigInfo({ id })",
+          "after": "const res = await readDeviceConfigMetadata(id)",
+          "count": 1
+        },
+        {
+          "before": "    configForm.value = res.data",
+          "after": "    configForm.value = res.data\n    configEtag.value = res.etag",
+          "count": 1
+        },
+        {
+          "before": "<ConnectionInfo :config-info=\"configForm\"",
+          "after": "<ConnectionInfo :config-info=\"configForm\" :config-etag=\"configEtag\"",
+          "count": 1
+        },
+        {
+          "before": "<ExtendInfo :config-info=\"configForm\"",
+          "after": "<ExtendInfo :config-info=\"configForm\" :config-etag=\"configEtag\"",
+          "count": 1
+        },
+        {
+          "before": "<SettingInfo :config-info=\"configForm\"",
+          "after": "<SettingInfo :config-info=\"configForm\" :config-etag=\"configEtag\"",
+          "count": 1
+        },
+        {
+          "before": "import { NAlert, NButton } from 'naive-ui'",
+          "after": "import { NAlert, NButton, useDialog } from 'naive-ui'",
+          "count": 1
+        },
+        {
+          "before": "const modelName = ref('')",
+          "after": "const dialog = useDialog()\nconst reloadConfig = () => dialog.warning({\n  title: '重新加载模板', content: '重新加载将放弃未保存的修改。',\n  positiveText: '重新加载', negativeText: '取消',\n  onPositiveClick: () => getConfig()\n})\nconst modelName = ref('')",
+          "count": 1
+        },
+        {
+          "before": "      <template #header-extra>",
+          "after": "      <template #header-extra>\n        <NButton class=\"mr-2\" :disabled=\"loading\" @click=\"reloadConfig\">重新加载</NButton>",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/views/device/config-detail/modules/connection-info.vue",
+      "base_sha256": "98ef1474d7812496beee543f221b1e616c64f29a039d000a03925333e85229e1",
+      "patched_sha256": "a0e147b49e0196f52969ecae96ed746f471638f076a28e5b58feccff0a769629",
+      "changes": [
+        {
+          "before": "  deviceConfigEdit,\n",
+          "after": "",
+          "count": 1
+        },
+        {
+          "before": "<script setup lang=\"ts\">",
+          "after": "<script setup lang=\"ts\">\nimport { saveDeviceConfigMetadata, templateSaveError } from '@/service/api/device-config-metadata'",
+          "count": 1
+        },
+        {
+          "before": "  configInfo?: object | any",
+          "after": "  configInfo?: object | any\n  configEtag?: string | null",
+          "count": 1
+        },
+        {
+          "before": "  configInfo: null",
+          "after": "  configInfo: null,\n  configEtag: null",
+          "count": 1
+        },
+        {
+          "before": "const handleSubmit = async () => {\n  const postData = props.configInfo\n  postData.protocol_type = extendForm.value.protocol_type\n  postData.voucher_type = extendForm.value.voucher_type\n  postData.protocol_config = JSON.stringify(protocol_config.value)\n\n  const res = await deviceConfigEdit(postData)\n  if (!res.error) {\n    // message.success('修改成功');\n    emit('upDateConfig')\n  }\n}\n",
+          "after": "const handleSubmit = async () => {\n  const res = await saveDeviceConfigMetadata({\n    id: props.configInfo.id,\n    protocol_type: extendForm.value.protocol_type,\n    voucher_type: extendForm.value.voucher_type,\n    protocol_config: JSON.stringify(protocol_config.value)\n  }, props.configEtag)\n  if (res.error) { message.error(templateSaveError(res.error)); return }\n  emit('upDateConfig')\n}\n",
+          "count": 1
+        },
+        {
+          "before": "  extendForm.value = props.configInfo",
+          "after": "  extendForm.value = { ...props.configInfo }",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/views/device/config-detail/modules/extend-info.vue",
+      "base_sha256": "bbc74d9fa84e6b24d0a69f5b8a553f9590b144e697e5e9ff7fe2be5c905e2200",
+      "patched_sha256": "a82568e0f80013422f73a3fb1455700791dea439ff0cb33388ebe9b744efaa1c",
+      "changes": [
+        {
+          "before": "import { deviceConfigEdit } from '@/service/api/device'",
+          "after": "import { saveDeviceConfigMetadata, templateSaveError } from '@/service/api/device-config-metadata'",
+          "count": 1
+        },
+        {
+          "before": "  configInfo?: object | any",
+          "after": "  configInfo?: object | any\n  configEtag?: string | null",
+          "count": 1
+        },
+        {
+          "before": "  configInfo: null",
+          "after": "  configInfo: null,\n  configEtag: null",
+          "count": 1
+        },
+        {
+          "before": "  const postData = props.configInfo\n  postData.additional_info = JSON.stringify(extendInfoList.value)\n  const res = await deviceConfigEdit(postData)",
+          "after": "  const res = await saveDeviceConfigMetadata({ id: props.configInfo.id,\n    additional_info: JSON.stringify(extendInfoList.value) }, props.configEtag)\n  if (res.error) { message.error(templateSaveError(res.error)); return }",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "path": "src/views/device/config-detail/modules/setting-info.vue",
+      "base_sha256": "2605fcbf8938df1c2b15ca1e49acb80de93532565a1d82789528efb015b7cf05",
+      "patched_sha256": "d564c6cb026fcee83f00d93a1f68a9a01047518e3bc34e658e1ada9149b5635f",
+      "changes": [
+        {
+          "before": "import { deviceConfigDel, deviceConfigEdit } from '@/service/api/device'",
+          "after": "import { deviceConfigDel } from '@/service/api/device'\nimport { saveDeviceConfigMetadata, templateSaveError } from '@/service/api/device-config-metadata'",
+          "count": 1
+        },
+        {
+          "before": "  configInfo?: object | any",
+          "after": "  configInfo?: object | any\n  configEtag?: string | null",
+          "count": 1
+        },
+        {
+          "before": "  configInfo: null",
+          "after": "  configInfo: null,\n  configEtag: null",
+          "count": 1
+        },
+        {
+          "before": "  const { error }: any = await deviceConfigEdit({\n    id: props.configInfo.id,\n    image_url: relativePath\n  })",
+          "after": "  const { error } = await saveDeviceConfigMetadata({\n    id: props.configInfo.id,\n    image_url: relativePath\n  }, props.configEtag)\n  if (error) { message.error(templateSaveError(error)); return }",
+          "count": 1
+        },
+        {
+          "before": "JSON.parse(props.configInfo?.other_config || {})",
+          "after": "JSON.parse(props.configInfo?.other_config || '{}')",
+          "count": 1
+        },
+        {
+          "before": "const onSubmit = async () => {\n  onDialogVisble()\n  if (modalIndex.value !== 1) {\n    const { error }: any = await deviceConfigEdit({\n      id: props.configInfo.id,\n      other_config: JSON.stringify({\n        online_timeout: onlinejson.online_timeout,\n        heartbeat: onlinejson.heartbeat\n      })\n    })\n    !error && emit('change')\n  } else {\n    const { error }: any = await deviceConfigEdit({\n      id: props.configInfo.id,\n      auto_register: auto_register.value ? 1 : 0\n    })\n    message.success($t('custom.grouping_details.operationSuccess'))\n    !error && emit('change')\n  }\n}",
+          "after": "const onSubmit = async () => {\n  const payload = modalIndex.value !== 1\n    ? { other_config: JSON.stringify({\n        ...JSON.parse(props.configInfo?.other_config || '{}'),\n        online_timeout: onlinejson.online_timeout, heartbeat: onlinejson.heartbeat\n      }) }\n    : { auto_register: auto_register.value ? 1 : 0 }\n  const { error } = await saveDeviceConfigMetadata({ id: props.configInfo.id, ...payload }, props.configEtag)\n  if (error) { message.error(templateSaveError(error)); return }\n  message.success($t('custom.grouping_details.operationSuccess'))\n  showModal.value = false\n  emit('change')\n}\n",
           "count": 1
         }
       ]

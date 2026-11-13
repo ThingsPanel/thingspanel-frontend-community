@@ -10,6 +10,8 @@ export default defineConfig({
     include: [
       'deploy/community-test/device-ui-pages.test.ts',
       'deploy/community-test/template-detail-route.test.ts',
+      'deploy/community-test/template-metadata-entries.test.ts',
+      'src/__tests__/unit/device-config-metadata.test.ts',
       'src/__tests__/unit/device-command-json-payload.test.ts'
     ],
     maxWorkers: 1,

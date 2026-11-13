@@ -6,6 +6,15 @@ vi.mock('vue-router', () => ({ useRoute: () => state.route }))
 vi.mock('@/hooks/common/router', () => ({ useRouterPush: () => ({ routerPushByKey: state.push }) }))
 vi.mock('@/locales', () => ({ $t: (key: string) => key }))
 vi.mock('@/service/api/device', () => ({ deviceConfigInfo: vi.fn() }))
+vi.mock('@/service/api/device-config-metadata', async () => {
+  const api = await import('@/service/api/device')
+  return {
+    readDeviceConfigMetadata: async (id: string) => ({
+      ...(await api.deviceConfigInfo({ id })),
+      etag: '"dc1-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"'
+    })
+  }
+})
 vi.mock('@/service/api/native-template-binding', () => ({ loadPublishedSnapshot: vi.fn() }))
 vi.mock('@/views/device/config-detail/modules/associated-devices.vue', () => ({
   default: {
@@ -26,6 +35,7 @@ vi.mock('@/views/device/config-detail/modules/automate.vue', () => ({ default: {
 vi.mock('naive-ui', async () => {
   const { defineComponent, h } = await import('vue')
   return {
+    useDialog: () => ({ warning: vi.fn() }),
     NAlert: defineComponent({
       setup:
         (_, { slots }) =>

@@ -13,7 +13,21 @@ vi.mock('@/service/api/device', () => ({
   deviceProtocalServiceList: vi.fn(),
   protocolPluginConfigForm: vi.fn()
 }))
+vi.mock('@/service/api/device-config-metadata', async () => {
+  const api = await import('@/service/api/device')
+  return {
+    readDeviceConfigMetadata: vi.fn(async (id: string) => ({
+      ...(await api.deviceConfigInfo({ id })),
+      etag: '"dc1-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"'
+    })),
+    saveDeviceConfigMetadata: vi.fn((body: any, _etag: string) => api.deviceConfigEdit(body)),
+    templateSaveError: (error: any) =>
+      error?.response?.status === 412 ? '模板已被其他操作修改，请重新加载后再保存' : 'failed',
+    templateVersionUnavailable: '版本信息不可用'
+  }
+})
 vi.mock('naive-ui', () => ({
+  useDialog: () => ({ warning: vi.fn() }),
   NTooltip: { template: '<div><slot name="trigger"/><slot/></div>' },
   NIcon: { template: '<i><slot/></i>' },
   NFlex: { template: '<div><slot/></div>' },
@@ -21,6 +35,8 @@ vi.mock('naive-ui', () => ({
 }))
 import ConfigEdit from '@/views/device/config-edit/index.vue'
 import * as api from '@/service/api/device'
+import * as metadata from '@/service/api/device-config-metadata'
+import { router } from '@/router'
 
 const wrappers: ReturnType<typeof mount>[] = []
 beforeEach(() => {
@@ -180,4 +196,35 @@ it('actual editing loader retains saved protocol data; type switch clears schema
   expect(state.protocol_config).toEqual({})
   expect(state.configForm.voucher_type).toBeNull()
   expect(state.formElements).toEqual([])
+})
+
+it('passes the loaded version and keeps the draft after a 412 without retry/navigation', async () => {
+  routeState.current.query.id = 'A'
+  vi.mocked(api.deviceConfigInfo).mockResolvedValue({
+    data: { id: 'A', name: 'original', protocol_config: '{}' }
+  } as any)
+  vi.mocked(api.deviceConfigEdit).mockResolvedValue({ error: { response: { status: 412 } } } as any)
+  const { state } = page()
+  await flushPromises()
+  state.configForm.name = 'unsaved draft'
+  await state.handleSubmit()
+  expect(metadata.saveDeviceConfigMetadata).toHaveBeenCalledWith(
+    expect.objectContaining({ id: 'A', name: 'unsaved draft' }),
+    '"dc1-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"'
+  )
+  expect(api.deviceConfigEdit).toHaveBeenCalledTimes(1)
+  expect(router.go).not.toHaveBeenCalled()
+  expect(state.configForm.name).toBe('unsaved draft')
+})
+it('missing ETag fails closed rather than sending an unconditional edit', async () => {
+  routeState.current.query.id = 'A'
+  vi.mocked(metadata.readDeviceConfigMetadata).mockResolvedValueOnce({
+    data: { id: 'A', name: 'A', protocol_config: '{}' },
+    etag: null
+  } as any)
+  const { state } = page()
+  await flushPromises()
+  await state.handleSubmit()
+  expect(state.configLoadFailed).toBe(true)
+  expect(metadata.saveDeviceConfigMetadata).not.toHaveBeenCalled()
 })
