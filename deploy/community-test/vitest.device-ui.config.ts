@@ -10,6 +10,7 @@ export default defineConfig({
     include: [
       'deploy/community-test/automation-preview.test.ts',
       'src/__tests__/unit/automation-command-identifier.test.ts',
+      'src/__tests__/unit/device-command-rows.test.ts',
       'deploy/community-test/device-ui-pages.test.ts',
       'deploy/community-test/template-detail-route.test.ts',
       'deploy/community-test/template-metadata-entries.test.ts',
