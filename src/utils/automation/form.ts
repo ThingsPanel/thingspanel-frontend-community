@@ -193,7 +193,7 @@ function stepToWire(step: FormStep): Step {
       // Writing it back would make an untouched rule differ from itself.
       if (step.device_ref && step.device_ref !== 'target') out.device_ref = step.device_ref
       out.action = step.action
-      out.identifier = step.identifier.trim()
+      out.identifier = step.identifier
       out.value = String(step.value ?? '').trim()
       break
     case 'wait':
@@ -358,7 +358,7 @@ export function validateForm(form: FormModel): FormIssue[] {
   }
   form.steps.forEach((step, index) => {
     const field = `definition.steps[${index}]`
-    if (step.kind === 'action' && !step.identifier.trim()) {
+    if (step.kind === 'action' && !step.identifier) {
       issues.push({ field: `${field}.identifier`, code: 'required', message: '请选择要写入的指标或命令' })
     }
     if (step.kind === 'wait' && durationFromText(step.wait) === null) {

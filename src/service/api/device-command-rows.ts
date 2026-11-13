@@ -53,7 +53,7 @@ export interface ParsedLegacySubmit {
 
 /** The shared table sends `{identify, value}` where value is a JSON text or null. */
 export function parseTableSubmit(params: { identify?: unknown; value?: unknown }): ParsedLegacySubmit {
-  const identifier = typeof params.identify === 'string' ? params.identify.trim() : ''
+  const identifier = typeof params.identify === 'string' ? params.identify : ''
   if (!identifier) throw new Error('请选择或输入命令标识符')
   const raw = params.value
   if (raw === null || raw === undefined || raw === '') return { identifier, parameters: {} }

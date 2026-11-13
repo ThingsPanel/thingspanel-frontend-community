@@ -47,13 +47,31 @@ describe('command rows', () => {
   })
   it('parses the table submit payload', () => {
     expect(parseTableSubmit({ identify: ' set ', value: '{"a":1}' })).toEqual({
-      identifier: 'set',
+      identifier: ' set ',
       parameters: { a: 1 }
     })
     expect(parseTableSubmit({ identify: 'x', value: null })).toEqual({ identifier: 'x', parameters: {} })
     expect(() => parseTableSubmit({ identify: '', value: null })).toThrow()
     expect(() => parseTableSubmit({ identify: 'x', value: '[1]' })).toThrow()
     expect(() => parseTableSubmit({ identify: 'x', value: '{bad' })).toThrow()
+  })
+  it('preserves published identifier bytes in immediate and expected submissions', async () => {
+    for (const identifier of ['  Vendor.Mode/°C  ', ' ']) {
+      const parsed = parseTableSubmit({ identify: identifier, value: '{"  target/value  ":false}' })
+      expect(
+        parseTableExpected({ identify: identifier, payload: '{"  target/value  ":false}', expiry: null }).identifier
+      ).toBe(identifier)
+      const submitted: unknown[] = []
+      const submitter = createCommandSubmitter({
+        newKey: () => 'namespace-test-key',
+        send: async (_device, body) => {
+          submitted.push(body)
+          return receipt()
+        }
+      })
+      await submitter.submit('device', 'snapshot', parsed)
+      expect(submitted).toEqual([{ identifier, snapshotId: 'snapshot', parameters: { '  target/value  ': false } }])
+    }
   })
 })
 
