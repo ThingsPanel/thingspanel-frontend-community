@@ -1,6 +1,6 @@
 <script lang="tsx" setup>
 import { onMounted, ref, computed, h, onActivated } from 'vue'
-import { NButton, NInput, NIcon, NPagination, NDataTable, NTag, NSpace, NEmpty, NTooltip, NModal } from 'naive-ui'
+import { NButton, NInput, NIcon, NPagination, NDataTable, NTag, NSpace, NEmpty, NModal } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import { templateNative, type DeviceAccessTemplate } from '@/service/api/template-native'
 import { TemplateNativeError } from '@/service/api/template-native-transport'
@@ -289,7 +289,7 @@ onMounted(() => {
 onActivated(() => {
   getData()
 })
-import { CreateOutline, ListOutline, GridOutline as CardIcon } from '@vicons/ionicons5'
+import { ListOutline, GridOutline as CardIcon } from '@vicons/ionicons5'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 
 // 注释：已移除defaultConfigSvg导入和svgToDataUrl函数，现在使用SvgIcon组件处理SVG图标
@@ -372,6 +372,7 @@ const availableViews = [
           <CardGrid>
             <div v-for="item in deviceConfigList" :key="item.id">
               <ItemCard
+                class="device-template-card"
                 :title="item.name"
                 :footer-text="`${item.deviceCount} ${$t('generate.individual')} ${$t('generate.device')}`"
                 :subtitle="deviceTypeMap[item.configuration.deviceKind]"
@@ -383,30 +384,14 @@ const availableViews = [
                   <SvgIcon :local-icon="getDeviceIconName(item.configuration.deviceKind)" class="image-icon" />
                 </template>
 
-                <!-- 高频图标操作固定在右上角 -->
+                <!-- 模板操作固定在右上角 -->
                 <template #top-right-icon>
-                  <NSpace :size="2" class="card-actions">
-                    <NTooltip trigger="hover">
-                      <template #trigger>
-                        <NButton
-                          v-if="canWrite"
-                          size="small"
-                          quaternary
-                          circle
-                          type="primary"
-                          @click.stop="handleEdit(item.id)"
-                        >
-                          <template #icon>
-                            <NIcon><CreateOutline /></NIcon>
-                          </template>
-                        </NButton>
-                      </template>
-                      编辑模板
-                    </NTooltip>
-                    <NButton v-if="canWrite" size="small" quaternary @click.stop="openCopy(item)">复制</NButton>
-                    <NButton v-if="canWrite" size="small" quaternary type="error" @click.stop="handleDelete(item)">
-                      删除
+                  <NSpace v-if="canWrite" :size="12" :wrap="false" class="card-actions" @click.stop>
+                    <NButton size="small" type="primary" @click.stop="handleEdit(item.id)">
+                      {{ $t('common.edit') }}
                     </NButton>
+                    <NButton size="small" @click.stop="openCopy(item)">复制</NButton>
+                    <NButton size="small" type="error" @click.stop="handleDelete(item)">删除</NButton>
                   </NSpace>
                 </template>
 
@@ -610,22 +595,18 @@ const availableViews = [
   }
 }
 
-:deep(.card-actions) {
-  flex-wrap: nowrap;
+.device-template-card :deep(.top-right-icon-container) {
+  height: auto;
+}
+
+.device-template-card :deep(.title-content .n-ellipsis) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.card-actions {
+  flex-shrink: 0;
   white-space: nowrap;
-}
-
-:deep(.card-actions .n-icon) {
-  font-size: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-:deep(.card-actions .n-button) {
-  width: 28px;
-  height: 28px;
-  padding: 0;
 }
 </style>
 
