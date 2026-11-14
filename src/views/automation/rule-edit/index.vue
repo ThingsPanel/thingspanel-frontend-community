@@ -444,7 +444,41 @@ onMounted(() => {
               </NFlex>
             </NFormItem>
 
-            <NFormItem label="目标设备">
+            <NFormItem v-if="form.kind !== 'scene'" label="触发设备范围">
+              <div class="w-100%">
+                <NFlex align="center">
+                  <NInput
+                    :value="form.triggerDeviceIDs.join(',')"
+                    placeholder="触发设备 ID，多个用逗号分隔"
+                    :disabled="deviceLocked"
+                    class="w-360px"
+                    @update:value="
+                      (value: string) =>
+                        (form.triggerDeviceIDs = value
+                          .split(',')
+                          .map(item => item.trim())
+                          .filter(Boolean))
+                    "
+                  />
+                  <NInput
+                    :value="form.triggerDeviceConfigIDs.join(',')"
+                    placeholder="触发设备模板 ID，多个用逗号分隔"
+                    :disabled="deviceLocked"
+                    class="w-360px"
+                    @update:value="
+                      (value: string) =>
+                        (form.triggerDeviceConfigIDs = value
+                          .split(',')
+                          .map(item => item.trim())
+                          .filter(Boolean))
+                    "
+                  />
+                </NFlex>
+                <span class="hint">留空时按条件匹配当前租户的设备；填写后仅这些设备可触发。</span>
+              </div>
+            </NFormItem>
+
+            <NFormItem label="动作目标设备">
               <div class="w-100%">
                 <NFlex align="center">
                   <NInput

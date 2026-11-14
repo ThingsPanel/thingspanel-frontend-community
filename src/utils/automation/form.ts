@@ -67,6 +67,8 @@ export interface FormModel {
   steps: FormStep[]
   deviceIDs: string[]
   deviceConfigIDs: string[]
+  triggerDeviceIDs: string[]
+  triggerDeviceConfigIDs: string[]
   areaIDs: string[]
   labels: string[]
   labelMatch: 'and' | 'or'
@@ -122,6 +124,8 @@ export function emptyForm(context: FormContext = {}): FormModel {
     steps: [emptyStep('action')],
     deviceIDs: context.deviceID ? [context.deviceID] : [],
     deviceConfigIDs: context.deviceConfigID ? [context.deviceConfigID] : [],
+    triggerDeviceIDs: context.kind !== 'scene' && context.deviceID ? [context.deviceID] : [],
+    triggerDeviceConfigIDs: context.kind !== 'scene' && context.deviceConfigID ? [context.deviceConfigID] : [],
     areaIDs: [],
     labels: [],
     labelMatch: 'and',
@@ -236,6 +240,8 @@ export function definitionToForm(definition: RuleDefinition, name = '', enabled 
     steps: (definition.steps ?? []).map(stepToForm),
     deviceIDs: definition.targets?.device_ids ?? [],
     deviceConfigIDs: definition.targets?.device_config_ids ?? [],
+    triggerDeviceIDs: [...(definition.trigger_scope?.device_ids ?? [])],
+    triggerDeviceConfigIDs: [...(definition.trigger_scope?.device_config_ids ?? [])],
     areaIDs: definition.targets?.area_ids ?? [],
     labels: definition.targets?.labels ?? [],
     labelMatch: definition.targets?.label_match === 'or' ? 'or' : 'and',
@@ -284,6 +290,12 @@ export function formToDefinition(form: FormModel): RuleDefinition {
     },
     targets,
     steps: form.steps.map(stepToWire)
+  }
+  if (form.triggerDeviceIDs.length || form.triggerDeviceConfigIDs.length) {
+    definition.trigger_scope = {
+      ...(form.triggerDeviceIDs.length ? { device_ids: [...form.triggerDeviceIDs] } : {}),
+      ...(form.triggerDeviceConfigIDs.length ? { device_config_ids: [...form.triggerDeviceConfigIDs] } : {})
+    }
   }
   return definition
 }

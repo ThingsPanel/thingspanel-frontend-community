@@ -237,6 +237,8 @@ export interface RuleDefinition {
   /** 旧控制台里写在场景/联动旁边的说明，新模型原样保留。 */
   description?: string
   trigger: Trigger
+  /** Event subjects; independent of the devices receiving actions. Omitted on existing rules. */
+  trigger_scope?: { device_ids?: string[]; device_config_ids?: string[] }
   recovery?: Trigger
   freshness: Freshness
   targets: TargetSpec
