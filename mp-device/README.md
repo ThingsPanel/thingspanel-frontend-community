@@ -20,7 +20,7 @@ The mini-program passes its existing session in the URL fragment. Bootstrap remo
 
 ```powershell
 $env:MP_DEVICE_PREVIEW_TARGET='https://cloud.thingspanel.cn'
-node node_modules/vite/bin/vite.js --config vite.mp-device.config.ts
+node node_modules/vite/bin/vite.js --config build/mp-device.config.ts
 node --test src/features/mp-device-detail/session.test.mjs
 # Requires Playwright and Chrome; all mutation requests are intercepted with fixtures.
 $env:PLAYWRIGHT_MODULE='file:///absolute/path/to/playwright/index.mjs'
@@ -31,7 +31,7 @@ $env:MP_VIEWER_ENTRY='mini'
 node src/features/mp-device-detail/browser.test.mjs
 node src/features/mp-device-detail/board.browser.test.mjs
 node --test src/features/mp-device-detail/viewer-entry.test.mjs
-node node_modules/vite/bin/vite.js build --config vite.mp-device.config.ts
+node node_modules/vite/bin/vite.js build --config build/mp-device.config.ts
 ```
 
 Preview: `http://127.0.0.1:5188/mp-device/index.html`. Open it through the mini-program device entry to supply a session; visiting it without a session must show an expired-login message. No credentials belong in source, screenshots, or build logs.

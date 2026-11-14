@@ -4,12 +4,6 @@
 
 `contract-metadata.json` mechanically retains operation mappings, OpenAPI schema constraints, formats, nullable/closed-object markers, and every `x-*` extension by JSON Pointer. It is a generated sidecar for information TypeScript cannot express, not a second API contract.
 
-From the combined cutover worktree root, regenerate with:
+The original generation helper is not included in this repository. Do not use the old worktree-specific command as a reproducible build step. Normal frontend builds consume the checked-in generated files. Regeneration requires restoring and verifying the helper before changing this contract.
 
-```sh
-python3 frontend/scripts/generate-device-metadata-client.py \
-  --spec backend/docs/initiatives/device-metadata-native-cutover/openapi.yaml \
-  --out frontend/src/service/api/generated/device-metadata
-```
-
-The generator checks OpenAPI 3.2.1 and requires a non-empty set of operations with unique `operationId` values; the manifest records the current operation count. It does not modify the source spec. Python 3, PyYAML, npm/npx, and network access on first use are required; npx fetches the exact generator version without installing the frontend dependency tree. `manifest.json` records source and output SHA-256 values and the compatibility transform version/schema.
+The checked-in manifest records the historical OpenAPI version, operation count, source/output SHA-256 values, and recursive schema transform version. These are provenance metadata, not evidence of a currently runnable generation command. The portable source identifier is relative to the named backend repository; it is not a local filesystem path.

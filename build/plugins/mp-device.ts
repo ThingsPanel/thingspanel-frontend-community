@@ -19,7 +19,7 @@ export function setupMpDeviceBuild(): Plugin {
       if (!written) return
       await build({
         root: config.root,
-        configFile: resolve(config.root, 'vite.mp-device.config.ts'),
+        configFile: resolve(config.root, 'build/mp-device.config.ts'),
         mode: config.mode,
         base: config.base,
         build: {

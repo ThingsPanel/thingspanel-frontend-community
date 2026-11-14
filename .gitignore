@@ -6,7 +6,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-package.json
 node_modules
 .DS_Store
 dist
@@ -29,22 +28,18 @@ coverage
 package-lock.json
 yarn.lock
 .VSCodeCounter
-env.config.ts
 settings.json
 vite.config.ts.timestamp-*-*.mjs
 .env
 .tsbuildinfo
 .eslintcache
 .env.development
-pnpm-lock.yaml
 src/typings/components.d.ts
 
 # Documentation and scripts
-*.md
 !README.md
 !README_ZH.md
 !docs/table-standard-audit-and-replacement-plan.md
-scripts/
 iteration-log.md
 project-context.md
 
@@ -66,3 +61,7 @@ AGENTS.md
 !/mp-device/README.md
 /tmp/mp-device-build/
 /.claude/worktrees/
+
+# Local AI working notes; reviewed repository docs remain trackable.
+/.ai/project.md
+/.ai/specs/

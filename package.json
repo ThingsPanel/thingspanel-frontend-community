@@ -31,7 +31,6 @@
     "format": "sa prettier-write",
     "gen-route": "sa gen-route",
     "lint": "eslint . --fix",
-    "logo": "tsx ./scripts/logo.ts",
     "prepare": "simple-git-hooks",
     "preview": "vite preview",
     "release": "sa release",

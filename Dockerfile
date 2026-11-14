@@ -1,3 +1,5 @@
+# Package the verified production bundle: pnpm install --frozen-lockfile && pnpm build
+# Then: docker build -t thingspanel-frontend .
 FROM nginx:latest
 
 COPY dist /usr/share/nginx/html/
