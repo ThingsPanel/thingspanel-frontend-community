@@ -38,6 +38,7 @@
   "custom.devicePage.clearFilters": "清除全部",
   "custom.devicePage.resultCount": "台设备",
   "custom.devicePage.lastPushTime": "最后推送时间",
+  "custom.devicePage.lastReportTime": "最后上报",
   "custom.devicePage.onlineStatus": "在线状态",
   "custom.devicePage.details": "详情",
   "custom.devicePage.close": "关闭",

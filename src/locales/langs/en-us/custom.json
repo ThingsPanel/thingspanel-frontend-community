@@ -38,6 +38,7 @@
   "custom.devicePage.clearFilters": "Clear all",
   "custom.devicePage.resultCount": "devices",
   "custom.devicePage.lastPushTime": "Last Push Time",
+  "custom.devicePage.lastReportTime": "Last Report",
   "custom.devicePage.onlineStatus": "Online Status",
   "custom.devicePage.details": "Details",
   "custom.devicePage.close": "Close",

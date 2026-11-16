@@ -21,7 +21,6 @@ import { useLoading } from '@sa/hooks'
 import { $t } from '@/locales'
 import { formatDateTime } from '@/utils/common/datetime'
 import { createLogger } from '@/utils/logger'
-import { getDemoServerUrl } from '@/utils/common/tool'
 import { FilterOutline } from '@vicons/ionicons5'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import TencentMap from './modules/tencent-map.vue'
@@ -213,10 +212,6 @@ const activeAdvancedFilterCount = computed(
 // 添加当前视图状态管理
 const currentViewType = ref('card') // 默认为卡片视图，与 AdvancedListLayout 保持一致
 const slots = useSlots()
-
-// 添加图片URL相关变量
-const demoUrl = getDemoServerUrl()
-const url = ref(demoUrl)
 
 // 获取数据的函数，结合搜索条件、分页等
 const getData = async () => {
@@ -483,28 +478,14 @@ const deviceTypeIcons = {
   default: 'defaultdevice' // 默认设备图标
 }
 
-// 获取设备图标名称的函数，针对"默认配置"使用直连设备图标
-const getDeviceIconName = (deviceType: string, deviceConfigName?: string): string => {
-  // 当配置是默认配置时，强制使用直连设备图标
-  if (!deviceConfigName || deviceConfigName === '默认配置') {
-    return deviceTypeIcons['1'] // 直连设备图标
-  }
-  return deviceTypeIcons[deviceType] || deviceTypeIcons.default
-}
+// 类型图标不依赖是否绑定模板。
+const getDeviceIconName = (deviceType: string): string => deviceTypeIcons[deviceType] || deviceTypeIcons.default
 
 const getDeviceTypeLabel = (deviceType: string): string => {
   if (deviceType === '1') return $t('custom.devicePage.directConnectedDevices')
   if (deviceType === '2') return $t('custom.devicePage.gateway')
   if (deviceType === '3') return $t('custom.devicePage.gatewaySubEquipment')
   return $t('generate.device-type')
-}
-
-// 获取配置图片URL的函数
-const getConfigImageUrl = (imagePath: string | undefined): string => {
-  logger.info('imagePath:', imagePath)
-  if (!imagePath) return '' // 返回空字符串，让模板使用默认图标
-  const relativePath = imagePath.replace(/^\.?\//, '')
-  return `${url.value.replace('api/v1', '') + relativePath}`
 }
 
 // 导入图标组件（修复图标显示问题）
@@ -727,7 +708,7 @@ const formSize = ref(undefined)
     <template #card-view>
       <n-scrollbar class="device-card-scroll" :size="1">
         <n-spin :show="loading">
-          <CardGrid>
+          <CardGrid class="device-card-grid">
             <div v-for="item in dataList" :key="item.id">
               <DevCardItem
                 class="device-card"
@@ -747,30 +728,17 @@ const formSize = ref(undefined)
                 :hide-footer-left="true"
                 @click-card="() => props.rowClick && props.rowClick(item)"
               >
-                <template #subtitle-icon>
+                <template #leading>
                   <span
                     class="device-type-icon"
                     :title="getDeviceTypeLabel(item.device_type)"
                     :aria-label="getDeviceTypeLabel(item.device_type)"
+                    role="img"
                   >
-                    <SvgIcon
-                      :local-icon="getDeviceIconName(item.device_type, item.device_config_name)"
-                      class="image-icon"
-                    />
+                    <SvgIcon :local-icon="getDeviceIconName(item.device_type)" class="image-icon" />
                   </span>
                 </template>
-
-                <template #leading>
-                  <div class="config-image-frame">
-                    <img
-                      v-if="item.image_url"
-                      :src="getConfigImageUrl(item.image_url)"
-                      :alt="item.name || '设备'"
-                      class="config-image"
-                    />
-                    <SvgIcon v-else local-icon="defaultdevice" class="config-image config-image--default" />
-                  </div>
-                </template>
+                <template #footer>{{ $t('custom.devicePage.lastReportTime') }}</template>
               </DevCardItem>
             </div>
           </CardGrid>
@@ -1161,69 +1129,50 @@ const formSize = ref(undefined)
   min-height: 0;
 }
 
+.device-card-grid {
+  gap: 12px;
+}
+
 .device-type-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
-  border: 1px solid rgb(var(--primary-color) / 14%);
-  border-radius: 8px;
-  background: rgb(var(--primary-color) / 6%);
+  width: 32px;
+  height: 40px;
+  color: var(--n-text-color);
 }
 
 .image-icon {
-  max-width: 100%;
-  max-height: 100%;
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
-
-.config-image-frame {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  overflow: hidden;
-  border: 1px solid var(--n-border-color);
-  border-radius: 10px;
-  background: var(--n-color);
-}
-
-.config-image {
-  display: block;
-  width: 100%;
-  height: 100%;
-  padding: 4px;
-  object-fit: contain;
-}
-
-.config-image--default {
-  opacity: 0.82;
+  width: 32px;
+  height: 32px;
 }
 
 :deep(.item-card.device-card) {
-  height: 132px;
-  border-radius: 12px;
+  height: 112px;
+  border-radius: 4px;
   border-color: var(--n-border-color);
   background: var(--n-color);
 }
 
 :deep(.item-card.device-card:hover) {
   border-color: rgb(var(--primary-color) / 58%);
-  box-shadow: 0 4px 12px rgb(15 23 42 / 6%);
+  box-shadow: none;
+}
+
+:deep(.item-card.device-card:active) {
+  transform: none;
+}
+:deep(.item-card.device-card .footer-right:first-child) {
+  opacity: 0.65;
 }
 
 :deep(.item-card.device-card .card-container) {
   display: grid;
-  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-columns: 32px minmax(0, 1fr);
   grid-template-rows: 1fr auto;
   gap: 12px;
   box-sizing: border-box;
-  padding: 14px 16px 16px;
+  padding: 14px;
 }
 
 :deep(.item-card.device-card .card-leading) {
@@ -1240,7 +1189,7 @@ const formSize = ref(undefined)
   max-width: 100%;
 }
 :deep(.item-card.device-card .card-title) {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.5;
 }
@@ -1269,7 +1218,9 @@ const formSize = ref(undefined)
 :deep(.item-card.device-card .card-footer) {
   grid-area: 2 / 1 / 3 / -1;
   min-width: 0;
-  justify-content: flex-end;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--n-text-color);
 }
 :deep(.item-card.device-card .footer-right) {
   flex: 0 1 auto;
@@ -1277,7 +1228,7 @@ const formSize = ref(undefined)
 }
 :deep(.item-card.device-card .footer-text) {
   max-width: 100%;
-  font-size: 12px;
+  font-size: 11px;
   opacity: 0.65;
 }
 

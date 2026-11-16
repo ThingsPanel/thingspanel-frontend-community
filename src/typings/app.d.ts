@@ -1389,6 +1389,7 @@ declare namespace App {
           alarmed: string
           notAlarmed: string
           lastPushTime: string
+          lastReportTime: string
           serviceProtocol: string
           details: string
           delete: string
