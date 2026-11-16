@@ -4,7 +4,7 @@
  * 使用 ThingsVis 嵌入式编辑器预览模式展示图表
  *
  * 数据推送策略：
- *  - tp-03: WebSocket 实时推送（首选），断线自动回退轮询
+ *  - tp-03: 遥测 WebSocket 实时推送，属性当前值在可见页面定期读取
  *  - tp-02: ThingsVis ready 后历史数据回填
  *  - tp-04: 告警/事件字段 30s 轮询推送
  */
@@ -17,6 +17,7 @@ import type { PlatformField } from '@/utils/thingsvis/types'
 import { useRealtimePush } from '@/hooks/thingsvis/useRealtimePush'
 import { useAlarmPush } from '@/hooks/thingsvis/useAlarmPush'
 import { resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
+import { createObservedAttributePoller } from '@/utils/thingsvis/observed-attribute-poller'
 import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
 
 const TEMPLATE_PLATFORM_SOURCE_ID = '__platform___template____'
@@ -276,6 +277,7 @@ const pushDataToVis = (fields: Record<string, unknown>, deviceId = props.id, exp
 // 历史推送方法
 const realtimePush = ref<ReturnType<typeof useRealtimePush> | null>(null)
 const alarmPush = ref<ReturnType<typeof useAlarmPush> | null>(null)
+let attributePoller: ReturnType<typeof createObservedAttributePoller> | null = null
 let initSequence = 0
 
 // ─── 加载模板和配置 ───────────────────────────────────────────────────────────
@@ -341,6 +343,8 @@ watch(
     // 先停止旧的推送
     realtimePush.value?.stop()
     alarmPush.value?.stop()
+    attributePoller?.stop()
+    attributePoller = null
     realtimePush.value = null
     alarmPush.value = null
     currentData.value = {}
@@ -378,6 +382,24 @@ watch(
 
     alarmPush.value = useAlarmPush(deviceIdRef, platformFields, pushForCurrentDevice)
 
+    const attributeIds = new Set(
+      platformFields.value.filter(field => field.dataType === 'attribute').map(field => field.id)
+    )
+    if (attributeIds.size > 0) {
+      attributePoller = createObservedAttributePoller({
+        read: async () =>
+          Object.fromEntries(
+            (await fetchLatestReadings(deviceId, 'attribute'))
+              .filter(row => attributeIds.has(row.key))
+              .map(row => [row.key, row.value])
+          ),
+        push: pushForCurrentDevice,
+        isVisible: () => !document.hidden && Boolean(chartCardRef.value?.$el?.getClientRects().length),
+        onError: error => console.error('[TelemetryChart] 属性当前值刷新失败:', error)
+      })
+      attributePoller.start()
+    }
+
     // 启动实时推送
     realtimePush.value?.start()
     // 启动告警轮询
@@ -397,8 +419,11 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  // Also invalidate an initial snapshot request that has not started its pollers yet.
+  initSequence++
   realtimePush.value?.stop()
   alarmPush.value?.stop()
+  attributePoller?.stop()
   resizeObserver?.disconnect()
   window.removeEventListener('resize', updateAvailableHeight)
 })
