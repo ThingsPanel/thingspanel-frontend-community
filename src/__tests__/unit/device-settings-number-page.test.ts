@@ -16,6 +16,10 @@ const { lifecycle, devices, templates } = vi.hoisted(() => ({
   templates: { list: vi.fn() }
 }))
 
+vi.mock('@/store/modules/auth', () => ({
+  useAuthStore: () => ({ userInfo: { id: 'tenant-admin', roles: ['TENANT_ADMIN'] } })
+}))
+
 vi.mock('@/service/api/device-lifecycle-native', () => ({ deviceLifecycleNative: lifecycle }))
 vi.mock('@/service/api/device-native', () => ({ deviceNative: devices }))
 vi.mock('@/service/api/template-native', () => ({ templateNative: templates }))
