@@ -94,6 +94,24 @@ describe('device settings page: number change', () => {
     wrapper.unmount()
   })
 
+  it('allows a bound runtime with stale activation projection to request owner-confirmed state changes', async () => {
+    devices.get.mockResolvedValue({
+      device: {
+        deviceNumber: 'SN-001',
+        resourceVersion: 7,
+        activationState: 'inactive',
+        runtimeRef: { namespace: 'community', externalId: deviceId }
+      },
+      etag: '"sha256-c"'
+    })
+    const wrapper = await mountPage()
+    const statePanel = wrapper.findComponent({ name: 'native-device-administrative-state' })
+    expect(statePanel.exists()).toBe(true)
+    expect(statePanel.props('readonly')).toBe(false)
+    expect(lifecycle.setAdministrativeState).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
+
   it('shows the current number and submits the version-guarded request with a key', async () => {
     lifecycle.changeNumber.mockResolvedValue({ operation })
     const wrapper = await mountPage()

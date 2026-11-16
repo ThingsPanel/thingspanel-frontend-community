@@ -58,7 +58,7 @@ async function load() {
     selectedTemplateId.value = binding.binding.templateId
     deviceEtag.value = device.etag
     deviceVersion.value = Number(device.device.resourceVersion)
-    runtimeReady.value = device.device.activationState === 'active' && Boolean(device.device.runtimeRef)
+    runtimeReady.value = Boolean(device.device.runtimeRef)
     currentNumber.value = device.device.deviceNumber
     templates.value = templatePage.items
   } catch (e) {
@@ -176,7 +176,7 @@ onBeforeUnmount(() => {
       <NativeDeviceAdministrativeState
         :id="id"
         :readonly="!!importedAccess || loading || !!loadError || !runtimeReady"
-        :unavailable-reason="importedAccess ? '既有接入由源系统管理' : !runtimeReady ? '设备激活后可操作' : ''"
+        :unavailable-reason="importedAccess ? '既有接入由源系统管理' : !runtimeReady ? '设备接入生效后可操作' : ''"
         @change="emit('change')"
       />
 
