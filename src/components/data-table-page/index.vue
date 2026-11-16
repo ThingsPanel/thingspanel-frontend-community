@@ -1193,7 +1193,7 @@ const formSize = ref(undefined)
 .device-card-preview {
   display: grid;
   grid-template-columns: 88px minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: 76px minmax(0, 1fr) auto;
   align-items: start;
   width: 100%;
   height: 100%;
@@ -1232,9 +1232,11 @@ const formSize = ref(undefined)
 
 .device-summary-status {
   grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px;
 }
 
 .device-report-time {
@@ -1330,7 +1332,7 @@ const formSize = ref(undefined)
 
 :deep(.item-card.device-card .device-report-time) {
   grid-column: 2;
-  grid-row: 2;
+  grid-row: 3;
   justify-self: end;
   align-self: end;
   max-width: 100%;
@@ -1450,6 +1452,8 @@ const formSize = ref(undefined)
   }
 
   :deep(.device-name-cell) {
+    width: 100%;
+    overflow: hidden;
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -1458,11 +1462,21 @@ const formSize = ref(undefined)
 
   :deep(.device-name-button) {
     max-width: 240px;
+    min-width: 0;
+    overflow: hidden;
     padding: 0;
     font-size: 14px;
     font-weight: 400;
     line-height: 1.5;
     text-align: left;
+  }
+
+  :deep(.device-name-button .n-button__content) {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   :deep(.device-status-dot) {

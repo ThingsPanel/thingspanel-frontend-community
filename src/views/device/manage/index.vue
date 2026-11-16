@@ -1360,19 +1360,19 @@ const toggleGroupPanel = () => {
 </style>
 
 <style scoped>
-.device-name-cell {
+:deep(.device-name-cell) {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
   overflow: hidden;
 }
-.device-name-button {
+:deep(.device-name-button) {
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
 }
-.device-name-button :deep(.n-button__content) {
+:deep(.device-name-button .n-button__content) {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
