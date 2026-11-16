@@ -2,6 +2,7 @@ import { defineComponent, h } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import naive from 'naive-ui'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { $t } from '@/locales'
 import NativeDeviceCredentials from '@/views/device/details/modules/native-device-credentials.vue'
 
 const deviceId = '7c1bdb51-842a-4baa-8f58-4cb27f7132fd'
@@ -59,6 +60,7 @@ async function mountPage() {
   const wrapper = mount(NativeDeviceCredentials, {
     props: { id: deviceId },
     global: {
+      mocks: { $t },
       plugins: [
         naive,
         {
@@ -119,9 +121,24 @@ describe('device credentials page: rotation, revocation and connection info', ()
   })
 
   it('shows redacted connection info and offers revoke only for credentials that are not revoked', async () => {
+    runtime.readConnectionInfo.mockResolvedValueOnce({
+      deviceId,
+      protocol: 'mqtt',
+      endpoint: null,
+      clientIdentifier: null,
+      gatewayId: null,
+      observedAt: null,
+      mqttTopics: {
+        available: true,
+        reason: null,
+        mappingVersion: 'standard-v1',
+        items: [{ purpose: 'command', direction: 'subscribe', topic: 'devices/command/device-number/+' }]
+      }
+    })
     const wrapper = await mountPage()
     const text = wrapper.text()
     expect(text).toContain('mqtt')
+    expect(text).toContain('devices/command/device-number/+')
     expect(text).toContain('未配置（由部署方提供）')
     expect(buttons(wrapper, '撤销')).toHaveLength(2)
     expect(buttons(wrapper, '轮换')).toHaveLength(1)
