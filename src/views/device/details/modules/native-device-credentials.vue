@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { connectionTopicRows, connectionTopicReason } from './connection-topics'
 import { v4 as uuidv4 } from 'uuid'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
@@ -299,6 +300,7 @@ async function changeCredential(
 
 const connectionInfo = ref<ConnectionInfo | null>(null)
 const connectionInfoError = ref('')
+const topicRows = computed(() => connectionTopicRows(connectionInfo.value))
 async function loadConnectionInfo(deviceId: string) {
   connectionLoading.value = true
   connectionInfo.value = null
@@ -436,6 +438,21 @@ onBeforeUnmount(() => {
         </n-descriptions-item>
         <n-descriptions-item label="客户端标识">{{ connectionInfo.clientIdentifier || '--' }}</n-descriptions-item>
         <n-descriptions-item label="所属网关">{{ connectionInfo.gatewayId || '--' }}</n-descriptions-item>
+        <n-descriptions-item :label="$t('custom.connectionTopics.title')">
+          <div v-if="topicRows.length" class="connection-topics">
+            <div v-for="item in topicRows" :key="item.direction + item.topic" class="connection-topics__item">
+              <span>
+                {{ $t('custom.connectionTopics.' + item.direction) }} ·
+                {{ $t('custom.connectionTopics.' + item.purpose) }}
+              </span>
+              <code>{{ item.topic }}</code>
+            </div>
+            <p v-if="topicRows.some(item => item.topic.includes('{message_id}'))">
+              {{ $t('custom.connectionTopics.messageId') }}
+            </p>
+          </div>
+          <span v-else>{{ $t(connectionTopicReason(connectionInfo)) }}</span>
+        </n-descriptions-item>
       </n-descriptions>
       <n-empty v-else description="暂无接入信息" />
     </n-card>
@@ -521,6 +538,22 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.connection-topics__item {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.connection-topics code {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  user-select: all;
+}
+.connection-topics p {
+  margin: 0;
+  font-size: 12px;
+  color: #666;
+}
+
 .native-device-credentials__row {
   display: flex;
   align-items: center;

@@ -2426,8 +2426,20 @@ export interface components {
       appliedTemplateId: components['schemas']['Id'] | null
       appliedModelBinding: components['schemas']['ThingModelBinding'] | null
     }
+    ConnectionTopics: {
+      available: boolean
+      reason: string | null
+      mappingVersion: string | null
+      items: {
+        purpose: string
+        /** @enum {string} */
+        direction: 'publish' | 'subscribe'
+        topic: string
+      }[]
+    }
     /** @description 脱敏连接信息；secret、完整认证报文不得返回。 */
     ConnectionInfo: {
+      mqttTopics?: components['schemas']['ConnectionTopics']
       importedAccess?: components['schemas']['ImportedDeviceAccess']
       deviceId: components['schemas']['Id']
       protocol: string

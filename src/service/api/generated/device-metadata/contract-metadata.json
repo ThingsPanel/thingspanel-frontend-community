@@ -10463,6 +10463,9 @@
         "importedAccess": {
           "$ref": "#/components/schemas/ImportedDeviceAccess"
         },
+        "mqttTopics": {
+          "$ref": "#/components/schemas/ConnectionTopics"
+        },
         "observedAt": {
           "anyOf": [
             {
@@ -10647,6 +10650,60 @@
       "required": [
         "data",
         "meta"
+      ],
+      "type": "object"
+    },
+    "ConnectionTopics": {
+      "additionalProperties": false,
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "items": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "direction": {
+                "enum": [
+                  "publish",
+                  "subscribe"
+                ],
+                "type": "string"
+              },
+              "purpose": {
+                "type": "string"
+              },
+              "topic": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "purpose",
+              "direction",
+              "topic"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "mappingVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "available",
+        "reason",
+        "mappingVersion",
+        "items"
       ],
       "type": "object"
     },
