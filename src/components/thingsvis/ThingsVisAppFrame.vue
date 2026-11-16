@@ -32,6 +32,7 @@ import {
   commandDataPub
 } from '@/service/api/device'
 import { resolveDeviceNativeModel, hasNativeDeviceBinding } from '@/views/device/native-model-consumption'
+import { nativeChartCommandWriter } from '@/utils/thingsvis/native-command-write-client'
 import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
 import { getThingsVisDashboard, updateThingsVisDashboard, type UpdateDashboardData } from '@/service/api/thingsvis'
 import { getPlatformApiBase, getThingsVisApiBase } from '@/utils/thingsvis/constants'
@@ -104,7 +105,10 @@ interface DeviceStatusWsEntry {
   deviceId: string
 }
 
-type PlatformDeviceField = Pick<PlatformField, 'id' | 'name' | 'dataType' | 'type' | 'unit' | 'options' | 'writable'>
+type PlatformDeviceField = Pick<
+  PlatformField,
+  'id' | 'name' | 'dataType' | 'type' | 'unit' | 'options' | 'writable' | 'nativeSchema'
+> & { nativeDevice?: boolean }
 
 type PlatformDeviceEntry = {
   deviceId: string
@@ -1306,7 +1310,10 @@ async function resolveWriteField(deviceId: string, fieldId?: string): Promise<Pl
   const loadedDevice = await buildPlatformDeviceById(deviceId)
   if (loadedDevice) {
     registerActivePlatformDevices([loadedDevice])
-    return findPlatformWriteTarget(loadedDevice.fields, fieldId)
+    const field = findPlatformWriteTarget(loadedDevice.fields, fieldId)
+    return field
+      ? { ...field, nativeDevice: Boolean(loadedDevice.nativeModelID || loadedDevice.nativeSnapshotID) }
+      : undefined
   }
   return undefined
 }
@@ -1390,6 +1397,8 @@ function sanitizeDataSourcesForHostSave(nodes: unknown, dataSources: unknown): u
     })
 }
 
+const writeNativeCommand = nativeChartCommandWriter()
+
 async function handlePlatformWrite(payload: Record<string, unknown>, requestId?: string) {
   const deviceId = resolveWriteDeviceId(payload)
   const fieldId = resolveWriteFieldId(payload.data)
@@ -1414,6 +1423,9 @@ async function handlePlatformWrite(payload: Record<string, unknown>, requestId?:
     const fieldType = field?.dataType
     let result: any
 
+    if ((field.nativeDevice || field.nativeSchema) && fieldType !== 'command') {
+      throw new Error('原生设备控制必须使用声明的命令')
+    }
     if (fieldType === 'attribute') {
       result = await attributeDataPub({ device_id: deviceId, value })
     } else if (fieldType === 'command') {
@@ -1423,6 +1435,12 @@ async function handlePlatformWrite(payload: Record<string, unknown>, requestId?:
           success: false,
           error: 'Command write requires a single command field payload'
         })
+        return
+      }
+      if (field.nativeDevice || field.nativeSchema) {
+        const accepted = await writeNativeCommand(deviceId, commandWrite.identify, commandWrite.value)
+        assertPlatformCacheScope(requestScope)
+        postPlatformWriteResult(requestId, accepted)
         return
       }
       result = await commandDataPub({ device_id: deviceId, identify: commandWrite.identify, value: commandWrite.value })

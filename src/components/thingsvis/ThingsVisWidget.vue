@@ -16,6 +16,9 @@ import {
 import { localStg } from '@/utils/storage'
 import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
 import { fetchNativeHistoryRows } from '@/utils/thingsvis/native-history'
+import { nativeChartCommandWriter } from '@/utils/thingsvis/native-command-write-client'
+
+const writeNativeCommand = nativeChartCommandWriter()
 
 const FIELD_BINDING_EXPR_RE = /^\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}$/
 const FIELD_BINDING_EXPR_GLOBAL_RE = /\{\{\s*ds\.([^.\s]+)\.data(?:\.(.+?))?\s*\}\}/g
@@ -70,6 +73,8 @@ const props = defineProps<{
   mode?: 'viewer' | 'editor'
   /** Optional: current device ID — used to route tv:platform-write back to the platform API */
   deviceId?: string
+  /** Native device context must never fall back to a legacy write transport. */
+  nativeDevice?: boolean
   /** Optional: ring buffer capacity for current device platform data. */
   bufferSize?: number
 }>()
@@ -876,6 +881,9 @@ const handlePlatformWrite = async (event: MessageEvent) => {
     const fieldType = writeField?.dataType || (schemaField?.dataType === 'telemetry' ? 'telemetry' : undefined)
     const valueStr = typeof normalizedData === 'string' ? normalizedData : JSON.stringify(normalizedData)
 
+    if ((props.nativeDevice || writeField?.nativeSchema) && fieldType !== 'command') {
+      throw new Error('原生设备控制必须使用声明的命令')
+    }
     if (fieldType === 'attribute') {
       const result = await attributeDataPub({ device_id: targetDeviceId, value: valueStr })
       if (!isWriteSuccessful(result)) {
@@ -900,6 +908,11 @@ const handlePlatformWrite = async (event: MessageEvent) => {
           success: false,
           error: 'Command write requires a single command field payload'
         })
+        return
+      }
+      if (props.nativeDevice || writeField?.nativeSchema) {
+        const accepted = await writeNativeCommand(targetDeviceId, commandWrite.identify, commandWrite.value)
+        postPlatformWriteResult(requestId, event.source, accepted)
         return
       }
       const result = await commandDataPub({

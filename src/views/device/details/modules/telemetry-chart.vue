@@ -422,6 +422,7 @@ onBeforeUnmount(() => {
     <template v-else>
       <ThingsVisWidget
         ref="visWidgetRef"
+        native-device
         mode="viewer"
         :config="initialConfig"
         :data="currentData"
