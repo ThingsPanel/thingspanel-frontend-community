@@ -58,3 +58,8 @@ export function absentTelemetryLabel(row: { runtime_available?: boolean; telemet
     ? 'custom.devicePage.noTelemetryReported'
     : 'custom.devicePage.summaryUnavailable'
 }
+
+/** Native summaries are authoritative; legacy binary WS frames cannot replace unknown. */
+export function acceptsLegacyDeviceStatus(row: { runtime_available?: boolean }): boolean {
+  return row.runtime_available === undefined
+}

@@ -9,6 +9,7 @@ import _ from 'lodash'
 import type { TreeSelectOption } from 'naive-ui/es/tree-select/src/interface'
 import { AppsOutline, FolderOpenOutline, FolderOutline, LayersOutline } from '@vicons/ionicons5'
 import { localStg } from '@/utils/storage'
+import { createObservedAttributePoller } from '@/utils/thingsvis/observed-attribute-poller'
 import { useDeviceStatusWebSocket } from '@/utils/deviceStatusWebSocket'
 import {
   deviceDictProtocolServiceFirstLevel,
@@ -16,7 +17,13 @@ import {
   putDeviceActive
 } from '@/service/api/device'
 import { deviceNative } from '@/service/api/device-native'
-import { deviceListRow, connectivityLabel, alarmLabel, absentTelemetryLabel } from '@/service/api/device-list-rows'
+import {
+  deviceListRow,
+  connectivityLabel,
+  alarmLabel,
+  absentTelemetryLabel,
+  acceptsLegacyDeviceStatus
+} from '@/service/api/device-list-rows'
 import { formatDateTime } from '@/utils/common/datetime'
 import { deviceGroupNative } from '@/service/api/device-group-native'
 import { templateNative } from '@/service/api/template-native'
@@ -134,7 +141,7 @@ const updateDeviceStatusInTable = (deviceId: string, isOnline: boolean) => {
     if (tablePageRef.value?.dataList && Array.isArray(tablePageRef.value.dataList)) {
       const deviceIndex = tablePageRef.value.dataList.findIndex(device => device.id === deviceId)
 
-      if (deviceIndex !== -1) {
+      if (deviceIndex !== -1 && acceptsLegacyDeviceStatus(tablePageRef.value.dataList[deviceIndex])) {
         tablePageRef.value.dataList[deviceIndex].is_online = isOnline ? 1 : 0
       }
     }
@@ -148,7 +155,8 @@ const updateDeviceStatusInTable = (deviceId: string, isOnline: boolean) => {
  */
 const subscribeDeviceStatus = () => {
   // 获取当前页面的设备ID列表
-  const deviceIds = tablePageRef.value?.dataList?.map((device: any) => device.id) || []
+  const deviceIds =
+    tablePageRef.value?.dataList?.filter(acceptsLegacyDeviceStatus).map((device: any) => device.id) || []
 
   if (deviceIds.length > 0) {
     // 连接并订阅（第一次会建立连接，后续会更新订阅）
@@ -657,7 +665,19 @@ onBeforeMount(async () => {
 /**
  * 组件挂载完成后初始化 WebSocket
  */
+const listRefresh = createObservedAttributePoller({
+  intervalMs: 15000,
+  isVisible: () =>
+    !document.hidden && Boolean(tablePageRef.value?.$el?.getClientRects().length) && !deviceListRefreshing.value,
+  read: async () => {
+    await tablePageRef.value?.refreshCurrentPage()
+    return {}
+  },
+  push: () => {},
+  onError: error => console.error('Device list refresh failed', error)
+})
 onMounted(() => {
+  listRefresh.start()
   // 不需要在这里初始化，等待 fetchData 完成后自动订阅
   if (initialDeviceConfigId.value) {
     void activate('bottom', 'hands')
@@ -668,6 +688,8 @@ onMounted(() => {
  * 组件卸载前清理 WebSocket 连接
  */
 onUnmounted(() => {
+  listRefresh.stop()
+  deviceListRequestGeneration++
   deviceStatusWS.disconnect()
 })
 
