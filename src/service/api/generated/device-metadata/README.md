@@ -4,6 +4,13 @@
 
 `contract-metadata.json` mechanically retains operation mappings, OpenAPI schema constraints, formats, nullable/closed-object markers, and every `x-*` extension by JSON Pointer. It is a generated sidecar for information TypeScript cannot express, not a second API contract.
 
-The original generation helper is not included in this repository. Do not use the old worktree-specific command as a reproducible build step. Normal frontend builds consume the checked-in generated files. Regeneration requires restoring and verifying the helper before changing this contract.
+Normal builds consume checked-in files. Regenerate with locked dependencies installed:
 
-The checked-in manifest records the historical OpenAPI version, operation count, source/output SHA-256 values, and recursive schema transform version. These are provenance metadata, not evidence of a currently runnable generation command. The portable source identifier is relative to the named backend repository; it is not a local filesystem path.
+```sh
+pnpm install --frozen-lockfile
+node scripts/generate-device-contract.mjs --source <backend-checkout>/docs/initiatives/device-metadata-native-cutover/openapi.yaml
+```
+
+The explicit source path supports any checkout. Commit all three generated files together; hashes are computed from their exact bytes.
+
+The checked-in manifest records the historical OpenAPI version, operation count, source/output SHA-256 values, and recursive schema transform version. The generator records actual input and output hashes. The portable source identifier is relative to the named backend repository; it is not a local filesystem path.

@@ -4,7 +4,7 @@ import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import type { DrawerPlacement, StepsProps } from 'naive-ui'
-import { NAlert, NIcon, NTag, NButton, useMessage } from 'naive-ui'
+import { NAlert, NIcon, NTag, NButton, NEllipsis, useMessage } from 'naive-ui'
 import _ from 'lodash'
 import type { TreeSelectOption } from 'naive-ui/es/tree-select/src/interface'
 import { AppsOutline, FolderOpenOutline, FolderOutline, LayersOutline } from '@vicons/ionicons5'
@@ -16,6 +16,8 @@ import {
   putDeviceActive
 } from '@/service/api/device'
 import { deviceNative } from '@/service/api/device-native'
+import { deviceListRow, connectivityLabel, alarmLabel, absentTelemetryLabel } from '@/service/api/device-list-rows'
+import { formatDateTime } from '@/utils/common/datetime'
 import { deviceGroupNative } from '@/service/api/device-group-native'
 import { templateNative } from '@/service/api/template-native'
 import type { SearchConfig } from '@/components/data-table-page/index.vue'
@@ -233,11 +235,12 @@ const getDeviceConfigOptions = async () => {
 const columns_to_show: Ref<any> = ref([
   {
     key: 'name',
-    minWidth: '180px',
+    width: 280,
+    minWidth: 220,
     label: () => $t('custom.devicePage.deviceName'),
     render: (row: any) => {
       return (
-        <div class="device-name-cell">
+        <div class="device-name-cell" title={row.name}>
           <span
             class={['device-status-dot', row?.is_online === 1 ? 'device-status-dot--online' : null]}
             aria-hidden="true"
@@ -265,7 +268,7 @@ const columns_to_show: Ref<any> = ref([
         return <NTag type="success">{$t('custom.devicePage.online')}</NTag>
       }
       if (row?.is_online === 0) return <NTag type="default">{$t('custom.devicePage.offline')}</NTag>
-      return <span>-</span>
+      return <NTag type="default">{$t(connectivityLabel(row))}</NTag>
     }
   },
   {
@@ -277,7 +280,7 @@ const columns_to_show: Ref<any> = ref([
         return <NTag type="warning">{$t('custom.devicePage.alarmed')}</NTag>
       }
       if (row?.warn_status === 'N') return <NTag type="default">{$t('custom.devicePage.notAlarmed')}</NTag>
-      return <span>-</span>
+      return <NTag type="default">{$t(alarmLabel(row))}</NTag>
     }
   },
   {
@@ -297,11 +300,11 @@ const columns_to_show: Ref<any> = ref([
   },
   {
     key: 'device_config_name',
-    minWidth: '100px',
+    width: 280,
+    minWidth: 200,
     label: () => $t('custom.devicePage.deviceConfig'),
     render: row => {
-      const template = configOptions.value.find(option => option.id === row?.device_config_id)
-      return template?.name || '-'
+      return <NEllipsis tooltip>{deviceTemplateName(row)}</NEllipsis>
     }
   },
   {
@@ -324,9 +327,18 @@ const columns_to_show: Ref<any> = ref([
   {
     key: 'ts',
     minWidth: '140px',
-    label: () => $t('custom.devicePage.lastPushTime')
+    label: () => $t('custom.devicePage.lastPushTime'),
+    render: row => (row.ts ? formatDateTime(row.ts) : $t(absentTelemetryLabel(row)))
   }
 ]) as Ref<any>
+
+const deviceTemplateName = (row: { device_config_id?: string | null }) => {
+  if (!row.device_config_id) return $t('custom.devicePage.unboundTemplate')
+  return (
+    configOptions.value.find(option => option.id === row.device_config_id)?.name ||
+    $t('custom.devicePage.summaryUnavailable')
+  )
+}
 
 const { routerPushByKey } = useRouterPush()
 const goDeviceDetails = row => {
@@ -776,15 +788,8 @@ const fetchData = async (params: Record<string, any>) => {
   const result = {
     data: {
       list: nativePage.items.map(device => ({
-        ...device,
-        device_number: device.deviceNumber,
-        device_type: device.deviceKind === 'standalone' ? '1' : device.deviceKind === 'gateway' ? '2' : '3',
-        device_config_id: device.templateId ?? '',
-        device_config_name: '',
-        access_way: '',
-        protocol_type: '',
-        is_online: undefined,
-        warn_status: undefined
+        ...deviceListRow(device),
+        device_config_name: deviceTemplateName({ device_config_id: device.templateId })
       })),
       total: nativePage.total
     }
@@ -924,6 +929,7 @@ const toggleGroupPanel = () => {
           :init-page="query.page"
           :init-page-size="query.page_size"
           :row-click="goDeviceDetails"
+          :row-subtitle="deviceTemplateName"
           @params-update="paramsUpdateHandle"
           @reset="handleFilterReset"
         >
@@ -1350,5 +1356,26 @@ const toggleGroupPanel = () => {
     height: auto;
     overflow: visible;
   }
+}
+</style>
+
+<style scoped>
+.device-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+.device-name-button {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+.device-name-button :deep(.n-button__content) {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

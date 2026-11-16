@@ -1,4 +1,9 @@
 {
+  "custom.devicePage.connectivityUnknown": "Connectivity unknown",
+  "custom.devicePage.alarmStateUnknown": "Alarm status unknown",
+  "custom.devicePage.summaryUnavailable": "Unavailable",
+  "custom.devicePage.noTelemetryReported": "No telemetry yet",
+  "custom.devicePage.unboundTemplate": "No template",
   "custom.selectDeviceFirst": "Please select at least one device.",
   "custom.parseProtocolError": "Failed to parse protocol config",
   "custom.loadConfigError": "Failed to load configuration",

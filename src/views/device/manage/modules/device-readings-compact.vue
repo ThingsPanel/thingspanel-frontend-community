@@ -7,6 +7,7 @@ import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
 import { deviceCommandNative } from '@/service/api/device-command-native'
 import { localStg } from '@/utils/storage'
 import { deviceNative } from '@/service/api/device-native'
+import { deviceListRow, connectivityLabel } from '@/service/api/device-list-rows'
 import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
 import {
   hasNativeDeviceBinding,
@@ -32,6 +33,7 @@ type DeviceRow = {
   name?: string
   device_number?: string
   is_online?: number
+  runtime_available?: boolean
   device_config_id?: string
   device_template_id?: string | null
   native_thing_model_id?: string | null
@@ -118,7 +120,7 @@ async function fetchAllDevices(sequence: number) {
     const response = await deviceNative.list(query as Parameters<typeof deviceNative.list>[0])
     if (!current()) return []
     const pageDevices: DeviceRow[] = response.items.map(device => ({
-      ...device,
+      ...deviceListRow(device),
       device_number: device.deviceNumber,
       device_config_id: device.templateId ?? '',
       resourceVersion: device.resourceVersion,
@@ -424,7 +426,7 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => void loadR
             <NTag v-else-if="device.is_online === 0" size="small" type="default">
               {{ $t('custom.devicePage.offline') }}
             </NTag>
-            <span v-else>-</span>
+            <span v-else>{{ $t(connectivityLabel(device)) }}</span>
           </div>
           <p v-if="nativeMetadataErrorsByDevice[device.id]" class="device-readings-row__metadata-error">
             {{ nativeMetadataErrorsByDevice[device.id] }}

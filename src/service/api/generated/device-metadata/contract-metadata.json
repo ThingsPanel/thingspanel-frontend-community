@@ -5930,6 +5930,18 @@
             "minLength": 1,
             "type": "string"
           }
+        },
+        {
+          "description": "只看立即下发(immediate)或等设备上线后发送(when_online)的命令；期望消息页使用when_online。",
+          "in": "query",
+          "name": "deliveryMode",
+          "schema": {
+            "enum": [
+              "immediate",
+              "when_online"
+            ],
+            "type": "string"
+          }
         }
       ],
       "path": "/api/v2/devices/{deviceId}/command-executions",
@@ -10448,6 +10460,9 @@
             }
           ]
         },
+        "importedAccess": {
+          "$ref": "#/components/schemas/ImportedDeviceAccess"
+        },
         "observedAt": {
           "anyOf": [
             {
@@ -10980,6 +10995,88 @@
       ],
       "type": "object"
     },
+    "CredentialDetail": {
+      "additionalProperties": false,
+      "properties": {
+        "createdAt": {
+          "$ref": "#/components/schemas/Timestamp"
+        },
+        "deviceId": {
+          "$ref": "#/components/schemas/Id"
+        },
+        "fingerprint": {
+          "maxLength": 128,
+          "minLength": 0,
+          "type": "string"
+        },
+        "id": {
+          "$ref": "#/components/schemas/Id"
+        },
+        "kind": {
+          "enum": [
+            "token",
+            "username_password",
+            "x509"
+          ],
+          "type": "string"
+        },
+        "publicIdentifier": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 0,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revokedAt": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "secret": {
+          "anyOf": [
+            {
+              "maxLength": 8192,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "2026-10-29产品决定：凭据明文直接显示，不设单独揭示流程。仅在有权读取该设备凭据时返回；x509与已撤销凭据为null。响应带Cache-Control no-store。"
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "active",
+            "revoked"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "deviceId",
+        "kind",
+        "status",
+        "publicIdentifier",
+        "fingerprint",
+        "createdAt",
+        "revokedAt",
+        "secret"
+      ],
+      "type": "object"
+    },
     "CredentialPolicy": {
       "additionalProperties": false,
       "properties": {
@@ -11144,7 +11241,7 @@
       "properties": {
         "items": {
           "items": {
-            "$ref": "#/components/schemas/CredentialSummary"
+            "$ref": "#/components/schemas/CredentialDetail"
           },
           "maxItems": 100,
           "minItems": 0,
@@ -11533,6 +11630,9 @@
           ],
           "type": "string"
         },
+        "alarmSummary": {
+          "$ref": "#/components/schemas/DeviceAlarmSummary"
+        },
         "batchNumber": {
           "anyOf": [
             {
@@ -11637,6 +11737,9 @@
               "type": "null"
             }
           ]
+        },
+        "runtimeSummary": {
+          "$ref": "#/components/schemas/DeviceRuntimeSummary"
         },
         "tags": {
           "items": {
@@ -11905,6 +12008,51 @@
       "required": [
         "data",
         "meta"
+      ],
+      "type": "object"
+    },
+    "DeviceAlarmSummary": {
+      "additionalProperties": false,
+      "description": "List and subdevice reads only; unavailable alarms are not none.",
+      "properties": {
+        "activeCount": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "available": {
+          "type": "boolean"
+        },
+        "observedAt": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "enum": [
+            "active",
+            "none",
+            "unknown"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "activeCount",
+        "observedAt",
+        "available"
       ],
       "type": "object"
     },
@@ -12932,6 +13080,51 @@
       ],
       "type": "object"
     },
+    "DeviceRuntimeSummary": {
+      "additionalProperties": false,
+      "description": "List and subdevice reads only; unknown is not offline.",
+      "properties": {
+        "available": {
+          "type": "boolean"
+        },
+        "connectivity": {
+          "enum": [
+            "online",
+            "offline",
+            "unknown"
+          ],
+          "type": "string"
+        },
+        "lastTelemetryAt": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Authoritative server telemetry reception time, not device update time."
+        },
+        "observedAt": {
+          "anyOf": [
+            {
+              "$ref": "#/components/schemas/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "connectivity",
+        "observedAt",
+        "lastTelemetryAt",
+        "available"
+      ],
+      "type": "object"
+    },
     "DeviceStatistics": {
       "additionalProperties": false,
       "description": "同一权限/过滤范围。运行时计数标时间与 unknown；依赖失败不得回 0 假冒离线。",
@@ -13206,6 +13399,9 @@
               "type": "null"
             }
           ]
+        },
+        "importedAccess": {
+          "$ref": "#/components/schemas/ImportedDeviceAccess"
         },
         "modelBinding": {
           "anyOf": [
@@ -13876,6 +14072,64 @@
       "required": [
         "data",
         "meta"
+      ],
+      "type": "object"
+    },
+    "ImportedDeviceAccess": {
+      "additionalProperties": false,
+      "description": "Non-secret reference to existing source-managed access. It is not an editable native access configuration.",
+      "properties": {
+        "accessWay": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "protocol": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "readOnly": {
+          "const": true,
+          "type": "boolean"
+        },
+        "serviceAccessId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sourceDeviceId": {
+          "$ref": "#/components/schemas/Id"
+        },
+        "sourceOwner": {
+          "const": "community",
+          "type": "string"
+        },
+        "sourceTemplateId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sourceTemplateName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "sourceOwner",
+        "sourceDeviceId",
+        "sourceTemplateId",
+        "sourceTemplateName",
+        "protocol",
+        "accessWay",
+        "serviceAccessId",
+        "readOnly"
       ],
       "type": "object"
     },

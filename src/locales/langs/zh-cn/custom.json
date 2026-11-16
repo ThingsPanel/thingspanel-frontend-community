@@ -1,4 +1,9 @@
 {
+  "custom.devicePage.connectivityUnknown": "在线状态未知",
+  "custom.devicePage.alarmStateUnknown": "告警状态未知",
+  "custom.devicePage.summaryUnavailable": "暂不可用",
+  "custom.devicePage.noTelemetryReported": "暂无上报",
+  "custom.devicePage.unboundTemplate": "未绑定模板",
   "custom.selectDeviceFirst": "请至少选择一个设备。",
   "custom.parseProtocolError": "解析协议配置失败",
   "custom.loadConfigError": "加载配置失败",

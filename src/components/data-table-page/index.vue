@@ -28,6 +28,7 @@ import TencentMap from './modules/tencent-map.vue'
 import DevCardItem from '@/components/dev-card-item/index.vue'
 import CardGrid from '@/components/card-grid/index.vue'
 import { tableThemeOverrides } from '@/utils/table-theme'
+import { connectivityLabel, alarmLabel, absentTelemetryLabel } from '@/service/api/device-list-rows'
 
 // 新增 DeviceItem 接口定义
 interface DeviceItem {
@@ -42,7 +43,10 @@ interface DeviceItem {
   batch_number: string
   current_version: string
   created_at: string
-  is_online: 0 | 1
+  is_online: 0 | 1 | undefined
+  runtime_available?: boolean
+  alarm_available?: boolean
+  telemetry_available?: boolean
   location: string
   access_way: string
   protocol_type: string
@@ -122,6 +126,7 @@ const props = defineProps<{
   topActions: { element: () => VNode }[] // 顶部操作组件列表
   pageTitle?: string
   pageCountLabel?: string
+  rowSubtitle?: (row: DeviceItem) => string
   rowClick?: RowClick // 表格行点击回调
   initPage?: number
   initPageSize?: number
@@ -727,8 +732,8 @@ const formSize = ref(undefined)
               <DevCardItem
                 class="device-card"
                 :title="item.name || 'N/A'"
-                :status-active="item.is_online === 1"
-                :subtitle="item.device_config_name || '--'"
+                :status-active="item.is_online === undefined ? undefined : item.is_online === 1"
+                :subtitle="props.rowSubtitle ? props.rowSubtitle(item) : item.device_config_name || '--'"
                 :hide-footer-left="true"
                 @click-card="() => props.rowClick && props.rowClick(item)"
               >
@@ -756,8 +761,22 @@ const formSize = ref(undefined)
                       />
                       <SvgIcon v-else local-icon="defaultdevice" class="config-image config-image--default" />
                     </div>
+                    <div v-if="item.runtime_available !== undefined" class="device-summary-status">
+                      <NTag size="small" :type="item.is_online === 1 ? 'success' : 'default'">
+                        {{ $t(connectivityLabel(item)) }}
+                      </NTag>
+                      <NTag size="small" :type="item.warn_status === 'Y' ? 'warning' : 'default'">
+                        {{ $t(alarmLabel(item)) }}
+                      </NTag>
+                    </div>
                     <span class="device-report-time">
-                      {{ item.ts ? formatDateTime(item.ts) : '--' }}
+                      {{
+                        item.ts
+                          ? formatDateTime(item.ts)
+                          : item.runtime_available !== undefined
+                            ? $t(absentTelemetryLabel(item))
+                            : '--'
+                      }}
                     </span>
                   </div>
                 </template>
@@ -1209,6 +1228,13 @@ const formSize = ref(undefined)
 .config-image--default {
   padding: 3px;
   opacity: 0.82;
+}
+
+.device-summary-status {
+  grid-column: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .device-report-time {

@@ -2106,6 +2106,23 @@ export interface components {
       /** @description 模板当前配置引用模型时，包含所选固定 SnapshotDetail 全量模型、资源及两个独立 checksum；无模型时为 null。源 modelId/snapshotId/revision 是受验证的包内引用，导入后使用持久 ID 映射，不能指定目标租户或覆盖目标对象。 */
       modelPackage: components['schemas']['NativeThingModelSnapshotDetail'] | null
     }
+    /** @description List and subdevice reads only; unknown is not offline. */
+    DeviceRuntimeSummary: {
+      /** @enum {string} */
+      connectivity: 'online' | 'offline' | 'unknown'
+      observedAt: components['schemas']['Timestamp'] | null
+      /** @description Authoritative server telemetry reception time, not device update time. */
+      lastTelemetryAt: components['schemas']['Timestamp'] | null
+      available: boolean
+    }
+    /** @description List and subdevice reads only; unavailable alarms are not none. */
+    DeviceAlarmSummary: {
+      /** @enum {string} */
+      state: 'active' | 'none' | 'unknown'
+      activeCount: number | null
+      observedAt: components['schemas']['Timestamp'] | null
+      available: boolean
+    }
     /** @description 无 online 或 telemetry 写字段。templateId指向模板当前配置；模型和网关关系用专门用例维护；modelBinding只读且固定ThingModel版本，不能与模板事实重复写。 */
     Device: {
       id: components['schemas']['Id']
@@ -2131,6 +2148,8 @@ export interface components {
       activatedAt: components['schemas']['Timestamp'] | null
       gatewayId: components['schemas']['Id'] | null
       runtimeRef: components['schemas']['RuntimeRef'] | null
+      runtimeSummary?: components['schemas']['DeviceRuntimeSummary']
+      alarmSummary?: components['schemas']['DeviceAlarmSummary']
       tags: string[]
       customFields: components['schemas']['CustomFieldValues']
       batchNumber: string | null
@@ -2212,7 +2231,21 @@ export interface components {
         observedAt: components['schemas']['Timestamp'] | null
       }
     }
+    /** @description Non-secret reference to existing source-managed access. It is not an editable native access configuration. */
+    ImportedDeviceAccess: {
+      /** @constant */
+      sourceOwner: 'community'
+      sourceDeviceId: components['schemas']['Id']
+      /** @constant */
+      readOnly: true
+      sourceTemplateId: string | null
+      sourceTemplateName: string | null
+      protocol: string | null
+      accessWay: string | null
+      serviceAccessId: string | null
+    }
     DeviceTemplateBinding: {
+      importedAccess?: components['schemas']['ImportedDeviceAccess']
       deviceId: components['schemas']['Id']
       templateId: components['schemas']['Id'] | null
       modelBinding: components['schemas']['ThingModelBinding'] | null
@@ -2250,11 +2283,6 @@ export interface components {
       fingerprint: string
       createdAt: components['schemas']['Timestamp']
       revokedAt: components['schemas']['Timestamp'] | null
-    }
-    /** @description 2026-10-29产品决定：列表直接返回凭据明文，不设单独揭示流程。 */
-    CredentialDetail: components['schemas']['CredentialSummary'] & {
-      /** @description x509与已撤销凭据为null。响应 Cache-Control: no-store。 */
-      secret: string | null
     }
     /** @description 生成 secret 或导入提供的 secret；不得接受两种歧义来源；证书只提交公钥证书，私钥不进入元数据服务。验证策略见 API-CONTRACT。 */
     CreateCredential: {
@@ -2400,6 +2428,7 @@ export interface components {
     }
     /** @description 脱敏连接信息；secret、完整认证报文不得返回。 */
     ConnectionInfo: {
+      importedAccess?: components['schemas']['ImportedDeviceAccess']
       deviceId: components['schemas']['Id']
       protocol: string
       endpoint: string | null
@@ -2575,6 +2604,20 @@ export interface components {
     DeviceNumberAvailabilityResponse: {
       data: components['schemas']['DeviceNumberAvailability']
       meta: components['schemas']['RequestMeta']
+    }
+    CredentialDetail: {
+      id: components['schemas']['Id']
+      deviceId: components['schemas']['Id']
+      /** @enum {string} */
+      kind: 'token' | 'username_password' | 'x509'
+      /** @enum {string} */
+      status: 'pending' | 'active' | 'revoked'
+      publicIdentifier: string | null
+      fingerprint: string
+      createdAt: components['schemas']['Timestamp']
+      revokedAt: components['schemas']['Timestamp'] | null
+      /** @description 2026-10-29产品决定：凭据明文直接显示，不设单独揭示流程。仅在有权读取该设备凭据时返回；x509与已撤销凭据为null。响应带Cache-Control no-store。 */
+      secret: string | null
     }
     /** @description items 与 total 来自同一授权过滤和数据库读快照；默认稳定排序 createdAt DESC,id DESC。跨页实时列表不承诺快照冻结；导出使用冻结数据集。 */
     CredentialSummaryPage: {
@@ -6216,6 +6259,8 @@ export interface operations {
         from?: string
         to?: string
         labelContains?: string
+        /** @description 只看立即下发(immediate)或等设备上线后发送(when_online)的命令；期望消息页使用when_online。 */
+        deliveryMode?: 'immediate' | 'when_online'
       }
       header?: never
       path: {
