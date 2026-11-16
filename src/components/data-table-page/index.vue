@@ -451,8 +451,7 @@ onUnmounted(() => {
 
 // 修复 NSelect 的 filter 函数类型错误
 const filterSelectOption = (pattern: string, option: any) => {
-  const label = typeof option.label === 'string' ? option.label : ''
-  return label.includes(pattern)
+  return String(getOptionLabel(option)).toLocaleLowerCase().includes(pattern.trim().toLocaleLowerCase())
 }
 
 // AdvancedListLayout 事件处理
@@ -733,7 +732,17 @@ const formSize = ref(undefined)
               <DevCardItem
                 class="device-card"
                 :title="item.name || 'N/A'"
-                :status-active="item.is_online === undefined ? undefined : item.is_online === 1"
+                :status-active="item.warn_status === 'Y' || item.is_online === 1"
+                :status-type="item.warn_status === 'Y' ? 'warning' : 'success'"
+                :status-blink="item.warn_status === 'Y'"
+                :status-label="`${$t(connectivityLabel(item))} · ${$t(alarmLabel(item))}`"
+                :footer-text="
+                  item.ts
+                    ? formatDateTime(item.ts) || '--'
+                    : item.runtime_available !== undefined
+                      ? $t(absentTelemetryLabel(item))
+                      : '--'
+                "
                 :subtitle="props.rowSubtitle ? props.rowSubtitle(item) : item.device_config_name || '--'"
                 :hide-footer-left="true"
                 @click-card="() => props.rowClick && props.rowClick(item)"
@@ -751,34 +760,15 @@ const formSize = ref(undefined)
                   </span>
                 </template>
 
-                <template #card-preview>
-                  <div class="device-card-preview">
-                    <div class="config-image-frame">
-                      <img
-                        v-if="item.image_url"
-                        :src="getConfigImageUrl(item.image_url)"
-                        :alt="`${item.name || '设备'}默认图片`"
-                        class="config-image"
-                      />
-                      <SvgIcon v-else local-icon="defaultdevice" class="config-image config-image--default" />
-                    </div>
-                    <div v-if="item.runtime_available !== undefined" class="device-summary-status">
-                      <NTag size="small" :type="item.is_online === 1 ? 'success' : 'default'">
-                        {{ $t(connectivityLabel(item)) }}
-                      </NTag>
-                      <NTag size="small" :type="item.warn_status === 'Y' ? 'warning' : 'default'">
-                        {{ $t(alarmLabel(item)) }}
-                      </NTag>
-                    </div>
-                    <span class="device-report-time">
-                      {{
-                        item.ts
-                          ? formatDateTime(item.ts)
-                          : item.runtime_available !== undefined
-                            ? $t(absentTelemetryLabel(item))
-                            : '--'
-                      }}
-                    </span>
+                <template #leading>
+                  <div class="config-image-frame">
+                    <img
+                      v-if="item.image_url"
+                      :src="getConfigImageUrl(item.image_url)"
+                      :alt="item.name || '设备'"
+                      class="config-image"
+                    />
+                    <SvgIcon v-else local-icon="defaultdevice" class="config-image config-image--default" />
                   </div>
                 </template>
               </DevCardItem>
@@ -1191,20 +1181,6 @@ const formSize = ref(undefined)
   object-fit: contain;
 }
 
-.device-card-preview {
-  display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  grid-template-rows: 76px minmax(0, 1fr) auto;
-  align-items: start;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  margin: 0;
-  padding: 0;
-  column-gap: 16px;
-  overflow: visible;
-}
-
 .config-image-frame {
   display: flex;
   align-items: center;
@@ -1213,7 +1189,7 @@ const formSize = ref(undefined)
   height: 56px;
   overflow: hidden;
   border: 1px solid var(--n-border-color);
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--n-color);
 }
 
@@ -1223,171 +1199,86 @@ const formSize = ref(undefined)
   height: 100%;
   padding: 4px;
   object-fit: contain;
-  object-position: center;
 }
 
 .config-image--default {
-  padding: 3px;
   opacity: 0.82;
 }
 
-.device-summary-status {
-  grid-column: 2;
-  grid-row: 2;
-  min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.device-report-time {
-  grid-column: 2;
-  justify-self: end;
-  color: var(--n-text-color);
-  font-size: 12px;
-  line-height: 1.35;
-  opacity: 0.62;
-  text-align: right;
-  white-space: nowrap;
-}
-
 :deep(.item-card.device-card) {
-  height: 190px;
-  border: 1px solid var(--n-border-color);
-  border-radius: 14px;
+  height: 132px;
+  border-radius: 12px;
+  border-color: var(--n-border-color);
   background: var(--n-color);
-  box-shadow: 0 6px 18px rgb(15 23 42 / 4%);
 }
 
 :deep(.item-card.device-card:hover) {
   border-color: rgb(var(--primary-color) / 58%);
-  box-shadow: 0 10px 22px rgb(var(--primary-color) / 12%);
+  box-shadow: 0 4px 12px rgb(15 23 42 / 6%);
 }
 
 :deep(.item-card.device-card .card-container) {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
-  column-gap: 16px;
+  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
+  gap: 12px;
   box-sizing: border-box;
-  padding: 16px;
+  padding: 14px 16px 16px;
 }
 
+:deep(.item-card.device-card .card-leading) {
+  grid-area: 1 / 1;
+}
 :deep(.item-card.device-card .card-header) {
-  grid-column: 2;
-  grid-row: 1;
-  align-self: start;
+  grid-area: 1 / 2;
   min-width: 0;
-  z-index: 1;
 }
-
 :deep(.item-card.device-card .title-row) {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
-
+:deep(.item-card.device-card .title-content .n-ellipsis) {
+  max-width: 100%;
+}
 :deep(.item-card.device-card .card-title) {
-  font-size: 16px;
-  font-weight: 650;
-  line-height: 1.35;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
 }
-
+:deep(.item-card.device-card .indicator-section) {
+  margin-left: 10px;
+  padding-top: 6px;
+}
 :deep(.item-card.device-card .status-dot) {
-  width: 7px;
-  height: 7px;
-  box-shadow: 0 0 0 3px rgb(var(--primary-color) / 12%);
+  width: 8px;
+  height: 8px;
 }
-
 :deep(.item-card.device-card .subtitle-row) {
-  gap: 8px;
-  color: var(--n-text-color);
+  gap: 6px;
 }
-
 :deep(.item-card.device-card .subtitle-text-container) {
   overflow: hidden;
   color: var(--n-text-color);
-  opacity: 0.72;
+  opacity: 0.65;
   font-size: 12px;
-  line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-:deep(.item-card.device-card .card-preview) {
-  grid-column: 1 / -1;
-  grid-row: 1;
-  display: block;
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  margin: 0;
-  pointer-events: none;
+:deep(.item-card.device-card .card-content) {
+  display: none;
 }
-
-:deep(.item-card.device-card .config-image-frame) {
-  grid-column: 1;
-  grid-row: 1;
-  width: 88px;
-  height: 88px;
-  border-radius: 14px;
-}
-
-:deep(.item-card.device-card .device-report-time) {
-  grid-column: 2;
-  grid-row: 3;
-  justify-self: end;
-  align-self: end;
-  max-width: 100%;
-  margin-top: 10px;
-}
-
 :deep(.item-card.device-card .card-footer) {
+  grid-area: 2 / 1 / 3 / -1;
+  min-width: 0;
   justify-content: flex-end;
-  padding-top: 2px;
 }
-
 :deep(.item-card.device-card .footer-right) {
   flex: 0 1 auto;
-  max-width: 100%;
+  min-width: 0;
 }
-
 :deep(.item-card.device-card .footer-text) {
   max-width: 100%;
-  color: var(--n-text-color);
-  opacity: 0.62;
-  font-size: 11px;
-  line-height: 1.35;
-}
-
-@media (max-width: 640px) {
-  :deep(.item-card.device-card) {
-    height: 176px;
-  }
-
-  :deep(.item-card.device-card .card-container) {
-    grid-template-columns: 72px minmax(0, 1fr);
-    column-gap: 12px;
-    padding: 12px;
-  }
-
-  :deep(.item-card.device-card .card-preview),
-  :deep(.item-card.device-card .device-card-preview) {
-    grid-template-columns: 72px minmax(0, 1fr);
-    column-gap: 12px;
-  }
-
-  :deep(.item-card.device-card .config-image-frame) {
-    width: 72px;
-    height: 72px;
-    border-radius: 12px;
-  }
-
-  :deep(.item-card.device-card .card-title) {
-    font-size: 15px;
-  }
-
-  :deep(.item-card.device-card .device-report-time) {
-    font-size: 11px;
-  }
+  font-size: 12px;
+  opacity: 0.65;
 }
 
 .map-view-container {

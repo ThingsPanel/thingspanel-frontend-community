@@ -62,6 +62,8 @@
   "custom.devicePage.retryConnection": "重新加载",
   "custom.devicePage.fail": "失败",
   "custom.devicePage.unlimitedDeviceConfig": "不使用设备模板",
+  "custom.devicePage.allDeviceTemplates": "不限设备模板",
+  "custom.devicePage.labelFilter": "标签（如 region=east）",
   "custom.devicePage.alarmStatus": "告警状态",
   "custom.devicePage.notAlarmed": "未告警",
   "custom.devicePage.directConnectedDevices": "直连设备",

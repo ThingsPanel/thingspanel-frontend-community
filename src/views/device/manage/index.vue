@@ -235,7 +235,7 @@ const getDeviceConfigOptions = async () => {
     if (res.items.length === 0) break
     page += 1
   }
-  configOptions.value = [{ name: $t('custom.devicePage.unlimitedDeviceConfig'), id: '' }, ...options]
+  configOptions.value = [{ name: $t('custom.devicePage.allDeviceTemplates'), id: '' }, ...options]
 
   return configOptions.value
 }
@@ -371,7 +371,7 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'device_config_id',
-    label: 'custom.devicePage.unlimitedDeviceConfig',
+    label: 'custom.devicePage.allDeviceTemplates',
     type: 'select',
     initValue: query.device_config_id,
     options: [],
@@ -433,7 +433,7 @@ const searchConfigs = ref<SearchConfig[]>([
   {
     key: 'label',
     initValue: query.label,
-    label: 'custom.devicePage.label',
+    label: 'custom.devicePage.labelFilter',
     type: 'input'
   }
 ])
@@ -570,7 +570,7 @@ function toNativeDeviceFilters(params: Record<string, any>) {
       }
     } else {
       query.accessWay = 'protocol'
-      query.protocol = identifier
+      query.protocol = identifier.toLowerCase()
     }
   }
   return query

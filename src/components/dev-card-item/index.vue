@@ -11,6 +11,8 @@ interface Props {
   isStatus?: boolean
   /** 状态点类型，影响激活时的颜色 */
   statusType?: 'success' | 'warning' | 'error' | 'info' | 'default'
+  statusLabel?: string
+  statusBlink?: boolean
   /** 底部右侧显示的文本，可以是时间戳或其他文本 */
   footerText?: string
   /** 是否显示边框 */
@@ -121,6 +123,7 @@ const handleTopRightIconClick = () => {
   >
     <!-- 卡片内容容器 -->
     <div class="card-container">
+      <div v-if="$slots.leading" class="card-leading"><slot name="leading" /></div>
       <!-- 卡片头部：包含标题、副标题和右侧指示器 -->
       <div class="card-header">
         <!-- 左侧标题区域 -->
@@ -157,7 +160,16 @@ const handleTopRightIconClick = () => {
         <!-- 右上角图标区域 - 支持插槽自定义 -->
         <div class="indicator-section">
           <!-- 在线状态点固定在卡片右上角，避免干扰设备名称阅读 -->
-          <div v-if="isStatus" class="status-dot" :style="{ backgroundColor: statusColor }" />
+          <div
+            v-if="isStatus"
+            class="status-dot"
+            :class="{ 'status-dot--alarm': statusBlink }"
+            :style="{ backgroundColor: statusColor, color: statusColor }"
+            :title="statusLabel"
+            :aria-label="statusLabel"
+            role="img"
+            :tabindex="statusLabel ? 0 : undefined"
+          />
           <div
             v-if="$slots['top-right-icon'] || shouldHandleTopRightIconClick"
             class="top-right-icon-container"
@@ -292,6 +304,29 @@ const handleTopRightIconClick = () => {
   border-radius: 50%;
   flex-shrink: 0;
   transition: background-color 0.3s ease;
+}
+
+.status-dot--alarm {
+  animation: alarm-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes alarm-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 3px currentColor;
+  }
+  50% {
+    opacity: 0.45;
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-dot--alarm {
+    animation: none;
+    box-shadow: 0 0 0 2px currentColor;
+  }
 }
 
 .subtitle-row {

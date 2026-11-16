@@ -62,6 +62,8 @@
   "custom.devicePage.retryConnection": "Reload",
   "custom.devicePage.fail": "Failed",
   "custom.devicePage.unlimitedDeviceConfig": "Skip Template",
+  "custom.devicePage.allDeviceTemplates": "All Device Templates",
+  "custom.devicePage.labelFilter": "Label (e.g. region=east)",
   "custom.devicePage.alarmStatus": "Alert Status",
   "custom.devicePage.notAlarmed": "Not Alert",
   "custom.devicePage.directConnectedDevices": "Direct Connected Devices",

@@ -1381,6 +1381,8 @@ declare namespace App {
           deviceConfig: string
           configTemplate: string
           unlimitedDeviceConfig: string
+          allDeviceTemplates: string
+          labelFilter: string
           selectGroup: string
           online: string
           offline: string
