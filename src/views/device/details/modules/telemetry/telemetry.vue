@@ -6,6 +6,7 @@ import { useWebSocket } from '@vueuse/core'
 import { MovingNumbers } from 'moving-numbers-vue3'
 import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
 import NativeDeviceSimulator from './native-device-simulator.vue'
+import NativeTelemetryHistory from './native-telemetry-history.vue'
 import { latestRowsFromReadings } from '@/service/api/device-runtime-rows'
 import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool'
@@ -25,6 +26,7 @@ const nativeTelemetryFields = ref(new Map<string, any>())
 const nativeMetadataError = ref('')
 const truncated = ref(false)
 const showSimulator = ref(false)
+const showHistory = ref(false)
 const fetching = ref(false)
 let nativeMetadataRequestId = 0
 const initTelemetryData = ref<any>()
@@ -172,12 +174,14 @@ onUnmounted(() => {
     <div class="telemetry-toolbar">
       <span class="telemetry-heading">当前遥测</span>
       <n-space>
+        <n-button @click="showHistory = !showHistory">{{ showHistory ? '收起历史' : '历史查询' }}</n-button>
         <n-button :loading="fetching" @click="fetchTelemetry">刷新</n-button>
         <n-button :aria-expanded="showSimulator" @click="showSimulator = !showSimulator">
           {{ showSimulator ? '收起模拟上报' : '模拟上报' }}
         </n-button>
       </n-space>
     </div>
+    <NativeTelemetryHistory v-if="showHistory" :id="props.id" />
     <n-alert v-if="nativeMetadataError" type="error" :show-icon="false" class="mb-4">
       {{ nativeMetadataError }}
     </n-alert>
