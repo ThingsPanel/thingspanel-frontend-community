@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import NativeDeviceAdministrativeState from './native-device-administrative-state.vue'
 import type { ImportedDeviceAccess } from '@/service/api/device-native-transport'
 import { deviceNative } from '@/service/api/device-native'
 import { deviceLifecycleNative, type DeviceOperation } from '@/service/api/device-lifecycle-native'
@@ -23,6 +24,7 @@ const importedAccess = ref<ImportedDeviceAccess | null>(null)
 const currentTemplateId = ref<string | null>(null)
 const deviceEtag = ref('')
 const deviceVersion = ref(0)
+const runtimeReady = ref(false)
 const currentNumber = ref('')
 const newNumber = ref('')
 const numberReason = ref('')
@@ -56,6 +58,7 @@ async function load() {
     selectedTemplateId.value = binding.binding.templateId
     deviceEtag.value = device.etag
     deviceVersion.value = Number(device.device.resourceVersion)
+    runtimeReady.value = device.device.activationState === 'active' && Boolean(device.device.runtimeRef)
     currentNumber.value = device.device.deviceNumber
     templates.value = templatePage.items
   } catch (e) {
@@ -169,6 +172,13 @@ onBeforeUnmount(() => {
         以下修改提交后为"已受理"，由后台投递给设备平台，应用成功后状态才变为已完成。
       </NAlert>
       <NAlert v-if="loadError" type="error">{{ loadError }}</NAlert>
+
+      <NativeDeviceAdministrativeState
+        :id="id"
+        :readonly="!!importedAccess || loading || !!loadError || !runtimeReady"
+        :unavailable-reason="importedAccess ? '既有接入由源系统管理' : !runtimeReady ? '设备激活后可操作' : ''"
+        @change="emit('change')"
+      />
 
       <NCard title="设备模板" size="small">
         <div v-if="importedAccess" class="flex flex-col gap-2">
