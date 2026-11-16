@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { nanoid } from '@sa/utils'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
@@ -34,6 +35,9 @@ import {
 } from '@/service/api/template-configuration-attempt'
 import {
   ONLINE_MODE_OPTIONS,
+  isBuiltinNativeMqttConfiguration,
+  nativeMqttPolicyIssue,
+  changeTemplateOnlineMode,
   administrativeStateNotice,
   buildAccessPolicyConfiguration,
   buildAdministrativeStatePatch,
@@ -50,6 +54,7 @@ interface Props {
   id: string
 }
 
+const { t } = useI18n()
 const props = defineProps<Props>()
 const emit = defineEmits<{ change: [] }>()
 const authStore = useAuthStore()
@@ -80,6 +85,14 @@ const administrativeState = computed(() => template.value?.administrativeState ?
 const isDisabled = computed(() => administrativeState.value === 'disabled')
 const hasCover = computed(() => Boolean(template.value?.imageAssetId))
 
+const builtinMqtt = computed(() => isBuiltinNativeMqttConfiguration(template.value?.configuration))
+const capabilityIssue = computed(() => nativeMqttPolicyIssue(policy.value, builtinMqtt.value))
+const unsupportedCredentialPolicy = computed(
+  () => builtinMqtt.value && template.value?.configuration.access.credentialPolicy.kind !== 'none'
+)
+function changeOnlineMode(mode: TemplateAccessPolicy['onlineMode']) {
+  policy.value = changeTemplateOnlineMode(policy.value, mode, builtinMqtt.value)
+}
 const onlineModeOptions = ONLINE_MODE_OPTIONS.map(option => ({ label: option.label, value: option.value }))
 
 function currentSessionIs(generation: number, templateId: string, sequence?: number) {
@@ -205,6 +218,10 @@ async function retryUnknown() {
 async function savePolicy() {
   if (busy.value) return
   policyError.value = ''
+  if (capabilityIssue.value || unsupportedCredentialPolicy.value) {
+    policyError.value = t('native-mqtt-policy.' + (capabilityIssue.value || 'credentialUnsupported'))
+    return
+  }
   const validation = validateAccessPolicy(policy.value)
   if (validation) {
     policyError.value = validation
@@ -370,14 +387,31 @@ onBeforeUnmount(() => {
           <NForm label-placement="left" label-width="140px">
             <NFormItem label="自动注册">
               <NSpace vertical>
-                <NSwitch v-model:value="policy.autoRegister" :disabled="!canWrite || busy" />
-                <span class="text-gray-500">开启后允许凭据策略自动登记新设备。</span>
+                <NSwitch v-model:value="policy.autoRegister" :disabled="!canWrite || busy || builtinMqtt" />
+                <NButton
+                  v-if="builtinMqtt && policy.autoRegister"
+                  size="small"
+                  :disabled="!canWrite || busy"
+                  @click="policy.autoRegister = false"
+                >
+                  {{ t('native-mqtt-policy.disableRegistration') }}
+                </NButton>
+                <span class="text-gray-500">
+                  {{
+                    builtinMqtt ? t('native-mqtt-policy.autoRegisterUnsupported') : '开启后允许凭据策略自动登记新设备。'
+                  }}
+                </span>
               </NSpace>
             </NFormItem>
             <NFormItem label="在线判定方式">
-              <NSelect v-model:value="policy.onlineMode" :options="onlineModeOptions" :disabled="!canWrite || busy" />
+              <NSelect
+                :value="policy.onlineMode"
+                :options="onlineModeOptions"
+                :disabled="!canWrite || busy"
+                @update:value="changeOnlineMode"
+              />
             </NFormItem>
-            <NFormItem label="判定超时（秒）">
+            <NFormItem v-if="!builtinMqtt || policy.onlineMode !== 'transport'" label="判定超时（秒）">
               <NInputNumber
                 v-model:value="policy.onlineTimeoutSeconds"
                 :min="1"
@@ -385,6 +419,29 @@ onBeforeUnmount(() => {
                 :disabled="!canWrite || busy"
               />
             </NFormItem>
+            <NAlert
+              v-if="builtinMqtt && policy.onlineMode === 'transport'"
+              :show-icon="false"
+              :type="policy.onlineTimeoutSeconds !== 60 ? 'warning' : 'info'"
+              class="mb-3"
+            >
+              {{
+                t(
+                  'native-mqtt-policy.' + (policy.onlineTimeoutSeconds !== 60 ? 'transportNeedsReset' : 'transportHint')
+                )
+              }}
+              <NButton
+                v-if="policy.onlineTimeoutSeconds !== 60"
+                size="small"
+                :disabled="!canWrite || busy"
+                @click="policy.onlineTimeoutSeconds = 60"
+              >
+                {{ t('native-mqtt-policy.resetTransport') }}
+              </NButton>
+            </NAlert>
+            <NAlert v-if="unsupportedCredentialPolicy" type="warning" :show-icon="false" class="mb-3">
+              {{ t('native-mqtt-policy.credentialUnsupported') }}
+            </NAlert>
             <NSpace>
               <NButton type="primary" :loading="saving" :disabled="!canWrite || busy || !template" @click="savePolicy">
                 保存注册与在线策略

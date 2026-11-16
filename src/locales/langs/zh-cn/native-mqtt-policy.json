@@ -1,0 +1,9 @@
+{
+  "autoRegisterUnsupported": "当前不支持自动注册，请使用设备凭据接入。",
+  "transportHint": "按 MQTT 连接状态判定。",
+  "transportNeedsReset": "旧配置的连接超时不受支持，请明确恢复默认值后保存。",
+  "resetTransport": "恢复默认值",
+  "disableRegistration": "关闭自动注册",
+  "credentialUnsupported": "当前仅支持设备凭据管理，请修正模板凭据策略后保存。",
+  "useManagedCredentials": "使用设备凭据管理"
+}

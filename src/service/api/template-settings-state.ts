@@ -96,3 +96,43 @@ export function administrativeStateNotice(state: string | undefined): string {
     ? '模板已停用：不会新绑定或新激活设备，已绑定设备保持原状。'
     : '模板已启用：允许新绑定设备。'
 }
+
+export function isBuiltinNativeMqttConfiguration(
+  configuration:
+    | {
+        deviceKind?: string
+        access?: { mode?: string; protocol?: string; providerId?: string | null; serviceInstanceId?: string | null }
+      }
+    | null
+    | undefined
+): boolean {
+  const access = configuration?.access
+  return (
+    configuration?.deviceKind === 'standalone' &&
+    access?.mode === 'direct' &&
+    access.protocol === 'mqtt' &&
+    !access.providerId &&
+    !access.serviceInstanceId
+  )
+}
+export function nativeMqttPolicyIssue(
+  policy: TemplateAccessPolicy,
+  builtin: boolean
+): 'autoRegisterUnsupported' | 'transportNeedsReset' | undefined {
+  if (!builtin) return undefined
+  if (policy.autoRegister) return 'autoRegisterUnsupported'
+  if (policy.onlineMode === 'transport' && policy.onlineTimeoutSeconds !== 60) return 'transportNeedsReset'
+  return undefined
+}
+/** Reset only on explicit user selection, never while loading old settings. */
+export function changeTemplateOnlineMode(
+  policy: TemplateAccessPolicy,
+  mode: TemplateOnlineMode,
+  builtin: boolean
+): TemplateAccessPolicy {
+  return {
+    ...policy,
+    onlineMode: mode,
+    onlineTimeoutSeconds: builtin && mode === 'transport' ? 60 : policy.onlineTimeoutSeconds
+  }
+}

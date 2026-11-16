@@ -1,0 +1,9 @@
+{
+  "autoRegisterUnsupported": "Automatic registration is unavailable. Use device credentials.",
+  "transportHint": "Status follows the MQTT connection.",
+  "transportNeedsReset": "The saved connection timeout is unsupported. Restore the default, then save.",
+  "resetTransport": "Restore default",
+  "disableRegistration": "Turn off automatic registration",
+  "credentialUnsupported": "Only managed device credentials are supported. Correct the template credential policy before saving.",
+  "useManagedCredentials": "Use managed device credentials"
+}

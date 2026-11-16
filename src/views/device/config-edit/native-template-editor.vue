@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+import { isBuiltinNativeMqttConfiguration, nativeMqttPolicyIssue } from '@/service/api/template-settings-state'
 import { computed, h, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
@@ -48,6 +50,7 @@ type CredentialKind = TemplateConfiguration['access']['credentialPolicy']['kind'
 type OnlineMode = TemplateConfiguration['access']['onlinePolicy']['mode']
 type ConnectionDirection = TemplateConfiguration['access']['connectionDirection']
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const message = useMessage()
@@ -96,6 +99,25 @@ const connectionDirection = ref<ConnectionDirection>('device_to_platform')
 const onlineMode = ref<OnlineMode>('transport')
 const timeoutSeconds = ref<number | null>(60)
 
+const builtinMqtt = computed(() =>
+  isBuiltinNativeMqttConfiguration({
+    deviceKind: form.deviceKind,
+    access: configurationBase.value?.access ?? { mode: 'direct', protocol: 'mqtt' }
+  })
+)
+const capabilityIssue = computed(() =>
+  nativeMqttPolicyIssue(
+    { autoRegister: autoRegister.value, onlineMode: onlineMode.value, onlineTimeoutSeconds: timeoutSeconds.value ?? 0 },
+    builtinMqtt.value
+  )
+)
+const availableCredentialOptions = computed(() =>
+  credentialOptions.map(option => ({ ...option, disabled: builtinMqtt.value && option.value !== 'none' }))
+)
+function changeOnlineMode(mode: OnlineMode) {
+  onlineMode.value = mode
+  if (builtinMqtt.value && mode === 'transport') timeoutSeconds.value = 60
+}
 const modelPickerVisible = ref(false)
 const versionPickerVisible = ref(false)
 const modelLoading = ref(false)
@@ -492,6 +514,10 @@ async function save() {
     message.error('在线策略时长须为 1 到 86400 秒。')
     return
   }
+  if (capabilityIssue.value || (builtinMqtt.value && credentialKind.value !== 'none')) {
+    message.error(t('native-mqtt-policy.' + (capabilityIssue.value || 'credentialUnsupported')))
+    return
+  }
   if (form.tags.length > 32) {
     message.error('标签最多支持32个。')
     return
@@ -674,12 +700,31 @@ function goBack() {
           <NFormItem label="凭据类型" class="editor-width">
             <NSelect
               v-model:value="credentialKind"
-              :options="credentialOptions"
+              :options="availableCredentialOptions"
               :disabled="!protocolEditable || saving"
             />
+            <NSpace v-if="builtinMqtt && credentialKind !== 'none'" vertical>
+              <span>{{ t('native-mqtt-policy.credentialUnsupported') }}</span>
+              <NButton size="small" :disabled="!protocolEditable || saving" @click="credentialKind = 'none'">
+                {{ t('native-mqtt-policy.useManagedCredentials') }}
+              </NButton>
+            </NSpace>
           </NFormItem>
           <NFormItem label="自动注册" class="editor-width">
-            <NCheckbox v-model:checked="autoRegister" :disabled="!protocolEditable || saving">启用自动注册</NCheckbox>
+            <NSpace vertical>
+              <NCheckbox v-model:checked="autoRegister" :disabled="!protocolEditable || saving || builtinMqtt">
+                启用自动注册
+              </NCheckbox>
+              <span v-if="builtinMqtt">{{ t('native-mqtt-policy.autoRegisterUnsupported') }}</span>
+              <NButton
+                v-if="builtinMqtt && autoRegister"
+                size="small"
+                :disabled="!protocolEditable || saving"
+                @click="autoRegister = false"
+              >
+                {{ t('native-mqtt-policy.disableRegistration') }}
+              </NButton>
+            </NSpace>
           </NFormItem>
           <NFormItem label="连接方向" class="editor-width">
             <NSelect
@@ -691,18 +736,27 @@ function goBack() {
           <NFormItem label="在线策略" class="editor-width">
             <NSpace>
               <NSelect
-                v-model:value="onlineMode"
+                :value="onlineMode"
                 :options="onlineModeOptions"
                 class="online-mode"
                 :disabled="!protocolEditable || saving"
+                @update:value="changeOnlineMode"
               />
               <NInputNumber
+                v-if="!builtinMqtt || onlineMode !== 'transport'"
                 v-model:value="timeoutSeconds"
                 :min="1"
                 :max="86400"
                 :disabled="!protocolEditable || saving"
               />
-              <span class="unit-label">秒</span>
+              <span v-if="!builtinMqtt || onlineMode !== 'transport'" class="unit-label">秒</span>
+              <span v-else>{{ t('native-mqtt-policy.transportHint') }}</span>
+              <NSpace v-if="builtinMqtt && onlineMode === 'transport' && timeoutSeconds !== 60" vertical>
+                <span>{{ t('native-mqtt-policy.transportNeedsReset') }}</span>
+                <NButton size="small" :disabled="!protocolEditable || saving" @click="timeoutSeconds = 60">
+                  {{ t('native-mqtt-policy.resetTransport') }}
+                </NButton>
+              </NSpace>
             </NSpace>
           </NFormItem>
 
