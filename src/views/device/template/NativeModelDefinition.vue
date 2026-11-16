@@ -37,6 +37,12 @@ function displaySummary(field: ModelField): string {
   if ('parameters' in field && field.parameters) return displayParams(field)
   return 'valueType' in field && field.valueType ? field.valueType.kind : ''
 }
+function displayRange(field: ModelField): string {
+  const value = field.valueType
+  if (!value || !['INT', 'FLOAT', 'NUMBER'].includes(value.kind)) return '—'
+  const bounds = 'constraint' in value ? (value.constraint as { min?: number; max?: number } | undefined) : undefined
+  return `${bounds?.min ?? '−∞'} ~ ${bounds?.max ?? '+∞'}`
+}
 const fieldKey = (field: ModelField) => field.fieldID || `${field.kind}:${field.identifier}`
 
 function openNew() {
@@ -61,7 +67,8 @@ function openEdit(field: ModelField) {
   try {
     const mapped = fromNativeField(field)
     selectedKey.value = fieldKey(field)
-    form.value = { ...mapped }
+    const constraint = (mapped.value_type as { constraint?: { min?: number; max?: number } })?.constraint
+    form.value = { ...mapped, numeric_min: constraint?.min ?? null, numeric_max: constraint?.max ?? null }
     form.value.enum_base = Array.isArray(mapped.additional_info)
       ? (mapped.additional_info[0]?.value_type ?? 'String')
       : 'String'
@@ -185,6 +192,7 @@ function removeField(field: ModelField) {
               key: 'summary',
               render: displaySummary
             },
+            { title: $t('custom.modelRange.range'), key: 'range', render: displayRange },
             { title: '单位', key: 'unit', render: (row: ModelField) => ('unit' in row ? (row.unit ?? '') : '') },
             { title: '说明', key: 'descriptionI18n', render: (row: ModelField) => row.descriptionI18n?.default ?? '' },
             {
@@ -291,6 +299,24 @@ function removeField(field: ModelField) {
                 </n-button>
               </div>
             </div>
+          </template>
+          <template v-if="form.data_type === 'Number'">
+            <n-form-item :label="$t('custom.modelRange.min')">
+              <n-input-number
+                v-model:value="form.numeric_min"
+                :placeholder="$t('custom.modelRange.unbounded')"
+                :disabled="saving"
+                :input-props="{ 'aria-label': '最小值' }"
+              />
+            </n-form-item>
+            <n-form-item :label="$t('custom.modelRange.max')">
+              <n-input-number
+                v-model:value="form.numeric_max"
+                :placeholder="$t('custom.modelRange.unbounded')"
+                :disabled="saving"
+                :input-props="{ 'aria-label': '最大值' }"
+              />
+            </n-form-item>
           </template>
           <n-form-item label="单位" class="field-wide">
             <n-input

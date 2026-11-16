@@ -1,4 +1,8 @@
 {
+  "custom.modelRange.min": "Minimum",
+  "custom.modelRange.max": "Maximum",
+  "custom.modelRange.range": "Range",
+  "custom.modelRange.unbounded": "Unbounded",
   "custom.devicePage.connectivityUnknown": "Connectivity unknown",
   "custom.devicePage.alarmStateUnknown": "Alarm status unknown",
   "custom.devicePage.summaryUnavailable": "Unavailable",

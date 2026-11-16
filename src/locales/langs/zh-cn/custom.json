@@ -1,4 +1,8 @@
 {
+  "custom.modelRange.min": "最小值",
+  "custom.modelRange.max": "最大值",
+  "custom.modelRange.range": "范围",
+  "custom.modelRange.unbounded": "不限制",
   "custom.devicePage.connectivityUnknown": "在线状态未知",
   "custom.devicePage.alarmStateUnknown": "告警状态未知",
   "custom.devicePage.summaryUnavailable": "暂不可用",
