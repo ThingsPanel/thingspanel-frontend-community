@@ -217,6 +217,7 @@ const getDeviceConfigOptions = async () => {
     deviceKind: string
     accessMode: string
     protocol: string
+    imageAssetId?: string | null
   }> = []
   let page = 1
   let total = Number.POSITIVE_INFINITY
@@ -226,6 +227,7 @@ const getDeviceConfigOptions = async () => {
       ...res.items.map(template => ({
         id: template.id,
         name: template.name,
+        imageAssetId: template.imageAssetId,
         deviceKind: template.configuration?.deviceKind ?? '',
         accessMode: template.configuration?.access?.mode ?? '',
         protocol: template.configuration?.access?.protocol ?? ''
@@ -952,6 +954,7 @@ const toggleGroupPanel = () => {
           :init-page-size="query.page_size"
           :row-click="goDeviceDetails"
           :row-subtitle="deviceTemplateName"
+          :row-image-asset="row => configOptions.find(option => option.id === row.device_config_id)?.imageAssetId"
           @params-update="paramsUpdateHandle"
           @reset="handleFilterReset"
         >

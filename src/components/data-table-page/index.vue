@@ -25,6 +25,7 @@ import { FilterOutline } from '@vicons/ionicons5'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import TencentMap from './modules/tencent-map.vue'
 import DevCardItem from '@/components/dev-card-item/index.vue'
+import DeviceCover from '@/components/dev-card-item/device-cover.vue'
 import CardGrid from '@/components/card-grid/index.vue'
 import { tableThemeOverrides } from '@/utils/table-theme'
 import { connectivityLabel, alarmLabel, absentTelemetryLabel } from '@/service/api/device-list-rows'
@@ -126,6 +127,7 @@ const props = defineProps<{
   pageTitle?: string
   pageCountLabel?: string
   rowSubtitle?: (row: DeviceItem) => string
+  rowImageAsset?: (row: DeviceItem) => string | null | undefined
   rowClick?: RowClick // 表格行点击回调
   initPage?: number
   initPageSize?: number
@@ -729,6 +731,9 @@ const formSize = ref(undefined)
                 @click-card="() => props.rowClick && props.rowClick(item)"
               >
                 <template #leading>
+                  <DeviceCover :asset-id="props.rowImageAsset?.(item)" :name="item.name" />
+                </template>
+                <template #subtitle-icon>
                   <span
                     class="device-type-icon"
                     :title="getDeviceTypeLabel(item.device_type)"
@@ -1129,7 +1134,8 @@ const formSize = ref(undefined)
   min-height: 0;
 }
 
-.device-card-grid {
+.device-card-grid.thingspanel-card-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
   gap: 12px;
 }
 
@@ -1137,18 +1143,17 @@ const formSize = ref(undefined)
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 40px;
+  width: 20px;
+  height: 20px;
   color: var(--n-text-color);
 }
 
 .image-icon {
-  width: 32px;
-  height: 32px;
+  width: 20px;
+  height: 20px;
 }
 
 :deep(.item-card.device-card) {
-  height: 112px;
   border-radius: 4px;
   border-color: var(--n-border-color);
   background: var(--n-color);
@@ -1168,7 +1173,7 @@ const formSize = ref(undefined)
 
 :deep(.item-card.device-card .card-container) {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr);
+  grid-template-columns: 56px minmax(0, 1fr);
   grid-template-rows: 1fr auto;
   gap: 12px;
   box-sizing: border-box;
@@ -1203,6 +1208,10 @@ const formSize = ref(undefined)
 }
 :deep(.item-card.device-card .subtitle-row) {
   gap: 6px;
+}
+:deep(.item-card.device-card .subtitle-icon-container) {
+  width: 20px;
+  height: 20px;
 }
 :deep(.item-card.device-card .subtitle-text-container) {
   overflow: hidden;
