@@ -854,6 +854,8 @@ const formSize = ref(undefined)
 
 :deep(.list-content-header-right--inline) {
   display: flex;
+  align-self: flex-end;
+  align-items: center;
   flex: 1;
   min-width: 0;
   gap: 10px;
@@ -891,7 +893,7 @@ const formSize = ref(undefined)
   gap: 8px;
 
   :deep(.n-button) {
-    height: 34px;
+    height: 36px;
   }
 }
 

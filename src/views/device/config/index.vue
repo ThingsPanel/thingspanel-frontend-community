@@ -475,6 +475,10 @@ const availableViews = [
 </template>
 
 <style scoped>
+:deep(.item-card.device-template-card) {
+  border-radius: 4px;
+}
+
 .device-template-header {
   display: flex;
   flex-direction: column;

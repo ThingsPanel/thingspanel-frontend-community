@@ -426,7 +426,7 @@ onActivated(() => {
 }
 .template-card {
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: 4px;
   border: 1px solid #e8ebf0;
   transition:
     box-shadow 0.2s ease,

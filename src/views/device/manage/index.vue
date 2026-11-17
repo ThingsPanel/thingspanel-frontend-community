@@ -959,18 +959,10 @@ const toggleGroupPanel = () => {
           @reset="handleFilterReset"
         >
           <template #search-toolbar-before>
-            <NAlert
-              v-if="deviceListError || deviceListRefreshing"
-              :type="deviceListError ? 'error' : 'warning'"
-              :bordered="false"
-              class="device-list-state-alert"
-            >
-              <template v-if="deviceListError">
-                列表读取失败：{{ deviceListError }}。
-                <span v-if="tablePageRef?.dataList?.length">下方显示的是上次成功结果，当前不可打开。</span>
-                <span v-else>目前没有可显示的成功结果。</span>
-              </template>
-              <template v-else>正在读取新筛选结果；下方暂时保留的是上次成功结果。</template>
+            <NAlert v-if="deviceListError" type="error" :bordered="false" class="device-list-state-alert">
+              列表读取失败：{{ deviceListError }}。
+              <span v-if="tablePageRef?.dataList?.length">下方显示的是上次成功结果，当前不可打开。</span>
+              <span v-else>目前没有可显示的成功结果。</span>
             </NAlert>
             <n-button
               class="device-group-filter-toggle"

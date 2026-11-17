@@ -110,6 +110,7 @@ onUnmounted(() => {
           <CardGrid>
             <div v-for="item in deviceTemplateList" :key="item.id">
               <DevCardItem
+                class="integration-card"
                 :isStatus="false"
                 :title="item.name"
                 :subtitle="item.description || '暂无描述'"
@@ -166,6 +167,10 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss" scoped>
+:deep(.item-card.integration-card) {
+  border-radius: 4px;
+}
+
 .service-icon-container {
   width: 40px;
   height: 40px;
