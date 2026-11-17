@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import { useMessage } from 'naive-ui'
+import MqttLoginFields from '@/views/device/shared/mqtt-login-fields.vue'
 import { useAuthStore } from '@/store/modules/auth'
 import { deviceNative } from '@/service/api/device-native'
 import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
@@ -30,6 +31,7 @@ const page = ref(1)
 const listLoading = ref(false)
 const listError = ref('')
 const createError = ref('')
+const showCredentialForm = ref(false)
 const creating = ref(false)
 const createAttempt = ref<ReturnType<typeof createNativeCredentialAttempt> | null>(null)
 const createdResult = ref<{ credential: DeviceCredentialSecret; location: string; requestId: string } | null>(null)
@@ -44,7 +46,19 @@ let credentialSessionGeneration = 0
 
 const hasPendingWrite = computed(() => Boolean(createAttempt.value))
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSize)))
-const createButtonLabel = computed(() => (createAttempt.value ? '重试同一请求' : '创建凭据'))
+const currentLogin = computed(() => summaries.value.find(item => item.status === 'active'))
+const hasCurrentLogin = computed(() => Boolean(currentLogin.value))
+const createButtonLabel = computed(() => {
+  if (createAttempt.value) return '重试保存'
+  const isCustom = credentialKind.value === 'x509' || credentialSource.value === 'import'
+  if (hasCurrentLogin.value) return isCustom ? '保存新登录信息' : '生成新登录信息'
+  return isCustom ? '保存登录信息' : '生成登录信息'
+})
+const loginMethodLabels = {
+  token: '仅用户名',
+  username_password: '用户名和密码',
+  x509: 'X.509 证书'
+} satisfies Record<CreateDeviceCredential['kind'], string>
 
 function blockPendingNavigation() {
   if (createAttempt.value) {
@@ -52,7 +66,7 @@ function blockPendingNavigation() {
     return true
   }
   if (createdResult.value?.credential.secret) {
-    message.warning('请先查看或清除这次仅显示一次的凭据内容，再离开页面。')
+    message.warning('请先关闭登录信息的提示，再离开页面。')
     return true
   }
   return false
@@ -158,13 +172,17 @@ function buildPayload(): CreateDeviceCredential | null {
     }
   }
 
+  if (credentialKind.value === 'username_password' && credentialSource.value === 'import' && !identifier) {
+    createError.value = '请输入现有的 MQTT 用户名。'
+    return null
+  }
   if (credentialSource.value === 'import' && !importedSecret.value) {
-    createError.value = '请输入要导入的凭据。'
+    createError.value = credentialKind.value === 'token' ? '请输入 MQTT 用户名。' : '请输入 MQTT 密码。'
     return null
   }
   return {
     kind: credentialKind.value,
-    ...(identifier ? { publicIdentifier: identifier } : {}),
+    ...(credentialKind.value === 'username_password' && identifier ? { publicIdentifier: identifier } : {}),
     ...(credentialSource.value === 'import' ? { secret: importedSecret.value } : {})
   }
 }
@@ -209,6 +227,7 @@ async function submitCreate() {
         showCreatedResult.value = true
         createAttempt.value = null
         resetCreateForm()
+        showCredentialForm.value = false
       },
       async deviceId => {
         await loadCredentialPage(deviceId, page.value)
@@ -266,19 +285,18 @@ async function changeCredential(
     const fingerprint = JSON.stringify([deviceId, credential.id, action, replacement?.id ?? null, version])
     const key = changeAttempt?.fingerprint === fingerprint ? changeAttempt.key : newIdempotencyKey()
     changeAttempt = { fingerprint, key }
-    const accepted =
-      action === 'revoke'
-        ? await deviceCredentialsNative.revoke(deviceId, credential.id, { expectedDeviceVersion: version, reason }, key)
-        : await deviceCredentialsNative.rotate(
-            deviceId,
-            credential.id,
-            { replacementCredentialId: replacement!.id, overlapSeconds: 0, expectedDeviceVersion: version },
-            key
-          )
+    if (action === 'revoke') {
+      await deviceCredentialsNative.revoke(deviceId, credential.id, { expectedDeviceVersion: version, reason }, key)
+    } else {
+      await deviceCredentialsNative.rotate(
+        deviceId,
+        credential.id,
+        { replacementCredentialId: replacement!.id, overlapSeconds: 0, expectedDeviceVersion: version },
+        key
+      )
+    }
     changeAttempt = null
-    message.success(
-      `${action === 'revoke' ? '撤销' : '轮换'}已提交（操作 ${accepted.operationId}，状态 ${accepted.state}）。设备侧是否已应用以操作状态为准。`
-    )
+    message.success(action === 'revoke' ? '已提交撤销，等待设备平台确认。' : '已提交更换，等待设备平台确认。')
   } catch (error) {
     if (typeof (error as { status?: unknown }).status === 'number' && (error as { status: number }).status > 0)
       changeAttempt = null
@@ -303,7 +321,7 @@ async function loadConnectionInfo(deviceId: string) {
       // 未绑定模板的设备没有接入配置，后端返回英文原文；这是预期状态，不是读取失败。
       connectionInfoError.value =
         message === 'device access is not configured'
-          ? '该设备尚未配置接入信息（需先绑定设备模板）'
+          ? '尚未设置接入方式。可以在「设置」中绑定模板以查看连接参数。'
           : message || '接入信息读取失败'
     }
   }
@@ -313,8 +331,6 @@ watch(
   id => void loadConnectionInfo(id),
   { immediate: true }
 )
-
-const pendingReplacement = computed(() => summaries.value.find(item => item.status === 'pending'))
 
 function clearCreatedResult() {
   createdResult.value = null
@@ -335,12 +351,8 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="native-device-credentials">
-    <n-alert type="warning" :show-icon="false" class="mb-4">
-      设备的第一个凭据创建后会自动下发给设备平台并生效；之后再创建的凭据先显示“待生效”，用于轮换替换当前凭据。轮换后旧凭据立刻失效（没有并存期）。
-    </n-alert>
-
     <n-alert v-if="createAttempt" type="warning" :show-icon="false" class="mb-4">
-      设备 {{ createAttempt.deviceId }} 的凭据创建结果尚未确认。输入已冻结，将使用同一请求编号重试。
+      登录信息保存结果还未确认，请在这里重试。
     </n-alert>
     <n-alert v-if="listError" type="error" :show-icon="false" class="mb-4">
       {{ listError }}
@@ -355,29 +367,126 @@ onBeforeUnmount(() => {
     </n-alert>
     <n-alert v-if="createError" type="error" :show-icon="false" class="mb-4">{{ createError }}</n-alert>
 
-    <n-card title="创建凭据" :bordered="false" class="mb-4">
+    <n-card title="连接参数" :bordered="false">
+      <n-alert v-if="connectionInfoError" type="warning" :show-icon="false">{{ connectionInfoError }}</n-alert>
+      <n-descriptions v-else-if="connectionInfo" bordered :column="1" size="small">
+        <n-descriptions-item label="协议">{{ connectionInfo.protocol }}</n-descriptions-item>
+        <n-descriptions-item label="服务器地址">
+          {{ connectionInfo.endpoint || '未配置（由部署方提供）' }}
+        </n-descriptions-item>
+        <n-descriptions-item v-if="connectionInfo.clientIdentifier" label="客户端 ID">
+          {{ connectionInfo.clientIdentifier }}
+        </n-descriptions-item>
+        <n-descriptions-item v-if="connectionInfo.gatewayId" label="所属网关">
+          {{ connectionInfo.gatewayId }}
+        </n-descriptions-item>
+      </n-descriptions>
+      <n-empty v-else description="暂无接入信息" />
+    </n-card>
+
+    <n-card title="设备登录信息" :bordered="false">
+      <template #header-extra>
+        <n-button
+          text
+          size="small"
+          class="mr-3"
+          :loading="listLoading"
+          @click="loadCredentialPage(props.id, page).catch(() => undefined)"
+        >
+          刷新状态
+        </n-button>
+        <n-button v-if="!showCredentialForm" size="small" @click="showCredentialForm = true">
+          {{ hasCurrentLogin ? '更换登录信息' : '设置登录信息' }}
+        </n-button>
+        <n-button v-else size="small" :disabled="creating || hasPendingWrite" @click="showCredentialForm = false">
+          收起表单
+        </n-button>
+      </template>
+      <n-spin :show="listLoading">
+        <n-list v-if="summaries.length" bordered>
+          <n-list-item v-for="credential in summaries" :key="credential.id">
+            <div class="native-device-credentials__row">
+              <div>
+                <strong>{{ loginMethodLabels[credential.kind] }}</strong>
+                <MqttLoginFields
+                  v-if="credential.status !== 'revoked'"
+                  :kind="credential.kind"
+                  :public-identifier="credential.publicIdentifier"
+                  :secret="credential.secret"
+                />
+              </div>
+              <n-tag
+                :type="
+                  credential.status === 'active' ? 'success' : credential.status === 'revoked' ? 'default' : 'warning'
+                "
+              >
+                {{ credential.status === 'active' ? '已生效' : credential.status === 'revoked' ? '已撤销' : '待生效' }}
+              </n-tag>
+              <n-space v-if="credential.status !== 'revoked'" :size="8">
+                <n-popconfirm
+                  v-if="credential.status === 'pending' && currentLogin && credential.kind !== 'x509'"
+                  @positive-click="currentLogin && changeCredential(currentLogin, 'rotate', credential)"
+                >
+                  <template #trigger>
+                    <n-button size="small" :disabled="Boolean(changingCredentialId) || hasPendingWrite">
+                      启用新登录信息
+                    </n-button>
+                  </template>
+                  新登录信息生效后，当前用户名和密码将立即失效。确认更换？
+                </n-popconfirm>
+                <n-popconfirm @positive-click="changeCredential(credential, 'revoke')">
+                  <template #trigger>
+                    <n-button size="small" type="error" :disabled="Boolean(changingCredentialId) || hasPendingWrite">
+                      撤销
+                    </n-button>
+                  </template>
+                  撤销后，设备将无法再用这组登录信息连接。确认撤销？
+                </n-popconfirm>
+              </n-space>
+            </div>
+          </n-list-item>
+        </n-list>
+        <n-empty v-else-if="!listError" description="还没有设置设备登录信息" />
+      </n-spin>
+      <div v-if="pageCount > 1" class="mt-4 flex items-center justify-end gap-2">
+        <n-button size="small" :disabled="page <= 1 || listLoading" @click="changePage(page - 1)">上一页</n-button>
+        <span>{{ page }} / {{ pageCount }}</span>
+        <n-button size="small" :disabled="page >= pageCount || listLoading" @click="changePage(page + 1)">
+          下一页
+        </n-button>
+      </div>
+    </n-card>
+
+    <n-card v-if="showCredentialForm || createAttempt" :bordered="false" class="mb-4">
+      <p v-if="hasCurrentLogin" class="mb-3">先准备新的登录信息，再点「启用新登录信息」完成更换。</p>
       <n-form>
-        <n-form-item label="凭据类型">
+        <n-form-item label="登录方式">
           <n-select
             v-model:value="credentialKind"
             :disabled="hasPendingWrite || creating"
             :options="[
-              { label: '访问令牌', value: 'token' },
+              { label: '仅用户名（密码留空）', value: 'token' },
               { label: '用户名和密码', value: 'username_password' },
-              { label: 'X.509 公开证书', value: 'x509' }
+              { label: 'X.509 证书', value: 'x509' }
             ]"
           />
         </n-form-item>
-        <n-form-item :label="credentialKind === 'username_password' ? '用户名（可选）' : '公开标识（可选）'">
-          <n-input v-model:value="publicIdentifier" :disabled="hasPendingWrite || creating" />
-        </n-form-item>
-        <n-form-item v-if="credentialKind !== 'x509'" label="凭据来源">
+        <n-form-item v-if="credentialKind !== 'x509'" label="填写方式">
           <n-radio-group v-model:value="credentialSource" :disabled="hasPendingWrite || creating">
-            <n-radio value="generate">由系统生成（默认）</n-radio>
-            <n-radio value="import">导入已有凭据</n-radio>
+            <n-radio value="generate">自动生成</n-radio>
+            <n-radio value="import">使用已有登录信息</n-radio>
           </n-radio-group>
         </n-form-item>
-        <n-form-item v-if="credentialKind !== 'x509' && credentialSource === 'import'" label="凭据内容">
+        <n-form-item
+          v-if="credentialKind === 'username_password'"
+          :label="credentialSource === 'generate' ? '用户名（留空则自动生成）' : '用户名'"
+        >
+          <n-input v-model:value="publicIdentifier" autocomplete="off" :disabled="hasPendingWrite || creating" />
+        </n-form-item>
+        <n-form-item
+          v-if="credentialKind !== 'x509' && credentialSource === 'import'"
+          :label="credentialKind === 'token' ? '用户名' : '密码'"
+        >
           <n-input
             v-model:value="importedSecret"
             type="password"
@@ -405,93 +514,27 @@ onBeforeUnmount(() => {
       </n-form>
     </n-card>
 
-    <n-card title="接入信息" :bordered="false">
-      <n-alert v-if="connectionInfoError" type="warning" :show-icon="false">{{ connectionInfoError }}</n-alert>
-      <n-descriptions v-else-if="connectionInfo" bordered :column="1" size="small">
-        <n-descriptions-item label="协议">{{ connectionInfo.protocol }}</n-descriptions-item>
-        <n-descriptions-item label="接入地址">
-          {{ connectionInfo.endpoint || '未配置（由部署方提供）' }}
-        </n-descriptions-item>
-        <n-descriptions-item label="客户端标识">{{ connectionInfo.clientIdentifier || '--' }}</n-descriptions-item>
-        <n-descriptions-item label="所属网关">{{ connectionInfo.gatewayId || '--' }}</n-descriptions-item>
-      </n-descriptions>
-      <n-empty v-else description="暂无接入信息" />
-    </n-card>
-
-    <n-card title="凭据摘要" :bordered="false">
-      <n-spin :show="listLoading">
-        <n-list v-if="summaries.length" bordered>
-          <n-list-item v-for="credential in summaries" :key="credential.id">
-            <div class="native-device-credentials__row">
-              <div>
-                <strong>{{ credential.publicIdentifier || credential.kind }}</strong>
-                <div class="native-device-credentials__hint">{{ credential.kind }} · {{ credential.createdAt }}</div>
-                <div v-if="credential.secret" class="native-device-credentials__secret">{{ credential.secret }}</div>
-              </div>
-              <n-tag
-                :type="
-                  credential.status === 'active' ? 'success' : credential.status === 'revoked' ? 'default' : 'warning'
-                "
-              >
-                {{ credential.status === 'active' ? '已生效' : credential.status === 'revoked' ? '已撤销' : '待生效' }}
-              </n-tag>
-              <n-space v-if="credential.status !== 'revoked'" :size="8">
-                <n-popconfirm
-                  v-if="credential.status === 'active'"
-                  @positive-click="pendingReplacement && changeCredential(credential, 'rotate', pendingReplacement)"
-                >
-                  <template #trigger>
-                    <n-button size="small" :disabled="Boolean(changingCredentialId) || hasPendingWrite">轮换</n-button>
-                  </template>
-                  {{
-                    pendingReplacement
-                      ? `用待生效凭据 ${pendingReplacement.publicIdentifier || pendingReplacement.id} 替换此凭据？`
-                      : '请先在上方创建一个新凭据（待生效），再来轮换。'
-                  }}
-                </n-popconfirm>
-                <n-popconfirm @positive-click="changeCredential(credential, 'revoke')">
-                  <template #trigger>
-                    <n-button size="small" type="error" :disabled="Boolean(changingCredentialId) || hasPendingWrite">
-                      撤销
-                    </n-button>
-                  </template>
-                  撤销后不可恢复，设备将无法再用此凭据接入。确认撤销？
-                </n-popconfirm>
-              </n-space>
-            </div>
-          </n-list-item>
-        </n-list>
-        <n-empty v-else-if="!listError" description="暂无凭据摘要" />
-      </n-spin>
-      <div v-if="pageCount > 1" class="mt-4 flex items-center justify-end gap-2">
-        <n-button size="small" :disabled="page <= 1 || listLoading" @click="changePage(page - 1)">上一页</n-button>
-        <span>{{ page }} / {{ pageCount }}</span>
-        <n-button size="small" :disabled="page >= pageCount || listLoading" @click="changePage(page + 1)">
-          下一页
-        </n-button>
-      </div>
-    </n-card>
-
     <n-modal v-model:show="showCreatedResult" :mask-closable="false" :closable="false" :close-on-esc="false">
-      <n-card title="凭据创建结果" class="max-w-640px">
-        <n-alert type="warning" :show-icon="false" class="mb-3">
-          新凭据需完成接入配置才能生效；创建操作不会激活设备，也不代表设备已接入。
+      <n-card v-if="createdResult" title="登录信息已保存" class="max-w-640px">
+        <n-alert v-if="createdResult.credential.credential.kind === 'x509'" type="info" class="mb-3">
+          公开证书已保存。设备连接时请使用设备上的证书和私钥。
         </n-alert>
-        <n-descriptions bordered :column="1" size="small">
-          <n-descriptions-item label="凭据 ID">{{ createdResult?.credential.credential.id }}</n-descriptions-item>
-          <n-descriptions-item label="类型">{{ createdResult?.credential.credential.kind }}</n-descriptions-item>
-          <n-descriptions-item label="状态">{{ createdResult?.credential.credential.status }}</n-descriptions-item>
-          <n-descriptions-item label="本次领取窗口截止">{{ createdResult?.credential.expiresAt }}</n-descriptions-item>
-        </n-descriptions>
-        <div v-if="createdResult?.credential.secret" class="native-device-credentials__secret">
-          {{ createdResult.credential.secret }}
-        </div>
-        <p v-else class="native-device-credentials__hint mt-3">此凭据类型不返回秘密内容；公开证书不会包含私钥。</p>
-        <p v-if="createdResult?.credential.secret" class="native-device-credentials__hint mt-3">
-          请保存本次凭据内容。领取窗口截止时间不是凭据的到期时间。
-        </p>
+        <template v-else>
+          <n-alert type="info" class="mb-3">
+            {{
+              currentLogin && currentLogin.id !== createdResult.credential.credential.id
+                ? '请回到列表点「启用新登录信息」，完成更换。'
+                : '设备平台确认下发后，这组登录信息才可用于连接。'
+            }}
+          </n-alert>
+          <MqttLoginFields
+            :kind="createdResult.credential.credential.kind"
+            :public-identifier="createdResult.credential.credential.publicIdentifier"
+            :secret="createdResult.credential.secret"
+          />
+        </template>
         <div class="mt-4 flex justify-end">
-          <n-button type="primary" @click="clearCreatedResult">清除并关闭</n-button>
+          <n-button type="primary" @click="clearCreatedResult">完成</n-button>
         </div>
       </n-card>
     </n-modal>
@@ -501,7 +544,8 @@ onBeforeUnmount(() => {
 <style scoped>
 .native-device-credentials__row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 12px;
 }
@@ -509,14 +553,5 @@ onBeforeUnmount(() => {
 .native-device-credentials__hint {
   color: #666;
   font-size: 12px;
-}
-
-.native-device-credentials__secret {
-  margin-top: 12px;
-  padding: 12px;
-  border-radius: 6px;
-  background: #f5f7fa;
-  overflow-wrap: anywhere;
-  user-select: all;
 }
 </style>

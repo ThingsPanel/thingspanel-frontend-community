@@ -149,7 +149,7 @@ let pendingDeviceUpdate: { etag: string; id: string; key: string; payloadJSON: s
 
 function requestedTabKey() {
   const requested = String(route.query.tab ?? '')
-  return requested === 'automate' || requested === 'give-an-alarm' ? requested : ''
+  return requested === 'join' || requested === 'automate' || requested === 'give-an-alarm' ? requested : ''
 }
 
 function getPreferredTabKey() {

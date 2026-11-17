@@ -45,7 +45,41 @@ export function createNativeDeviceRegistrationAttempt(
     tags: normalizeNativeDeviceTags(input.tags),
     deviceKind: input.deviceKind,
     initialAdministrativeState: 'enabled',
-    ...(input.templateId ? { templateId: input.templateId } : {})
+    ...(input.templateId
+      ? { templateId: input.templateId }
+      : input.deviceKind === 'standalone'
+        ? { directAccess: defaultMQTTAccess() }
+        : {})
   }
   return { payload, key }
+}
+
+function defaultMQTTAccess(): NonNullable<CreateDevice['directAccess']> {
+  return {
+    externalDeviceId: null,
+    access: {
+      mode: 'direct',
+      protocol: 'mqtt',
+      providerId: null,
+      parameters: {},
+      credentialPolicy: { kind: 'none', autoRegister: false },
+      onlinePolicy: { mode: 'transport', timeoutSeconds: 60 },
+      connectionDirection: 'device_to_platform',
+      serviceInstanceId: null
+    }
+  }
+}
+
+export type FirstCredentialKind = 'token' | 'username_password'
+
+export function selectFirstCredentialKind(configuration?: {
+  deviceKind: string
+  access: { mode: string; protocol: string; credentialPolicy: { kind: string } }
+}): FirstCredentialKind | null {
+  if (!configuration) return 'token'
+  const { deviceKind, access } = configuration
+  if (deviceKind !== 'standalone' || access.mode !== 'direct' || access.protocol.toLowerCase() !== 'mqtt') return null
+  const kind = access.credentialPolicy.kind
+  if (kind === 'none') return 'token'
+  return kind === 'token' || kind === 'username_password' ? kind : null
 }

@@ -9,8 +9,10 @@ import { getMarketTemplates, getMarketTemplateDetail, installFromMarket } from '
 import { marketTemplateCompatibility } from '../../config/market-template-compatibility'
 import {
   createNativeDeviceRegistrationAttempt,
+  selectFirstCredentialKind,
   shouldRetainNativeDeviceRegistrationAttempt
 } from './native-device-registration'
+import type { FirstCredentialKind } from './native-device-registration'
 import { $t } from '@/locales'
 import MarketLoginModal from '../../config/modules/market-login-modal.vue'
 import { useMarketAuth } from '../../config/composables/use-market-auth'
@@ -20,7 +22,7 @@ const props = defineProps<{
   initialConfigId?: string
   nextCallback: () => void
   // eslint-disable-next-line no-unused-vars
-  setDeviceCallback: (device: Device) => void
+  setDeviceCallback: (device: Device, credentialKind: FirstCredentialKind | null) => void
 }>()
 const formRef = ref<FormInst | null>(null)
 const message = useMessage()
@@ -36,6 +38,7 @@ const installLoading = ref(false)
 const creating = ref(false)
 const createAttempt = ref<{ payload: CreateDevice; key: string } | null>(null)
 const createOutcomeUnknown = ref(false)
+const firstCredentialKind = ref<FirstCredentialKind | null>(null)
 const confirmedDevice = ref<Device | null>(null)
 const formValue = ref({
   name: '',
@@ -248,7 +251,7 @@ function handleValidateClick(e: MouseEvent) {
   if (installLoading.value || creating.value) return
   if (confirmedDevice.value) {
     try {
-      props.setDeviceCallback(confirmedDevice.value)
+      props.setDeviceCallback(confirmedDevice.value, firstCredentialKind.value)
       props.nextCallback()
     } catch {
       message.warning('设备已登记，但页面暂未切换。请重试查看登记结果。')
@@ -265,6 +268,7 @@ function handleValidateClick(e: MouseEvent) {
         if (!createAttempt.value) {
           const templateId = formValue.value.device_config_id
           const template = templateId ? (await templateNative.get(templateId)).template : null
+          firstCredentialKind.value = selectFirstCredentialKind(template?.configuration)
           createAttempt.value = createNativeDeviceRegistrationAttempt(
             {
               name: formValue.value.name,
@@ -305,7 +309,7 @@ function handleValidateClick(e: MouseEvent) {
       createOutcomeUnknown.value = false
       confirmedDevice.value = createdDevice
       try {
-        props.setDeviceCallback(confirmedDevice.value)
+        props.setDeviceCallback(confirmedDevice.value, firstCredentialKind.value)
         props.nextCallback()
       } catch {
         message.warning('设备已登记，但页面暂未切换。请返回设备列表刷新查看。')
@@ -346,6 +350,9 @@ onMounted(() => {
             @update:value="handleTemplateChange"
           />
         </n-form-item>
+        <p v-if="!selectedTemplateValue" class="mb-4 text-sm text-gray-500">
+          不选模板时，设备默认通过 MQTT 直连，创建后自动生成 MQTT 用户名，密码留空。
+        </p>
         <n-form-item>
           <n-button
             type="primary"
@@ -354,13 +361,7 @@ onMounted(() => {
             :disabled="installLoading || creating"
             @click="handleValidateClick"
           >
-            {{
-              createOutcomeUnknown
-                ? '用原内容重试登记'
-                : confirmedDevice
-                  ? '继续查看登记结果'
-                  : $t('custom.devicePage.saveAndNext')
-            }}
+            {{ createOutcomeUnknown ? '用原内容重试登记' : confirmedDevice ? '继续查看登记结果' : '创建设备' }}
           </n-button>
         </n-form-item>
       </n-form>
