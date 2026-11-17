@@ -843,8 +843,8 @@ const formSize = ref(undefined)
   }
 }
 
-:deep(.list-content-header) {
-  align-items: flex-start;
+.data-table-page-layout :deep(.list-content-header--inline) {
+  align-items: flex-end;
 }
 
 :deep(.list-content-header-left) {
