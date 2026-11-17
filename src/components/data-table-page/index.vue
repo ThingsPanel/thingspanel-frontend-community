@@ -1150,8 +1150,12 @@ const formSize = ref(undefined)
 
 :deep(.item-card.device-card) {
   border-radius: 4px;
-  border-color: var(--n-border-color);
+  border-color: var(--device-card-border, #d8dee8);
   background: var(--n-color);
+}
+
+:global(.dark) .device-card-grid {
+  --device-card-border: #414957;
 }
 
 :deep(.item-card.device-card:hover) {
