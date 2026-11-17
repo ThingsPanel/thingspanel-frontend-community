@@ -426,6 +426,7 @@ onActivated(() => {
 }
 .template-card {
   cursor: pointer;
+  height: 160px;
   border-radius: 4px;
   border: 1px solid #e8ebf0;
   transition:
@@ -441,7 +442,8 @@ onActivated(() => {
   flex-direction: column;
   gap: 8px;
   padding: 14px 16px 16px;
-  min-height: 130px;
+  box-sizing: border-box;
+  height: 100%;
 }
 .card-header {
   display: flex;
