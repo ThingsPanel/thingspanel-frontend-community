@@ -509,7 +509,7 @@ const formSize = ref(undefined)
     :initial-view="'card'"
     :available-views="availableViews"
     :inline-header="true"
-    :stacked-header="true"
+    :stacked-header="false"
     :show-query-button="false"
     :show-reset-button="false"
     :show-add-button="false"
@@ -518,12 +518,17 @@ const formSize = ref(undefined)
     @add-new="handleAddNew"
     @view-change="handleViewChange"
   >
-    <!-- 内容区头部：标题独占一行，下面是完整工具栏 -->
+    <!-- 与设备模板共用头部布局：左侧标题和操作，右侧筛选。 -->
     <template #header-title>
       <div class="data-table-page-header">
         <div class="data-table-page-header__title">
           <h2>{{ props.pageTitle }}</h2>
           <span>{{ total }} {{ props.pageCountLabel || '条' }}</span>
+        </div>
+        <div class="device-filter-primary-actions">
+          <slot name="header-left-before" />
+          <component :is="action.element" v-for="(action, index) in topActions" :key="index"></component>
+          <slot name="search-toolbar-before" />
         </div>
       </div>
     </template>
@@ -531,12 +536,6 @@ const formSize = ref(undefined)
     <template #search-form-content>
       <div class="device-filter-area">
         <div class="device-filter-toolbar">
-          <div class="device-filter-primary-actions">
-            <slot name="header-left-before" />
-            <component :is="action.element" v-for="(action, index) in topActions" :key="index"></component>
-            <slot name="search-toolbar-before" />
-          </div>
-
           <div
             v-for="config in primarySearchConfigs"
             :key="config.key"
@@ -708,47 +707,45 @@ const formSize = ref(undefined)
 
     <!-- 卡片视图 - 使用铃铛图标插槽 -->
     <template #card-view>
-      <n-scrollbar class="device-card-scroll" :size="1">
-        <n-spin :show="loading">
-          <CardGrid class="device-card-grid">
-            <div v-for="item in dataList" :key="item.id">
-              <DevCardItem
-                class="device-card"
-                :title="item.name || 'N/A'"
-                :status-active="item.warn_status === 'Y' || item.is_online === 1"
-                :status-type="item.warn_status === 'Y' ? 'warning' : 'success'"
-                :status-blink="item.warn_status === 'Y'"
-                :status-label="`${$t(connectivityLabel(item))} · ${$t(alarmLabel(item))}`"
-                :footer-text="
-                  item.ts
-                    ? formatDateTime(item.ts) || '--'
-                    : item.runtime_available !== undefined
-                      ? $t(absentTelemetryLabel(item))
-                      : '--'
-                "
-                :subtitle="props.rowSubtitle ? props.rowSubtitle(item) : item.device_config_name || '--'"
-                :hide-footer-left="true"
-                @click-card="() => props.rowClick && props.rowClick(item)"
-              >
-                <template #leading>
-                  <DeviceCover :asset-id="props.rowImageAsset?.(item)" :name="item.name" />
-                </template>
-                <template #subtitle-icon>
-                  <span
-                    class="device-type-icon"
-                    :title="getDeviceTypeLabel(item.device_type)"
-                    :aria-label="getDeviceTypeLabel(item.device_type)"
-                    role="img"
-                  >
-                    <SvgIcon :local-icon="getDeviceIconName(item.device_type)" class="image-icon" />
-                  </span>
-                </template>
-                <template #footer>{{ $t('custom.devicePage.lastReportTime') }}</template>
-              </DevCardItem>
-            </div>
-          </CardGrid>
-        </n-spin>
-      </n-scrollbar>
+      <n-spin :show="loading">
+        <CardGrid class="device-card-grid">
+          <div v-for="item in dataList" :key="item.id">
+            <DevCardItem
+              class="device-card"
+              :title="item.name || 'N/A'"
+              :status-active="item.warn_status === 'Y' || item.is_online === 1"
+              :status-type="item.warn_status === 'Y' ? 'warning' : 'success'"
+              :status-blink="item.warn_status === 'Y'"
+              :status-label="`${$t(connectivityLabel(item))} · ${$t(alarmLabel(item))}`"
+              :footer-text="
+                item.ts
+                  ? formatDateTime(item.ts) || '--'
+                  : item.runtime_available !== undefined
+                    ? $t(absentTelemetryLabel(item))
+                    : '--'
+              "
+              :subtitle="props.rowSubtitle ? props.rowSubtitle(item) : item.device_config_name || '--'"
+              :hide-footer-left="true"
+              @click-card="() => props.rowClick && props.rowClick(item)"
+            >
+              <template #leading>
+                <DeviceCover :asset-id="props.rowImageAsset?.(item)" :name="item.name" />
+              </template>
+              <template #subtitle-icon>
+                <span
+                  class="device-type-icon"
+                  :title="getDeviceTypeLabel(item.device_type)"
+                  :aria-label="getDeviceTypeLabel(item.device_type)"
+                  role="img"
+                >
+                  <SvgIcon :local-icon="getDeviceIconName(item.device_type)" class="image-icon" />
+                </span>
+              </template>
+              <template #footer>{{ $t('custom.devicePage.lastReportTime') }}</template>
+            </DevCardItem>
+          </div>
+        </CardGrid>
+      </n-spin>
     </template>
 
     <!-- 列表视图 -->
@@ -809,7 +806,10 @@ const formSize = ref(undefined)
 
 <style scoped lang="scss">
 .data-table-page-header {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
   min-width: 0;
 }
 
@@ -831,13 +831,13 @@ const formSize = ref(undefined)
     color: var(--text-color);
     font-size: 20px;
     font-weight: 700;
-    line-height: 1.35;
+    line-height: 1.4;
     white-space: nowrap;
   }
 
   span {
     color: var(--text-color-3);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.4;
     white-space: nowrap;
   }
@@ -848,12 +848,21 @@ const formSize = ref(undefined)
 }
 
 :deep(.list-content-header-left) {
-  flex: 1;
   min-width: 0;
+  flex-shrink: 0;
 }
 
-:deep(.list-content-header-right) {
-  padding-top: 2px;
+:deep(.list-content-header-right--inline) {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+:deep(.inline-search-form) {
+  flex: 1;
+  min-width: 0;
 }
 
 .btn-style {
@@ -863,7 +872,6 @@ const formSize = ref(undefined)
 .device-filter-area {
   width: 100%;
   min-width: 0;
-  padding: 2px 0 0;
   container-type: inline-size;
 }
 
@@ -881,6 +889,10 @@ const formSize = ref(undefined)
   flex: 0 0 auto;
   align-items: center;
   gap: 8px;
+
+  :deep(.n-button) {
+    height: 34px;
+  }
 }
 
 .device-filter-field {
@@ -1036,16 +1048,12 @@ const formSize = ref(undefined)
   }
 
   .device-filter-actions {
-    flex: 0 0 100%;
+    flex: 0 0 auto;
     justify-content: flex-end;
   }
 }
 
 @media (max-width: 768px) {
-  .data-table-page-layout :deep(.full-height-card > .n-card__content) {
-    padding: 12px;
-  }
-
   .data-table-page-layout :deep(.list-content-header--stacked) {
     padding-bottom: 12px;
   }
@@ -1129,11 +1137,6 @@ const formSize = ref(undefined)
   padding: 16px;
 }
 
-.device-card-scroll {
-  height: 100%;
-  min-height: 0;
-}
-
 .device-type-icon {
   display: inline-flex;
   align-items: center;
@@ -1176,7 +1179,7 @@ const formSize = ref(undefined)
   grid-template-rows: 1fr auto;
   gap: 12px;
   box-sizing: border-box;
-  padding: 14px;
+  padding: 20px 20px 10px;
 }
 
 :deep(.item-card.device-card .card-leading) {
@@ -1191,11 +1194,6 @@ const formSize = ref(undefined)
 }
 :deep(.item-card.device-card .title-content .n-ellipsis) {
   max-width: 100%;
-}
-:deep(.item-card.device-card .card-title) {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.5;
 }
 :deep(.item-card.device-card .indicator-section) {
   margin-left: 10px;
@@ -1227,7 +1225,6 @@ const formSize = ref(undefined)
   grid-area: 2 / 1 / 3 / -1;
   min-width: 0;
   justify-content: space-between;
-  font-size: 11px;
   color: var(--n-text-color);
 }
 :deep(.item-card.device-card .footer-right) {
@@ -1236,7 +1233,6 @@ const formSize = ref(undefined)
 }
 :deep(.item-card.device-card .footer-text) {
   max-width: 100%;
-  font-size: 11px;
   opacity: 0.65;
 }
 
