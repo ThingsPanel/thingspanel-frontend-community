@@ -1134,11 +1134,6 @@ const formSize = ref(undefined)
   min-height: 0;
 }
 
-.device-card-grid.thingspanel-card-grid {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
-  gap: 12px;
-}
-
 .device-type-icon {
   display: inline-flex;
   align-items: center;
