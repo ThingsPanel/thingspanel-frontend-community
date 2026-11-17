@@ -31,6 +31,7 @@ import type { SearchConfig } from '@/components/data-table-page/index.vue'
 import AddDevicesStep1 from '@/views/device/manage/modules/add-devices-step1.vue'
 import AddDevicesServer1 from '@/views/device/manage/modules/add-devices-server1.vue'
 import NativeDeviceRegistrationResult from '@/views/device/manage/modules/native-device-registration-result.vue'
+import type { FirstCredentialKind } from './modules/native-device-registration'
 import type { Device } from '@/service/api/device-native'
 import DeviceReadingsCompact from '@/views/device/manage/modules/device-readings-compact.vue'
 import { useRouterPush } from '@/hooks/common/router'
@@ -45,6 +46,7 @@ interface ServiceIds {
 const addKey = ref()
 const deviceNumber = ref()
 const configOptions = ref<any[]>([])
+const firstCredentialKind = ref<FirstCredentialKind | null>(null)
 const registeredDevice = ref<Device | null>(null)
 const tablePageRef = ref()
 const buttonDisabled = ref(true)
@@ -167,7 +169,8 @@ const subscribeDeviceStatus = () => {
   }
 }
 
-const onNativeDeviceRegistered = (device: Device) => {
+const onNativeDeviceRegistered = (device: Device, credentialKind: FirstCredentialKind | null) => {
+  firstCredentialKind.value = credentialKind
   registeredDevice.value = device
 }
 const returnToNativeDeviceList = () => {
@@ -177,7 +180,7 @@ const openNativeDeviceDetails = () => {
   if (!registeredDevice.value) return
   const device = registeredDevice.value
   active.value = false
-  goDeviceDetails(device)
+  routerPushByKey('device_details', { query: { d_id: device.id, tab: 'join' } })
 }
 const getDeviceGroupOptions = async () => {
   // 将原始数据转换为树形结构
@@ -1015,6 +1018,7 @@ const toggleGroupPanel = () => {
           <div v-else-if="registeredDevice">
             <NativeDeviceRegistrationResult
               :device="registeredDevice"
+              :credential-kind="firstCredentialKind"
               :on-back="returnToNativeDeviceList"
               :on-details="openNativeDeviceDetails"
             />

@@ -3,6 +3,7 @@ import { test } from 'node:test'
 import {
   createNativeDeviceRegistrationAttempt,
   normalizeNativeDeviceTags,
+  selectFirstCredentialKind,
   shouldRetainNativeDeviceRegistrationAttempt
 } from './native-device-registration'
 
@@ -32,7 +33,20 @@ test('native device registration defaults to standalone when no template is sele
     name: '独立设备',
     tags: [],
     deviceKind: 'standalone',
-    initialAdministrativeState: 'enabled'
+    initialAdministrativeState: 'enabled',
+    directAccess: {
+      externalDeviceId: null,
+      access: {
+        mode: 'direct',
+        protocol: 'mqtt',
+        providerId: null,
+        parameters: {},
+        credentialPolicy: { kind: 'none', autoRegister: false },
+        onlinePolicy: { mode: 'transport', timeoutSeconds: 60 },
+        connectionDirection: 'device_to_platform',
+        serviceInstanceId: null
+      }
+    }
   })
   assert.equal('templateId' in attempt.payload, false)
 })
@@ -51,4 +65,23 @@ test('registration retries retain the frozen key after unknown outcomes and conf
   assert.equal(shouldRetainNativeDeviceRegistrationAttempt(429, true), true)
   assert.equal(shouldRetainNativeDeviceRegistrationAttempt(409, false), true)
   assert.equal(shouldRetainNativeDeviceRegistrationAttempt(422, false), false)
+})
+
+test('first credentials are issued only for ordinary MQTT devices and follow the selected policy', () => {
+  const access = { mode: 'direct', protocol: 'MQTT', credentialPolicy: { kind: 'username_password' } }
+  assert.equal(selectFirstCredentialKind(), 'token')
+  assert.equal(selectFirstCredentialKind({ deviceKind: 'standalone', access }), 'username_password')
+  assert.equal(
+    selectFirstCredentialKind({ deviceKind: 'standalone', access: { ...access, credentialPolicy: { kind: 'none' } } }),
+    'token'
+  )
+  assert.equal(selectFirstCredentialKind({ deviceKind: 'gateway', access }), null)
+  assert.equal(selectFirstCredentialKind({ deviceKind: 'standalone', access: { ...access, protocol: 'http' } }), null)
+  assert.equal(
+    selectFirstCredentialKind({
+      deviceKind: 'standalone',
+      access: { ...access, credentialPolicy: { kind: 'x509' } }
+    }),
+    null
+  )
 })
