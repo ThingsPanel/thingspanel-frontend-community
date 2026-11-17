@@ -3,7 +3,14 @@ import 'gridstack/dist/gridstack.css'
 import 'gridstack/dist/gridstack-extra.css'
 import './plugins/assets'
 import { useSysSettingStore } from '@/store/modules/sys-setting'
-import { setupDayjs, setupIconifyOffline, setupLoading, setupNProgress } from './plugins'
+import {
+  finishLoading,
+  showLoadingError,
+  setupDayjs,
+  setupIconifyOffline,
+  setupLoading,
+  setupNProgress
+} from './plugins'
 import { setupStore } from './store'
 import { router, setupRouter } from './router'
 import { i18n, setupI18n } from './locales'
@@ -178,6 +185,7 @@ async function setupApp() {
   }
 
   app.mount('#app')
+  finishLoading()
 }
 
-setupApp()
+setupApp().catch(showLoadingError)
