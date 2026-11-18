@@ -21,6 +21,7 @@ const checkLabels: Record<string, [string, string]> = {
   CONFIGURATION_PENDING: ['接入配置待生效', 'Access configuration pending'],
   CONFIGURATION_SET: ['接入配置已设置', 'Access configuration set'],
   RUNTIME_UNAVAILABLE: ['连接状态暂不可读取', 'Connectivity unavailable'],
+  CONNECTIVITY_UNKNOWN: ['暂无近期连接记录，设备状态未知', 'Device connectivity unknown (no recent evidence)'],
   DEVICE_ONLINE: ['设备在线', 'Device online'],
   DEVICE_OFFLINE: ['设备离线', 'Device offline'],
   NO_INGESTION_STATS: ['暂无完整上报统计', 'Complete ingestion statistics unavailable'],
