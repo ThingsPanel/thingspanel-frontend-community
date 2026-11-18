@@ -74,6 +74,7 @@ export interface LegacyCondition {
 
 /** 场景编辑页的表单。 */
 export interface SceneForm {
+  version?: number
   id?: string
   name: string | null
   description?: string | null
@@ -82,6 +83,7 @@ export interface SceneForm {
 
 /** 联动编辑页的表单。 */
 export interface LinkageForm {
+  version?: number
   id?: string
   name: string | null
   description?: string | null
@@ -677,7 +679,7 @@ export function linkageFormToDefinition(form: LinkageForm): MappingResult<RuleDe
         )
       )
     }
-    targets = { device_ids: uniqueSorted([...uniqueCondDevices, ...uniqueActionDevices]) }
+    targets = { device_ids: uniqueActionDevices.length ? uniqueActionDevices : uniqueCondDevices }
     // 条件点名了具体设备：整条联动只跑一次，不按设备拆。
     scope = 'rule'
   }
@@ -685,6 +687,9 @@ export function linkageFormToDefinition(form: LinkageForm): MappingResult<RuleDe
   return {
     value: {
       kind: 'automation',
+      trigger_scope: uniqueCondConfigs.length
+        ? { device_config_ids: uniqueCondConfigs }
+        : { device_ids: uniqueCondDevices },
       mode: 'single',
       scope,
       ...(text(form.description) ? { description: text(form.description) } : {}),

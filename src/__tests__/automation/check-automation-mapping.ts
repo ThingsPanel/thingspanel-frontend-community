@@ -194,7 +194,8 @@ check('联动：单个设备触发，条件写死设备，动作写死目标，�
   assert.equal(value.scope, 'rule')
   assert.equal(value.trigger.groups[0].conditions[0].source, 'device')
   assert.equal(value.trigger.groups[0].conditions[0].device_id, 'dev-a')
-  assert.deepEqual(value.targets.device_ids, ['dev-a', 'dev-b'])
+  assert.deepEqual(value.targets.device_ids, ['dev-b'])
+  assert.deepEqual(value.trigger_scope?.device_ids, ['dev-a'])
   assert.equal(value.steps[0].device_ref, 'dev-b')
 })
 

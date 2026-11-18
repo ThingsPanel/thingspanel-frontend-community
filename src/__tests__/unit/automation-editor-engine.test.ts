@@ -1,71 +1,50 @@
-import { defineComponent } from 'vue'
-import { flushPromises, mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import EngineEditor from '@/views/automation/modules/engine-editor.vue'
+import { beforeEach, expect, it, vi } from 'vitest'
+import { sceneInfo, sceneEdit } from '@/service/api/automation-native'
+import { sceneFormToDefinition } from '@/service/api/automation-legacy-mapping'
+import { getRule, previewRuleChange, updateRule } from '@/service/api/automation-rules'
 
-const { mode, legacyMounted } = vi.hoisted(() => ({ mode: vi.fn(), legacyMounted: vi.fn() }))
-vi.mock('@/service/api/automation-runtime', () => ({ getAutomationMode: mode }))
-vi.mock('@/views/automation/rule-edit/index.vue', () => ({
-  default: { props: ['initialKind'], template: '<div data-test="native">{{ initialKind }}</div>' }
+vi.mock('@/service/api/automation-rules', async importOriginal => ({
+  ...(await importOriginal<typeof import('@/service/api/automation-rules')>()),
+  getRule: vi.fn(),
+  previewRuleChange: vi.fn(),
+  updateRule: vi.fn()
 }))
-const Legacy = defineComponent({ setup: legacyMounted, template: '<div data-test="legacy" />' })
-function open(kind: 'scene' | 'automation' = 'scene') {
-  return mount(EngineEditor, {
-    props: { kind },
-    slots: { legacy: Legacy },
-    global: {
-      stubs: {
-        NSpin: { template: '<div><slot /></div>' },
-        NAlert: { template: '<div><slot /><slot name="action" /></div>' },
-        NButton: { template: '<button><slot /></button>' }
-      }
+const form = {
+  name: '原场景',
+  actions: [
+    {
+      action_type: '10',
+      action_target: 'dev-a',
+      action_param_type: 'attributes',
+      action_param: 'power',
+      action_value: '{"power":true}'
     }
-  })
+  ]
 }
-
-describe('automation editor uses the confirmed backend engine', () => {
-  beforeEach(() => {
-    mode.mockReset()
-    legacyMounted.mockReset()
-  })
-  it.each(['scene', 'automation'] as const)(
-    'opens the native %s editor without mounting the lossy legacy form',
-    async kind => {
-      let resolve!: (value: string) => void
-      mode.mockReturnValue(
-        new Promise(r => {
-          resolve = r
-        })
-      )
-      const wrapper = open(kind)
-      expect(legacyMounted).not.toHaveBeenCalled()
-      expect(wrapper.find('[data-test="native"]').exists()).toBe(false)
-      resolve('native')
-      await flushPromises()
-      expect(wrapper.get('[data-test="native"]').text()).toBe(kind)
-      expect(legacyMounted).not.toHaveBeenCalled()
-      wrapper.unmount()
-    }
-  )
-  it('preserves the legacy editor when the backend explicitly selects legacy', async () => {
-    mode.mockResolvedValue('legacy')
-    const wrapper = open()
-    await flushPromises()
-    expect(wrapper.find('[data-test="legacy"]').exists()).toBe(true)
-    expect(wrapper.find('[data-test="native"]').exists()).toBe(false)
-    wrapper.unmount()
-  })
-  it('blocks both editors when discovery fails and allows an explicit retry', async () => {
-    mode.mockRejectedValueOnce(new Error('状态查询失败')).mockResolvedValueOnce('native')
-    const wrapper = open()
-    await flushPromises()
-    expect(wrapper.text()).toContain('状态查询失败')
-    expect(legacyMounted).not.toHaveBeenCalled()
-    expect(wrapper.find('[data-test="native"]').exists()).toBe(false)
-    await wrapper.get('button').trigger('click')
-    await flushPromises()
-    expect(wrapper.get('[data-test="native"]').text()).toBe('scene')
-    expect(legacyMounted).not.toHaveBeenCalled()
-    wrapper.unmount()
-  })
+const definition = sceneFormToDefinition(form).value
+beforeEach(() => {
+  vi.clearAllMocks()
+  vi.mocked(getRule).mockResolvedValue({
+    id: 'scene-a',
+    name: form.name,
+    enabled: true,
+    version: 3,
+    definition
+  } as Awaited<ReturnType<typeof getRule>>)
+})
+it('preserves the loaded scene definition on rename and submits its preview token', async () => {
+  const loaded = await sceneInfo('scene-a')
+  vi.mocked(previewRuleChange).mockResolvedValue({
+    token: 'token',
+    scope: { deviceCount: 0 },
+    requiresConfirmation: false
+  } as Awaited<ReturnType<typeof previewRuleChange>>)
+  const result = await sceneEdit({ ...loaded.data.info, actions: loaded.data.actions, name: '新名称' })
+  expect(result.error).toBeNull()
+  expect(updateRule).toHaveBeenCalledWith('scene-a', { name: '新名称', version: 3, definition, previewToken: 'token' })
+})
+it('rejects a stale form before saving', async () => {
+  const result = await sceneEdit({ ...form, id: 'scene-a', version: 2 })
+  expect(result.error?.message).toContain('规则已更新')
+  expect(updateRule).not.toHaveBeenCalled()
 })

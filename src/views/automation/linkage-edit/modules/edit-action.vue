@@ -11,7 +11,7 @@ import {
   deviceListAll,
   deviceMetricsMenu,
   sceneGet
-} from '@/service/api/automation-api'
+} from '@/service/api/automation-native'
 import { $t } from '@/locales'
 
 const route = useRoute()

@@ -23,7 +23,8 @@ import {
   listRuns,
   runRule,
   setRuleEnabled,
-  updateRule
+  updateRule,
+  previewRuleChange
 } from './automation-rules'
 import type { Rule } from './automation-rules'
 import {
@@ -174,7 +175,10 @@ export async function sceneInfo(id: string) {
   try {
     const rule = await getRule(id)
     const form = definitionToSceneForm(rule.definition, rule.name, rule.id)
-    return ok({ info: { id: rule.id, name: rule.name, description: form.description }, actions: form.actions })
+    return ok({
+      info: { version: rule.version, id: rule.id, name: rule.name, description: form.description },
+      actions: form.actions
+    })
   } catch (error) {
     return failed<unknown>(error)
   }
@@ -192,17 +196,46 @@ export async function sceneAdd(form: SceneForm) {
   }
 }
 
+async function saveEditedRule(current: Rule, form: SceneForm | LinkageForm, edited: Rule['definition']) {
+  if (current.version !== form.version) throw new Error('规则已更新，请重新打开后再保存')
+  const original = current.definition
+  const before =
+    'trigger_condition_groups' in form
+      ? linkageFormToDefinition(definitionToLinkageForm(original, current.name, current.enabled)).value
+      : sceneFormToDefinition(definitionToSceneForm(original, current.name)).value
+  const definition = { ...original }
+  for (const key of Object.keys(edited) as (keyof typeof edited)[]) {
+    if (JSON.stringify(before[key]) === JSON.stringify(edited[key])) continue
+    if (key === 'steps' && original.steps.some(step => !['action', 'alarm', 'activate_scene'].includes(step.kind))) {
+      throw new Error('该规则含有此表单无法编辑的动作')
+    }
+    Object.assign(definition, { [key]: edited[key] })
+  }
+  if (before.description !== edited.description) definition.description = edited.description
+  const preview = await previewRuleChange(current.id, definition)
+  if (preview.issues?.length) throw new Error(preview.issues.map(item => item.message).join('，'))
+  if (!preview.token || !preview.scope) throw new Error('无法确认规则影响范围')
+  if (
+    (preview.requiresConfirmation || preview.scope.deviceCount > 0 || preview.bindingIssues?.length) &&
+    !window.confirm(`本次修改影响 ${preview.scope.deviceCount} 台设备，确认保存？`)
+  ) {
+    throw new Error('已取消保存')
+  }
+  return updateRule(current.id, {
+    name: form.name ?? '',
+    definition,
+    version: current.version,
+    previewToken: preview.token
+  })
+}
+
 /** 修改场景。 */
 export async function sceneEdit(form: SceneForm & { id: string }) {
   try {
     const mapped = sceneFormToDefinition(form)
     if (mapped.issues.length > 0) throw issuesToError(mapped.issues)
     const current = await getRule(form.id)
-    const rule = await updateRule(form.id, {
-      name: form.name ?? '',
-      definition: mapped.value,
-      version: current.version
-    })
+    const rule = await saveEditedRule(current, form, mapped.value)
     return ok(rule)
   } catch (error) {
     return failed<Rule>(error)
@@ -282,7 +315,7 @@ export async function sceneAutomationsInfo(id: string) {
   try {
     const rule = await getRule(id)
     const form = definitionToLinkageForm(rule.definition, rule.name, rule.enabled, rule.id)
-    return ok(form)
+    return ok({ ...form, version: rule.version })
   } catch (error) {
     return failed<LinkageForm>(error)
   }
@@ -310,11 +343,7 @@ export async function sceneAutomationsEdit(form: LinkageForm & { id: string }) {
     const mapped = linkageFormToDefinition(form)
     if (mapped.issues.length > 0) throw issuesToError(mapped.issues)
     const current = await getRule(form.id)
-    const rule = await updateRule(form.id, {
-      name: form.name ?? '',
-      definition: mapped.value,
-      version: current.version
-    })
+    const rule = await saveEditedRule(current, form, mapped.value)
     // 开关单独一次请求：改定义不等于改开关，混在一起会让「保存」顺手打开一条
     // 用户特意停用的规则。
     if (rule.enabled !== (form.enabled !== 'N')) {
