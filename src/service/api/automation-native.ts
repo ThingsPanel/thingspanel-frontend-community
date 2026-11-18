@@ -176,7 +176,13 @@ export async function sceneInfo(id: string) {
     const rule = await getRule(id)
     const form = definitionToSceneForm(rule.definition, rule.name, rule.id)
     return ok({
-      info: { version: rule.version, id: rule.id, name: rule.name, description: form.description },
+      info: {
+        version: rule.version,
+        id: rule.id,
+        name: rule.name,
+        description: form.description,
+        notification_device_ids: form.notification_device_ids
+      },
       actions: form.actions
     })
   } catch (error) {
@@ -206,7 +212,10 @@ async function saveEditedRule(current: Rule, form: SceneForm | LinkageForm, edit
   const definition = { ...original }
   for (const key of Object.keys(edited) as (keyof typeof edited)[]) {
     if (JSON.stringify(before[key]) === JSON.stringify(edited[key])) continue
-    if (key === 'steps' && original.steps.some(step => !['action', 'alarm', 'activate_scene'].includes(step.kind))) {
+    if (
+      key === 'steps' &&
+      original.steps.some(step => !['action', 'alarm', 'activate_scene', 'notify'].includes(step.kind) || !!step.guard)
+    ) {
       throw new Error('该规则含有此表单无法编辑的动作')
     }
     Object.assign(definition, { [key]: edited[key] })

@@ -1,4 +1,10 @@
 {
+  "common.notificationDeviceScope": "Scene device scope",
+  "common.notificationPolicyUnavailable": "Current policy unavailable",
+  "common.notificationPolicyLoadFailed": "Could not load notification policies",
+  "common.notificationContent": "Message",
+  "common.notificationPolicy": "Notification policy",
+  "common.sendNotification": "Send notification",
   "common.serviceConfi": "Service Configuration",
   "common.config": "Config",
   "common.back": "Back",

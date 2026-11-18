@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import NotificationActionFields from '@/views/automation/modules/notification-action-fields.vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { NButton, NCard, NFlex, useDialog, useMessage } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
@@ -39,8 +40,14 @@ const configForm = ref({
   id: '',
   name: '',
   description: '',
+  notification_device_ids: [] as string[],
   actions: [] as any
 })
+const needsNotificationDevices = computed(
+  () =>
+    configForm.value.actions.some((action: any) => action.actionType === 'notify') &&
+    !configForm.value.actions.some((action: any) => action.actionType === '1')
+)
 // 场景表单规则
 const configFormRules = ref({
   name: {
@@ -91,6 +98,7 @@ const wideSelectMenuProps = {
 
 // 动作选项
 const actionOptions = ref([
+  { label: $t('common.sendNotification'), value: 'notify', disabled: false },
   {
     label: $t('common.operateDevice'),
     value: '1',
@@ -119,6 +127,8 @@ const actionChange = (actionGroupItem: any, actionGroupIndex: any, data: any) =>
   actionGroupItem.actionInstructList = []
   actionGroupItem.action_type = null
   actionGroupItem.action_target = null
+  actionGroupItem.notification_revision = undefined
+  actionGroupItem.action_value = null
   if (data === '1') {
     // eslint-disable-next-line array-callback-return
     actionOptions.value.map(item => {
@@ -590,6 +600,25 @@ onMounted(() => {
             rows="1"
           />
         </NFormItem>
+        <NFormItem
+          v-if="needsNotificationDevices"
+          :label="$t('common.notificationDeviceScope')"
+          path="notification_device_ids"
+          :rule="{ type: 'array', required: true, min: 1, message: $t('generate.select-device'), trigger: 'change' }"
+        >
+          <NSelect
+            v-model:value="configForm.notification_device_ids"
+            :options="deviceOptions"
+            multiple
+            remote
+            filterable
+            value-field="id"
+            label-field="name"
+            class="max-w-100"
+            :loading="loadingSelect"
+            @search="name => getDevice(null, name)"
+          />
+        </NFormItem>
         <NFormItem :label="$t('generate.action')" required class="w-100%" :show-feedback="false">
           <NFlex vertical class="scene-actions mt-1 w-100%">
             <NFlex
@@ -865,6 +894,13 @@ onMounted(() => {
                   </NFormItem>
                 </NFlex>
               </template>
+              <NotificationActionFields
+                v-if="actionGroupItem.actionType === 'notify'"
+                v-model:policy="actionGroupItem.action_target"
+                v-model:revision="actionGroupItem.notification_revision"
+                v-model:content="actionGroupItem.action_value"
+                :path="`actions[${actionGroupIndex}].action_target`"
+              />
               <template v-if="actionGroupItem.actionType === '30'">
                 <NFlex class="ml-6 w-auto">
                   <NFormItem

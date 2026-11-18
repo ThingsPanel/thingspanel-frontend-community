@@ -247,17 +247,25 @@ check('原生联动的 self 和 target 分别回显触发设备和执行设备',
   assert.equal(form.actions[0].action_target, 'dev-b')
 })
 
-check('联动：单个设备和整类设备混在触发里，报错', () => {
-  const form: LinkageForm = {
-    name: '混',
-    trigger_condition_groups: [[condition(), condition({ trigger_conditions_type: '11', trigger_source: 'cfg-1' })]],
-    actions: [deviceAction('dev-1', 'switch', '1')]
-  }
-  const { issues } = linkageFormToDefinition(form)
-  assert.ok(issues.some(item => item.code === 'mixed_trigger_sources'))
+check('联动：混合条件按组限定触发设备', () => {
+  const fixed = condition()
+  const template = condition({ trigger_conditions_type: '11', trigger_source: 'cfg-1' })
+  const { value, issues } = linkageFormToDefinition({
+    name: '混合条件',
+    trigger_condition_groups: [[fixed, template], [fixed]],
+    actions: [deviceAction('dev-b', 'switch', '1')]
+  })
+  assert.deepEqual(issues, [])
+  assert.deepEqual(value.trigger_scope, { device_config_ids: ['cfg-1'], device_ids: ['dev-a'] })
+  assert.deepEqual(
+    value.trigger.groups.map(group => group.trigger_scope),
+    [{ device_config_ids: ['cfg-1'] }, { device_ids: ['dev-a'] }]
+  )
+  const restored = definitionToLinkageForm(value, '混合条件', true)
+  assert.deepEqual(linkageFormToDefinition(restored).value, value)
 })
 
-check('联动：时间范围属于排程，报错并说清楚去哪建', () => {
+check('联动：时间范围需要设备条件，完整配置回显后保持时区', () => {
   const form: LinkageForm = {
     name: '时间段',
     trigger_condition_groups: [
@@ -266,9 +274,20 @@ check('联动：时间范围属于排程，报错并说清楚去哪建', () => {
     actions: [deviceAction('dev-1', 'switch', '1')]
   }
   const { issues } = linkageFormToDefinition(form)
-  const found = issues.find(item => item.code === 'time_range_needs_schedule')
-  assert.ok(found)
-  assert.ok(found!.message.includes('排程'))
+  assert.ok(issues.some(item => item.code === 'window_without_signal'))
+  form.trigger_condition_groups[0].push(condition())
+  const mapped = linkageFormToDefinition(form)
+  assert.deepEqual(mapped.issues, [])
+  assert.deepEqual(mapped.value.trigger.groups[0].time_windows, [
+    {
+      weekdays: [1, 2, 3, 4, 5, 6, 7],
+      start_second: 28800,
+      end_second: 64800,
+      utc_offset_minutes: 480
+    }
+  ])
+  const rebuilt = definitionToLinkageForm(mapped.value, '时间段', true)
+  assert.equal(rebuilt.trigger_condition_groups[0][1].trigger_value, form.trigger_condition_groups[0][0].trigger_value)
 })
 
 check('联动：在线/离线变成 online=1/0，不用旧比较符', () => {
@@ -401,6 +420,44 @@ check('联动：一条触发条件都转不了时不留空组', () => {
 })
 
 // ---------------------------------------------------------------------------
+
+check('通知策略、正文、版本及动作顺序可在场景和联动中往返', () => {
+  const notification = {
+    action_type: 'notify',
+    action_target: 'native-group',
+    action_value: '温度超限',
+    notification_revision: 3
+  }
+  const form = { name: '邮件通知', actions: [notification, deviceAction('device-a', 'switch', '1'), notification] }
+  const scene = sceneFormToDefinition(form)
+  assert.deepEqual(scene.issues, [])
+  const expected = {
+    kind: 'notify',
+    notification_policy_id: 'native-group',
+    value: '温度超限',
+    notification_revision: 3
+  }
+  assert.deepEqual(scene.value.steps[0], expected)
+  assert.deepEqual(
+    scene.value.steps.map(step => step.kind),
+    ['notify', 'action', 'notify']
+  )
+  assert.deepEqual(sceneFormToDefinition(definitionToSceneForm(scene.value, form.name)).value.steps, scene.value.steps)
+  const linkage = linkageFormToDefinition({ ...form, trigger_condition_groups: [[condition()]] })
+  assert.deepEqual(linkage.issues, [])
+  assert.deepEqual(linkage.value.steps, scene.value.steps)
+  assert.deepEqual(
+    linkageFormToDefinition(definitionToLinkageForm(linkage.value, form.name, true)).value.steps,
+    scene.value.steps
+  )
+  const onlyNotify = sceneFormToDefinition({
+    name: form.name,
+    actions: [notification],
+    notification_device_ids: ['sensor']
+  })
+  assert.deepEqual(onlyNotify.issues, [])
+  assert.deepEqual(definitionToSceneForm(onlyNotify.value, form.name).notification_device_ids, ['sensor'])
+})
 
 if (failures.length > 0) {
   console.error(`automation mapping checks: ${passed} passed, ${failures.length} failed`)

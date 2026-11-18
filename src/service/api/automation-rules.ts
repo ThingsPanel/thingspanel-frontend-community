@@ -177,7 +177,16 @@ export interface Condition {
   event_match?: { fields: { path: string; operator: string; value: string }[] }
 }
 
+export interface TimeWindow {
+  weekdays: number[]
+  start_second: number
+  end_second: number
+  utc_offset_minutes: number
+}
+
 export interface ConditionGroup {
+  trigger_scope?: { device_config_ids?: string[]; device_ids?: string[] }
+  time_windows?: TimeWindow[]
   id?: string
   conditions: Condition[]
 }
@@ -196,6 +205,7 @@ export interface Step {
   wait?: string
   alarm_policy_id?: string
   notification_policy_id?: string
+  notification_revision?: number
   continue_on_failure?: boolean
   then?: Step[]
   else?: Step[]

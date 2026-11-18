@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NotificationActionFields from '@/views/automation/modules/notification-action-fields.vue'
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { type FormInst, NButton, NCard, NFlex, useMessage } from 'naive-ui'
@@ -97,6 +98,7 @@ const loadingSelect = ref(false)
 
 // 动作选项
 const actionOptions = ref([
+  { label: $t('common.sendNotification'), value: 'notify', disabled: false },
   {
     label: $t('common.operateDevice'),
     value: '1',
@@ -125,6 +127,8 @@ const actionChange = (actionGroupItem: any, data: any) => {
   actionGroupItem.actionInstructList = []
   actionGroupItem.action_type = null
   actionGroupItem.action_target = null
+  actionGroupItem.notification_revision = undefined
+  actionGroupItem.action_value = null
   if (data === '1') {
     const instruction = JSON.parse(JSON.stringify(instructListItem.value))
     instruction.action_type = props.conditionsType || null
@@ -696,6 +700,13 @@ onMounted(() => {
                   </NFormItem>
                 </NFlex>
               </template>
+              <NotificationActionFields
+                v-if="actionGroupItem.actionType === 'notify'"
+                v-model:policy="actionGroupItem.action_target"
+                v-model:revision="actionGroupItem.notification_revision"
+                v-model:content="actionGroupItem.action_value"
+                :path="`actionGroups[${actionGroupIndex}].action_target`"
+              />
               <template v-if="actionGroupItem.actionType === '30'">
                 <!--          执行动作是触发告警->添加指令--->
                 <NFlex class="ml-6">

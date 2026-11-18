@@ -1,4 +1,10 @@
 {
+  "common.notificationDeviceScope": "场景设备范围",
+  "common.notificationPolicyUnavailable": "当前策略不可用",
+  "common.notificationPolicyLoadFailed": "通知策略加载失败",
+  "common.notificationContent": "通知内容",
+  "common.notificationPolicy": "通知策略",
+  "common.sendNotification": "发送通知",
   "common.serviceConfi": "服务配置",
   "common.config": "配置",
   "common.back": "返回",

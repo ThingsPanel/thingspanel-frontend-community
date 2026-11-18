@@ -12,7 +12,7 @@
  * 问题用户当场就能改。
  */
 
-import type { Condition, ConditionGroup, RuleDefinition, Step } from './automation-rules'
+import type { Condition, ConditionGroup, RuleDefinition, Step, TimeWindow } from './automation-rules'
 
 export interface MappingIssue {
   field: string
@@ -35,6 +35,7 @@ export const LegacyActionType = {
   deviceConfig: '11',
   activateScene: '20',
   raiseAlarm: '30',
+  notify: 'notify',
   service: '40'
 } as const
 
@@ -53,6 +54,7 @@ export interface LegacyAction {
   action_param?: string | null
   action_value?: string | null
   remark?: string | null
+  notification_revision?: number
   continue_on_failure?: boolean
 }
 
@@ -68,6 +70,7 @@ export interface LegacyCondition {
 
 /** 场景编辑页的表单。 */
 export interface SceneForm {
+  notification_device_ids?: string[]
   version?: number
   id?: string
   name: string | null
@@ -264,6 +267,17 @@ export function sceneFormToDefinition(form: SceneForm): MappingResult<RuleDefini
         return
       }
 
+      case LegacyActionType.notify:
+        if (!target) issues.push(issue(field, 'notification_policy_missing', '请选择通知策略'))
+        else
+          steps.push({
+            kind: 'notify',
+            notification_policy_id: target,
+            value: action.action_value ?? '',
+            ...(action.notification_revision ? { notification_revision: action.notification_revision } : {}),
+            ...(action.continue_on_failure ? { continue_on_failure: true } : {})
+          })
+        return
       case LegacyActionType.raiseAlarm: {
         if (!target) {
           issues.push(issue(field, 'alarm_policy_missing', `第 ${index + 1} 个动作没有选择要触发的告警`))
@@ -288,6 +302,9 @@ export function sceneFormToDefinition(form: SceneForm): MappingResult<RuleDefini
     }
   })
 
+  if (!deviceIDs.length && !configIDs.length && steps.some(step => step.kind === 'notify')) {
+    deviceIDs.push(...(form.notification_device_ids ?? []))
+  }
   const uniqueDevices = uniqueSorted(deviceIDs)
   const uniqueConfigs = uniqueSorted(configIDs)
 
@@ -339,6 +356,16 @@ function formActionTarget(definition: RuleDefinition, step: Step) {
   }
 }
 
+function notificationAction(step: Step): LegacyAction {
+  return {
+    action_type: LegacyActionType.notify,
+    action_target: text(step.notification_policy_id),
+    action_value: step.value ?? '',
+    notification_revision: step.notification_revision,
+    continue_on_failure: step.continue_on_failure
+  }
+}
+
 /** 规则定义 → 场景表单，用于编辑页回显。 */
 export function definitionToSceneForm(definition: RuleDefinition, name: string, id = ''): SceneForm {
   const actions: LegacyAction[] = []
@@ -354,6 +381,10 @@ export function definitionToSceneForm(definition: RuleDefinition, name: string, 
       action.action_value = encodeLegacyActionValue(action, step.value ?? '')
       if (step.continue_on_failure) action.continue_on_failure = true
       actions.push(action)
+      return
+    }
+    if (step.kind === 'notify') {
+      actions.push(notificationAction(step))
       return
     }
     if (step.kind === 'activate_scene') {
@@ -385,6 +416,13 @@ export function definitionToSceneForm(definition: RuleDefinition, name: string, 
     id,
     name,
     description: definition.description ?? '',
+    ...(actions.some(action => action.action_type === LegacyActionType.notify) &&
+    !actions.some(
+      action =>
+        action.action_type === LegacyActionType.singleDevice || action.action_type === LegacyActionType.deviceConfig
+    )
+      ? { notification_device_ids: definition.targets?.device_ids ?? [] }
+      : {}),
     actions
   }
 }
@@ -393,7 +431,13 @@ export function definitionToSceneForm(definition: RuleDefinition, name: string, 
 export function sceneStepsBeyondForm(definition: RuleDefinition): string[] {
   const extra: string[] = []
   ;(definition.steps ?? []).forEach((step, index) => {
-    if (step.kind === 'action' || step.kind === 'activate_scene' || step.kind === 'alarm') return
+    if (
+      step.kind === 'action' ||
+      step.kind === 'activate_scene' ||
+      step.kind === 'alarm' ||
+      (step.kind === 'notify' && !step.guard)
+    )
+      return
     extra.push(`第 ${index + 1} 步（${step.kind}）`)
   })
   return extra
@@ -422,11 +466,37 @@ function conditionSignal(paramType: unknown): Condition['signal'] | null {
   }
 }
 
-/**
- * 一条旧触发条件 → 新条件。
- *
- * 设备事件可按名称或字段过滤。时间范围不属于设备信号条件。
- */
+function parseWindow(value: string): TimeWindow | null {
+  const [days, start, end, ...rest] = value.split('|')
+  const clock = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)([+-])(\d{2}):([0-5]\d)$/
+  const a = clock.exec(start)
+  const b = clock.exec(end)
+  if (rest.length || !/^[1-7]+$/.test(days) || !a || !b || start.slice(8) !== end.slice(8)) return null
+  const seconds = (m: RegExpExecArray) => Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3])
+  const offset = (Number(a[5]) * 60 + Number(a[6])) * (a[4] === '-' ? -1 : 1)
+  if (Math.abs(offset) > 840 || seconds(a) === seconds(b)) return null
+  return {
+    weekdays: [...days].map(Number),
+    start_second: seconds(a),
+    end_second: seconds(b),
+    utc_offset_minutes: offset
+  }
+}
+
+function windowCondition(window: TimeWindow): LegacyCondition {
+  const pad = (n: number) => String(Math.floor(n)).padStart(2, '0')
+  const minutes = Math.abs(window.utc_offset_minutes)
+  const offset = (window.utc_offset_minutes < 0 ? '-' : '+') + pad(minutes / 60) + ':' + pad(minutes % 60)
+  const clock = (s: number) => [s / 3600, (s / 60) % 60, s % 60].map(pad).join(':') + offset
+  return {
+    trigger_conditions_type: LegacyConditionType.timeRange,
+    trigger_source: '',
+    trigger_param: '',
+    trigger_param_type: '',
+    trigger_value: [window.weekdays.join(''), clock(window.start_second), clock(window.end_second)].join('|')
+  }
+}
+
 function buildCondition(
   raw: LegacyCondition,
   index: number,
@@ -435,15 +505,6 @@ function buildCondition(
   const field = `trigger_condition_groups[${groupIndex}][${index}]`
   const type = text(raw.trigger_conditions_type)
 
-  if (type === LegacyConditionType.timeRange) {
-    return {
-      issue: issue(
-        field,
-        'time_range_needs_schedule',
-        '「时间范围」在新模型里属于排程，不是触发条件；请到排程里建一条定时规则'
-      )
-    }
-  }
   if (type !== LegacyConditionType.singleDevice && type !== LegacyConditionType.deviceConfig) {
     return { issue: issue(field, 'unknown_condition_type', `触发条件类型 ${type} 无法识别`) }
   }
@@ -588,6 +649,17 @@ function buildSteps(
         }
         steps.push({ kind: 'activate_scene', value: target })
         return
+      case LegacyActionType.notify:
+        if (!target) issues.push(issue(field, 'notification_policy_missing', '请选择通知策略'))
+        else
+          steps.push({
+            kind: 'notify',
+            notification_policy_id: target,
+            value: action.action_value ?? '',
+            ...(action.notification_revision ? { notification_revision: action.notification_revision } : {}),
+            ...(action.continue_on_failure ? { continue_on_failure: true } : {})
+          })
+        return
       case LegacyActionType.raiseAlarm:
         if (!target) {
           issues.push(issue(field, 'alarm_policy_missing', `第 ${index + 1} 个动作没有选择告警`))
@@ -631,7 +703,21 @@ export function linkageFormToDefinition(form: LinkageForm): MappingResult<RuleDe
 
   form.trigger_condition_groups.forEach((group, groupIndex) => {
     const conditions: Condition[] = []
+    const windows: TimeWindow[] = []
     group.forEach((raw, index) => {
+      if (raw.trigger_conditions_type === LegacyConditionType.timeRange) {
+        const window = parseWindow(text(raw.trigger_value))
+        if (window) windows.push(window)
+        else
+          issues.push(
+            issue(
+              `trigger_condition_groups[${groupIndex}][${index}]`,
+              'invalid_time_window',
+              '请选择星期和不同的起止时间'
+            )
+          )
+        return
+      }
       const built = buildCondition(raw, index, groupIndex)
       if (built.issue) {
         issues.push(built.issue)
@@ -644,7 +730,9 @@ export function linkageFormToDefinition(form: LinkageForm): MappingResult<RuleDe
       else conditionDevices.push(text(raw.trigger_source))
     })
     // 整组都转不了就不留空组：空组会被当成「无条件通过」。
-    if (conditions.length > 0) groups.push({ conditions })
+    if (conditions.length > 0) groups.push({ conditions, ...(windows.length ? { time_windows: windows } : {}) })
+    else if (windows.length)
+      issues.push(issue(`trigger_condition_groups[${groupIndex}]`, 'window_without_signal', '时间范围需要同组设备条件'))
   })
 
   if (groups.length === 0 && issues.length === 0) {
@@ -665,15 +753,14 @@ export function linkageFormToDefinition(form: LinkageForm): MappingResult<RuleDe
   let targets: RuleDefinition['targets'] = {}
   let scope: RuleDefinition['scope'] = 'device'
 
-  if (uniqueCondConfigs.length > 0 && uniqueCondDevices.length > 0) {
-    issues.push(
-      issue(
-        'trigger_condition_groups',
-        'mixed_trigger_sources',
-        '触发条件同时用了「单个设备」和「单类设备」。新模型里这是两种目标集，不能放进同一条联动，请拆开'
-      )
-    )
-  } else if (uniqueCondConfigs.length > 1) {
+  if (uniqueCondConfigs.length === 1 && uniqueCondDevices.length) {
+    for (const group of groups) {
+      group.trigger_scope = group.conditions.some(c => c.source === 'self')
+        ? { device_config_ids: uniqueCondConfigs }
+        : { device_ids: uniqueSorted(group.conditions.map(c => text(c.device_id))) }
+    }
+  }
+  if (uniqueCondConfigs.length > 1) {
     issues.push(
       issue(
         'trigger_condition_groups',
@@ -720,7 +807,10 @@ export function linkageFormToDefinition(form: LinkageForm): MappingResult<RuleDe
     value: {
       kind: 'automation',
       trigger_scope: uniqueCondConfigs.length
-        ? { device_config_ids: uniqueCondConfigs }
+        ? {
+            device_config_ids: uniqueCondConfigs,
+            ...(uniqueCondDevices.length ? { device_ids: uniqueCondDevices } : {})
+          }
         : { device_ids: uniqueCondDevices },
       mode: 'single',
       scope,
@@ -746,43 +836,45 @@ export function definitionToLinkageForm(
   const triggerConfigID = subject ? subject.device_config_ids?.[0] : configID
   const triggerDeviceID = subject?.device_ids?.length === 1 ? subject.device_ids[0] : ''
   const groups: LegacyCondition[][] = (definition.trigger?.groups ?? []).map(group =>
-    (group.conditions ?? []).map(condition => {
-      const raw: LegacyCondition = {
-        trigger_conditions_type:
-          condition.source === 'self' && triggerConfigID
-            ? LegacyConditionType.deviceConfig
-            : LegacyConditionType.singleDevice,
-        trigger_source: condition.source === 'self' ? triggerConfigID || triggerDeviceID : text(condition.device_id),
-        trigger_param_type: condition.signal,
-        trigger_param: condition.key,
-        trigger_operator: condition.operator,
-        trigger_value: condition.value
-      }
-      if (condition.signal === 'event' && condition.event_match) {
-        raw.trigger_value = JSON.stringify({
-          match_mode: 'field',
-          conditions: condition.event_match.fields.map(({ path, operator, value }) => ({
-            field: path,
-            operator,
-            value:
-              operator === 'between'
-                ? splitBetweenBounds(value)
-                : operator === 'in'
-                  ? value.split(',')
-                  : operator === 'exists'
-                    ? value === 'true' || value === '1'
-                    : value
-          }))
-        })
-      }
-      if (condition.signal === 'status') {
-        raw.trigger_param = condition.value === '1' ? 'ON-LINE' : 'OFF-LINE'
-        raw.trigger_param_type = 'status'
-        raw.trigger_operator = null
-        raw.trigger_value = null
-      }
-      return raw
-    })
+    (group.conditions ?? [])
+      .map(condition => {
+        const raw: LegacyCondition = {
+          trigger_conditions_type:
+            condition.source === 'self' && triggerConfigID
+              ? LegacyConditionType.deviceConfig
+              : LegacyConditionType.singleDevice,
+          trigger_source: condition.source === 'self' ? triggerConfigID || triggerDeviceID : text(condition.device_id),
+          trigger_param_type: condition.signal,
+          trigger_param: condition.key,
+          trigger_operator: condition.operator,
+          trigger_value: condition.value
+        }
+        if (condition.signal === 'event' && condition.event_match) {
+          raw.trigger_value = JSON.stringify({
+            match_mode: 'field',
+            conditions: condition.event_match.fields.map(({ path, operator, value }) => ({
+              field: path,
+              operator,
+              value:
+                operator === 'between'
+                  ? splitBetweenBounds(value)
+                  : operator === 'in'
+                    ? value.split(',')
+                    : operator === 'exists'
+                      ? value === 'true' || value === '1'
+                      : value
+            }))
+          })
+        }
+        if (condition.signal === 'status') {
+          raw.trigger_param = condition.value === '1' ? 'ON-LINE' : 'OFF-LINE'
+          raw.trigger_param_type = 'status'
+          raw.trigger_operator = null
+          raw.trigger_value = null
+        }
+        return raw
+      })
+      .concat((group.time_windows ?? []).map(windowCondition))
   )
 
   const actions: LegacyAction[] = (definition.steps ?? []).flatMap(step => {
@@ -797,6 +889,7 @@ export function definitionToLinkageForm(
       if (step.continue_on_failure) action.continue_on_failure = true
       return [action]
     }
+    if (step.kind === 'notify') return [notificationAction(step)]
     if (step.kind === 'activate_scene') {
       return [
         {
@@ -836,7 +929,13 @@ export function definitionToLinkageForm(
 export function linkageBeyondForm(definition: RuleDefinition): string[] {
   const extra: string[] = []
   ;(definition.steps ?? []).forEach((step, index) => {
-    if (step.kind === 'action' || step.kind === 'activate_scene' || step.kind === 'alarm') return
+    if (
+      step.kind === 'action' ||
+      step.kind === 'activate_scene' ||
+      step.kind === 'alarm' ||
+      (step.kind === 'notify' && !step.guard)
+    )
+      return
     extra.push(`第 ${index + 1} 步（${step.kind}）`)
   })
   if (definition.recovery) extra.push('恢复条件')

@@ -79,7 +79,7 @@ const submitData = async () => {
   const isAlarmError =
     configForm.value.trigger_condition_groups.some((item: any) => {
       return item.some(subItem => {
-        return subItem.ifType === '2'
+        return ['20', '21'].includes(subItem.trigger_conditions_type)
       })
     }) &&
     configForm.value.actions.some((item: any) => {
@@ -196,14 +196,13 @@ const handleIfData = () => {
         }
       }
       if (ifItem.trigger_conditions_type === '22') {
-        let trigger_value = ''
-        // eslint-disable-next-line array-callback-return
-        ifItem.weekChoseValue.map((item: any) => {
-          trigger_value += item
-        })
-        trigger_value += `|${moment(ifItem.startTimeValue).format('HH:mm:ssZ')}`
-        trigger_value += `|${moment(ifItem.endTimeValue).format('HH:mm:ssZ')}`
-        ifItem.trigger_value = trigger_value
+        const offset = ifItem.windowOffset || moment().format('Z')
+        const clock = (value: number) => moment(value).format('HH:mm:ss') + offset
+        ifItem.trigger_value = [
+          ifItem.weekChoseValue.join(''),
+          clock(ifItem.startTimeValue),
+          clock(ifItem.endTimeValue)
+        ].join('|')
       }
       if (ifItem.trigger_conditions_type === '20') {
         ifItem.execution_time = moment(ifItem.onceTimeValue).format()
@@ -318,10 +317,10 @@ const echoIfData = (ifData: any) => {
         ifItem.ifType = '2'
         const weekChoseValue = ifItem.trigger_value.split('|')[0]
         ifItem.weekChoseValue = weekChoseValue.split('')
-        const startTimeValue = `${String(moment().format('yyyy-MM-DD'))} ${ifItem.trigger_value.split('|')[1]}`
-        const endTimeValue = `${String(moment().format('yyyy-MM-DD'))} ${ifItem.trigger_value.split('|')[2]}`
-        ifItem.startTimeValue = moment(startTimeValue).valueOf()
-        ifItem.endTimeValue = moment(endTimeValue).valueOf()
+        const [, start, end] = ifItem.trigger_value.split('|')
+        ifItem.windowOffset = start.slice(8)
+        ifItem.startTimeValue = moment(start.slice(0, 8), 'HH:mm:ss').valueOf()
+        ifItem.endTimeValue = moment(end.slice(0, 8), 'HH:mm:ss').valueOf()
       }
       if (ifItem.trigger_conditions_type === '20') {
         ifItem.ifType = '2'

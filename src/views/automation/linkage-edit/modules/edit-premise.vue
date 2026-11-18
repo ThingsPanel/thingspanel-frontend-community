@@ -5,6 +5,7 @@ import { NButton, NFlex, useMessage } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
 import { IosAlert, IosRefresh } from '@vicons/ionicons4'
 import { repeat } from 'seemly'
+import moment from 'moment'
 import { deviceGroupTree } from '@/service/api'
 import {
   configMetricsConditionMenu,
@@ -91,6 +92,7 @@ const premiseFormRules = ref({
     message: $t('common.select')
   },
   weekChoseValue: {
+    type: 'array' as const,
     required: true,
     message: $t('common.select')
   },
@@ -107,10 +109,12 @@ const premiseFormRules = ref({
     message: $t('common.select')
   },
   startTimeValue: {
+    type: 'number' as const,
     required: true,
     message: $t('common.select')
   },
   endTimeValue: {
+    type: 'number' as const,
     required: true,
     message: $t('common.select')
   },
@@ -122,11 +126,9 @@ const premiseFormRules = ref({
 })
 
 /** if分组的数据类型 */
-// Native linkage rules accept device conditions. Schedules use a separate contract.
-const deviceConditionType = computed(() => [{ label: $t('common.deviceConditions'), value: '1' }])
-const existingTimeConditionType = computed(() => [
-  ...deviceConditionType.value,
-  { label: $t('common.timeConditions'), value: '2', disabled: true }
+const conditionTypes = computed(() => [
+  { label: $t('common.deviceConditions'), value: '1' },
+  { label: $t('common.timeConditions'), value: '2' }
 ])
 
 // 设备条件类型下选项2使用的下拉
@@ -423,25 +425,7 @@ const message = useMessage()
 }
 
 // 时间条件类型下选项2使用的下拉
-const getTimeConditionOptions = ifGroup => {
-  return [
-    {
-      label: $t('common.single'),
-      value: '20',
-      disabled: ifGroup.some(item => item.ifType === '1')
-    },
-    {
-      label: $t('common.repeat'),
-
-      value: '21',
-      disabled: ifGroup.some(item => item.ifType === '1')
-    },
-    {
-      label: $t('common.timeFrame'),
-      value: '22'
-    }
-  ]
-}
+const timeConditionOptions = computed(() => [{ label: $t('common.timeFrame'), value: '22' }])
 // const timeConditionOptions = ref([
 //   {
 //     label: $t('common.single'),
@@ -950,7 +934,7 @@ watch(locale, () => {
               >
                 <NSelect
                   v-model:value="ifItem.ifType"
-                  :options="ifItem.ifType === '2' ? existingTimeConditionType : deviceConditionType"
+                  :options="conditionTypes"
                   :placeholder="$t('common.select')"
                   @update:value="ifItem.trigger_conditions_type = null"
                 />
@@ -1229,7 +1213,7 @@ watch(locale, () => {
                 >
                   <NSelect
                     v-model:value="ifItem.trigger_conditions_type"
-                    :options="getTimeConditionOptions(ifGroupItem)"
+                    :options="timeConditionOptions"
                     :placeholder="$t('common.select')"
                     @update:value="ifItem.task_type = null"
                   />
@@ -1553,6 +1537,7 @@ watch(locale, () => {
                       format="HH:mm:ss"
                     />
                   </NFormItem>
+                  <span class="self-center">UTC{{ ifItem.windowOffset || moment().format('Z') }}</span>
                 </template>
               </NFlex>
               <NFlex v-if="ifItem.ifType === '3'" class="flex-1">
