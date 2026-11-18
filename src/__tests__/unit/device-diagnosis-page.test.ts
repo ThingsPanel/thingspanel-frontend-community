@@ -4,8 +4,9 @@ import { createI18n } from 'vue-i18n'
 import DeviceDiagnosis from '@/views/device/details/modules/device-diagnosis.vue'
 
 const deviceId = '7c1bdb51-842a-4baa-8f58-4cb27f7132fd'
-const { diagnostics, debug } = vi.hoisted(() => ({
+const { diagnostics, debug, cumulative } = vi.hoisted(() => ({
   diagnostics: { get: vi.fn() },
+  cumulative: vi.fn(),
   debug: { listLogs: vi.fn(), createSession: vi.fn(), stopSession: vi.fn() }
 }))
 
@@ -17,6 +18,7 @@ vi.mock('@/service/api/device-debug-native', () => ({
   deviceDebugNative: debug,
   parseStoredDebugSession: () => null
 }))
+vi.mock('@/service/api/device-runtime-cumulative-statistics', () => ({ readCumulativeDeviceStatistics: cumulative }))
 vi.mock('@/locales', () => ({ $t: (key: string) => key }))
 
 const incomplete = { success: null, total: null, successRate: null, complete: false }
@@ -62,6 +64,7 @@ async function mountPage(locale = 'zh-CN') {
 describe('device diagnosis page (native diagnostics)', () => {
   beforeEach(() => {
     diagnostics.get.mockReset()
+    cumulative.mockReset().mockResolvedValue(null)
     debug.listLogs.mockReset().mockResolvedValue({ items: [], page: 1, pageSize: 100, total: 0 })
   })
 
@@ -72,7 +75,7 @@ describe('device diagnosis page (native diagnostics)', () => {
     const text = wrapper.text()
     expect(text).toContain('设备资料可读取')
     expect(text).toContain('设备离线')
-    expect(text).toContain('暂无完整上报统计')
+    expect(text).not.toContain('暂无完整上报统计')
     expect(text.match(/--/g)?.length).toBeGreaterThanOrEqual(3)
     expect(text).not.toMatch(/\b100(\.0)?%/)
     expect(text).not.toContain('0.0%')
@@ -112,14 +115,24 @@ describe('device diagnosis page (native diagnostics)', () => {
     expect(wrapper.text()).toContain('runtime refused the command')
   })
 
-  it('formats a complete window as a percentage with its counts', async () => {
-    const complete = { success: 9, total: 10, successRate: 0.9, complete: true }
-    diagnostics.get.mockResolvedValue(
-      diagnostic({ stats: { uplink: complete, downlink: incomplete, storage: incomplete } })
-    )
+  it('formats Redis lifetime statistics independently from the Encore window', async () => {
+    diagnostics.get.mockResolvedValue(diagnostic())
+    cumulative.mockResolvedValue({
+      uplink: { success: 9, total: 10, successRate: 0.9, complete: true },
+      downlink: { success: 3, total: 4, successRate: 0.75, complete: true },
+      storage: { success: 4, total: 4, successRate: 1, complete: true }
+    })
     const wrapper = await mountPage()
-    expect(wrapper.text()).toContain('90.0%')
-    expect(wrapper.text()).toContain('9/10条')
+    try {
+      expect(cumulative).toHaveBeenCalledWith(deviceId)
+      expect(wrapper.text()).toContain('custom.device_details.cumulativeStatistics')
+      expect(wrapper.text()).toContain('90.0%')
+      expect(wrapper.text()).toContain('9 / 10')
+      expect(wrapper.text()).toContain('75.0%')
+      expect(wrapper.text()).toContain('100.0%')
+    } finally {
+      wrapper.unmount()
+    }
   })
 
   it('shows the error and does not invent numbers when diagnostics are unavailable', async () => {
@@ -127,5 +140,17 @@ describe('device diagnosis page (native diagnostics)', () => {
     const wrapper = await mountPage()
     expect(wrapper.text()).toContain('诊断服务不可用')
     expect(wrapper.text()).not.toMatch(/\b100(\.0)?%/)
+  })
+
+  it('shows a debug log read error separately from an empty log list', async () => {
+    diagnostics.get.mockResolvedValue(diagnostic())
+    debug.listLogs.mockRejectedValue(new Error('runtime unavailable'))
+    const wrapper = await mountPage()
+    try {
+      expect(wrapper.text()).toContain('custom.device_details.debugLogReadError')
+      expect(wrapper.text()).not.toContain('custom.device_details.debugLogEmpty')
+    } finally {
+      wrapper.unmount()
+    }
   })
 })

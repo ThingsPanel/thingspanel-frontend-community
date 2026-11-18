@@ -7,10 +7,12 @@ import { $t } from '@/locales'
 import { Refresh, HelpCircleOutline } from '@vicons/ionicons5'
 import { NDataTable, NEmpty, NTag } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
-import { counterView, deviceDiagnosticsNative } from '@/service/api/device-diagnostics-native'
-import type { DiagnosticCheck } from '@/service/api/device-diagnostics-native'
+import { deviceDiagnosticsNative } from '@/service/api/device-diagnostics-native'
+import type { DiagnosticCheck, DiagnosticCounter } from '@/service/api/device-diagnostics-native'
 import { deviceDebugNative, parseStoredDebugSession } from '@/service/api/device-debug-native'
 import { newIdempotencyKey } from '@/service/api/device-write-attempt'
+import { readCumulativeDeviceStatistics } from '@/service/api/device-runtime-cumulative-statistics'
+import type { CumulativeDeviceStatistics } from '@/service/api/device-runtime-cumulative-statistics'
 
 const { locale } = useI18n()
 const checkLabels: Record<string, [string, string]> = {
@@ -54,17 +56,25 @@ const props = defineProps<{
   id: string
 }>()
 
-// 统计数据（运行时没有完整窗口时显示“--”）
-const counters = ref({
-  uplink: counterView({ success: null, total: null, successRate: null, complete: false }),
-  downlink: counterView({ success: null, total: null, successRate: null, complete: false }),
-  storage: counterView({ success: null, total: null, successRate: null, complete: false })
-})
+const counters = ref<CumulativeDeviceStatistics | null>(null)
+
+function displayRate(counter: DiagnosticCounter | undefined) {
+  return counter?.successRate == null ? '--' : (counter.successRate * 100).toFixed(1) + '%'
+}
+
+function displayCount(counter: DiagnosticCounter | undefined) {
+  if (!counter?.complete || counter.total == null || counter.success == null) {
+    return $t('custom.device_details.cumulativeStatisticsUnavailable')
+  }
+  if (counter.total === 0) return $t('custom.device_details.cumulativeStatisticsEmpty')
+  return counter.success + ' / ' + counter.total
+}
 
 // 失败记录表格数据
 const failureRecords = ref<FailureRecord[]>([])
 const diagnosticChecks = ref<DiagnosticCheck[]>([])
 const diagnosticError = ref('')
+let diagnosticsRequest = 0
 const failuresTruncated = ref(false)
 
 const tableThemeOverrides = {
@@ -129,16 +139,18 @@ const columns: DataTableColumns<FailureRecord> = [
 
 // 获取诊断数据：统计缺口以“--”显示，不补 0 或 100%
 const fetchDiagnostics = async () => {
+  const deviceId = props.id
+  const request = ++diagnosticsRequest
+  const current = () => request === diagnosticsRequest && deviceId === props.id
+  void readCumulativeDeviceStatistics(deviceId).then(stats => {
+    if (current()) counters.value = stats
+  })
   try {
-    const data = await deviceDiagnosticsNative.get(props.id, { recentFailureLimit: 20 })
+    const data = await deviceDiagnosticsNative.get(deviceId, { recentFailureLimit: 20 })
+    if (!current()) return
     diagnosticError.value = ''
-    diagnosticChecks.value = data.checks
+    diagnosticChecks.value = data.checks.filter(check => check.code !== 'NO_INGESTION_STATS')
     failuresTruncated.value = data.recentFailuresTruncated
-    counters.value = {
-      uplink: counterView(data.stats.uplink),
-      downlink: counterView(data.stats.downlink),
-      storage: counterView(data.stats.storage)
-    }
     failureRecords.value = data.recentFailures.map(failure => ({
       timestamp: failure.timestamp,
       direction: failure.direction === 'downlink' ? 'downlink' : 'uplink',
@@ -146,6 +158,7 @@ const fetchDiagnostics = async () => {
       error: failure.message
     }))
   } catch (error) {
+    if (!current()) return
     diagnosticError.value = error instanceof Error ? error.message : '诊断读取失败'
   }
 }
@@ -154,11 +167,15 @@ const fetchDiagnostics = async () => {
 const refresh = () => {
   fetchDiagnostics()
   getLogStatus()
+  void fetchLogs()
 }
 
 // 日志相关
 const logEnabled = ref(false)
 const debugLogs = ref<string[]>([])
+const debugLogError = ref(false)
+const debugLogLoading = ref(false)
+const debugModeChanging = ref(false)
 let logTimer: NodeJS.Timeout | null = null
 const logContainerRef = ref<HTMLElement | null>(null)
 
@@ -184,13 +201,17 @@ function writeStoredSession(value: { id: string; expiresAt: string } | null) {
   }
 }
 
-const getLogStatus = async () => {
+const getLogStatus = () => {
   activeSession = readStoredSession()
   logEnabled.value = activeSession !== null
+  if (logEnabled.value) startLogPolling()
+  else stopLogPolling()
 }
 
 // 切换调试会话
 const handleLogSwitch = async (value: boolean) => {
+  if (debugModeChanging.value) return
+  debugModeChanging.value = true
   const action = value ? 'start' : 'stop'
   // 结果未知（没有 HTTP 状态）后再次点击，沿用同一个幂等键重试，避免重复开启。
   const key = pendingKey?.action === action ? pendingKey.key : newIdempotencyKey()
@@ -213,17 +234,24 @@ const handleLogSwitch = async (value: boolean) => {
       logEnabled.value = false
     }
     pendingKey = null
+    getLogStatus()
+    void fetchLogs()
   } catch (e) {
     if (typeof (e as { status?: unknown }).status === 'number') pendingKey = null
     window.$message?.error(e instanceof Error ? e.message : '调试会话切换失败')
     logEnabled.value = !value
+  } finally {
+    debugModeChanging.value = false
   }
 }
 
 // 获取日志
 const fetchLogs = async () => {
+  if (debugLogLoading.value) return
+  debugLogLoading.value = true
   try {
     const page = await deviceDebugNative.listLogs(props.id, { page: 1, pageSize: 100 })
+    debugLogError.value = false
     if (page.items.length) {
       // 倒序排列，最新的在下面，符合控制台习惯
       debugLogs.value = [...page.items].reverse().map(item => {
@@ -239,16 +267,20 @@ const fetchLogs = async () => {
         logContainerRef.value.scrollTop = logContainerRef.value.scrollHeight
       }
     })
-  } catch (e) {
-    console.error(e)
+  } catch {
+    debugLogError.value = true
+  } finally {
+    debugLogLoading.value = false
   }
 }
 
 // 开始轮询日志
 const startLogPolling = () => {
   if (logTimer) return
-  fetchLogs() // 立即执行一次
-  logTimer = setInterval(fetchLogs, 3000) // 每3秒查询一次
+  logTimer = setInterval(() => {
+    getLogStatus()
+    if (logEnabled.value) void fetchLogs()
+  }, 3000)
 }
 
 // 停止轮询日志
@@ -262,10 +294,11 @@ const stopLogPolling = () => {
 onMounted(() => {
   fetchDiagnostics()
   getLogStatus()
-  startLogPolling()
+  void fetchLogs()
 })
 
 onUnmounted(() => {
+  diagnosticsRequest++
   stopLogPolling()
 })
 </script>
@@ -275,7 +308,7 @@ onUnmounted(() => {
     <!-- 统计概览部分 -->
     <div class="mb-4">
       <div class="flex items-center justify-between">
-        <div class="text-18px">{{ $t('custom.device_details.statisticsOverview') }}</div>
+        <div class="text-18px">{{ $t('custom.device_details.cumulativeStatistics') }}</div>
         <NButton :bordered="false" @click="refresh">
           <NIcon size="18">
             <Refresh />
@@ -283,9 +316,6 @@ onUnmounted(() => {
           {{ $t('common.refresh') }}
         </NButton>
       </div>
-      <!-- <div class="text-14px text-gray-500">
-        {{ $t('custom.device_details.statisticsRange') }}
-      </div> -->
       <NAlert v-if="diagnosticError" type="warning" :show-icon="false" class="mt-4">{{ diagnosticError }}</NAlert>
       <NFlex v-if="diagnosticChecks.length" :gap="8" class="mt-4" wrap>
         <NTag
@@ -298,13 +328,12 @@ onUnmounted(() => {
         </NTag>
       </NFlex>
       <NFlex :gap="16" class="mt-4">
-        <!-- 上行成功率卡片 -->
         <NCard class="flex-1" :title="$t('custom.device_details.uplinkSuccessRate')">
           <NFlex vertical :gap="8">
             <NText type="info" class="text-28px font-bold">
-              {{ counters.uplink.rate === null ? '--' : counters.uplink.rate + '%' }}
+              {{ displayRate(counters?.uplink) }}
             </NText>
-            <NText :depth="2" class="text-14px">{{ counters.uplink.detail }}</NText>
+            <NText :depth="2" class="text-14px">{{ displayCount(counters?.uplink) }}</NText>
           </NFlex>
         </NCard>
 
@@ -312,10 +341,10 @@ onUnmounted(() => {
         <NCard class="flex-1" :title="$t('custom.device_details.downlinkSuccessRate')">
           <NFlex vertical :gap="8">
             <NText type="success" class="text-28px font-bold">
-              {{ counters.downlink.rate === null ? '--' : counters.downlink.rate + '%' }}
+              {{ displayRate(counters?.downlink) }}
             </NText>
             <NText :depth="2" class="text-14px">
-              {{ counters.downlink.detail }}
+              {{ displayCount(counters?.downlink) }}
             </NText>
           </NFlex>
         </NCard>
@@ -324,10 +353,10 @@ onUnmounted(() => {
         <NCard class="flex-1" :title="$t('custom.device_details.storageSuccessRate')">
           <NFlex vertical :gap="8">
             <NText type="warning" class="text-28px font-bold">
-              {{ counters.storage.rate === null ? '--' : counters.storage.rate + '%' }}
+              {{ displayRate(counters?.storage) }}
             </NText>
             <NText :depth="2" class="text-14px">
-              {{ counters.storage.detail }}
+              {{ displayCount(counters?.storage) }}
             </NText>
           </NFlex>
         </NCard>
@@ -367,20 +396,20 @@ onUnmounted(() => {
     <!-- 设备调试日志部分 -->
     <div class="mt-4">
       <div class="flex items-center justify-between mb-4">
-        <div class="text-18px">设备调试日志</div>
+        <div class="text-18px">{{ $t('custom.device_details.debugLogTitle') }}</div>
         <div class="flex items-center gap-2">
           <NTooltip trigger="hover">
             <template #trigger>
               <div class="flex items-center gap-1 cursor-help">
-                <span>调试模式</span>
+                <span>{{ $t('custom.device_details.debugMode') }}</span>
                 <NIcon size="14" class="text-gray-400">
                   <HelpCircleOutline />
                 </NIcon>
               </div>
             </template>
-            开启后，系统将记录该设备的通信动作与结果（不含报文内容）。开关只记住本浏览器开启的会话。
+            {{ $t('custom.device_details.debugModeHelp') }}
           </NTooltip>
-          <NSwitch :value="logEnabled" @update:value="handleLogSwitch" />
+          <NSwitch :value="logEnabled" :loading="debugModeChanging" @update:value="handleLogSwitch" />
         </div>
       </div>
 
@@ -388,7 +417,10 @@ onUnmounted(() => {
         ref="logContainerRef"
         class="bg-[#1e1e1e] text-[#d4d4d4] font-mono p-4 rounded h-[400px] overflow-auto whitespace-pre-wrap break-all text-xs"
       >
-        <div v-if="debugLogs.length === 0" class="text-center text-gray-500 py-10">暂无日志...</div>
+        <div v-if="debugLogError" class="mb-2 text-amber-400">{{ $t('custom.device_details.debugLogReadError') }}</div>
+        <div v-else-if="!debugLogLoading && debugLogs.length === 0" class="text-center text-gray-500 py-10">
+          {{ $t(logEnabled ? 'custom.device_details.debugLogWaiting' : 'custom.device_details.debugLogEmpty') }}
+        </div>
         <div
           v-for="(log, index) in debugLogs"
           :key="index"

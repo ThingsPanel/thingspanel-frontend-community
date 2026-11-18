@@ -548,11 +548,6 @@ export const deviceStatusHistory = async (params: {
   return await request.get<any>(`/device/status/history`, { params })
 }
 
-/** 获取设备诊断信息 */
-export const deviceDiagnostics = async (deviceId: string) => {
-  return await request.get<any>(`/devices/${deviceId}/diagnostics`)
-}
-
 export interface TopicMappingPayload {
   device_config_id: string
   name: string
@@ -578,19 +573,4 @@ export const updateTopicMapping = async (id: string | number, data: Partial<Topi
 
 export const deleteTopicMapping = async (id: string | number) => {
   return await request.delete<any>(`/device/topic-mappings/${id}`)
-}
-
-/** 设备调试日志开关状态查询 */
-export const getDeviceDebugStatus = async (deviceId: string) => {
-  return await request.get<any>(`/device/${deviceId}/debug/status`)
-}
-
-/** 设备调试日志开关 */
-export const setDeviceDebugStatus = async (deviceId: string, data: { enabled: boolean }) => {
-  return await request.post<any>(`/device/${deviceId}/debug`, data)
-}
-
-/** 设备调试日志查询 */
-export const getDeviceDebugLogs = async (deviceId: string, params?: { limit?: number; offset?: number }) => {
-  return await request.get<any>(`/device/${deviceId}/debug/logs`, { params })
 }
