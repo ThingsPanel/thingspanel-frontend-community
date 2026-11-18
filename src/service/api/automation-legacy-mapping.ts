@@ -325,6 +325,7 @@ export function sceneFormToDefinition(form: SceneForm): MappingResult<RuleDefini
 /** 规则定义 → 场景表单，用于编辑页回显。 */
 export function definitionToSceneForm(definition: RuleDefinition, name: string, id = ''): SceneForm {
   const configID = definition.targets?.device_config_ids?.[0] ?? ''
+  const singleTarget = definition.targets?.device_ids?.length === 1 ? definition.targets.device_ids[0] : ''
   const actions: LegacyAction[] = []
 
   ;(definition.steps ?? []).forEach(step => {
@@ -332,7 +333,7 @@ export function definitionToSceneForm(definition: RuleDefinition, name: string, 
       const isConfig = step.device_ref === CONFIG_FANOUT_REF || (!step.device_ref && !!configID)
       const action: LegacyAction = {
         action_type: isConfig ? LegacyActionType.deviceConfig : LegacyActionType.singleDevice,
-        action_target: isConfig ? configID : text(step.device_ref),
+        action_target: isConfig ? configID : text(step.device_ref || singleTarget),
         action_param_type: step.action ?? 'telemetry',
         action_param: step.identifier ?? '',
         action_value: ''

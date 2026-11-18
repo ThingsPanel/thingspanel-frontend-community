@@ -74,6 +74,12 @@ check('联动：无等待必须发送合法的零时长，不能发送空字符�
   assert.equal(JSON.parse(JSON.stringify(value)).trigger.for, '0s')
 })
 
+check('手动场景的命令继承唯一目标设备时回显该设备', () => {
+  const { value } = sceneFormToDefinition({ name: 'QA', actions: [deviceAction('dev-a', 'switch', '1')] })
+  delete value.steps[0].device_ref
+  assert.equal(definitionToSceneForm(value, 'QA').actions[0].action_target, 'dev-a')
+})
+
 check('场景：单台设备的动作，目标集就是那台设备', () => {
   const form: SceneForm = { name: '开灯', actions: [deviceAction('dev-1', 'switch', '1')] }
   const { value, issues } = sceneFormToDefinition(form)
