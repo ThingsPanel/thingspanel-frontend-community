@@ -2,6 +2,7 @@
 import dayjs from 'dayjs'
 import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue'
 import { deviceCommandNative } from '@/service/api/device-command-native'
+import { commandDataPub, getCommandDataSetLogs } from '@/service/api/device'
 import {
   commandRowsFromReceipts,
   createCommandSubmitter,
@@ -13,17 +14,17 @@ import { $t } from '@/locales'
 import { computed, h, ref, watch } from 'vue'
 import { NButton, NPopconfirm } from 'naive-ui'
 import {
-  deviceBindingRequiresNativeModel,
   hasNativeDeviceBinding,
   nativeCommandOptions,
   resolveDeviceNativeModel
 } from '@/views/device/native-model-consumption'
+import { controlLogStatus } from './public/control-log-status'
 const props = defineProps<{
   id: string
   deviceData?: Record<string, any>
 }>()
 
-const nativeCommandsResolved = ref(false)
+const hasModel = computed(() => hasNativeDeviceBinding(props.deviceData?.device_config))
 const nativeCommands = ref<any[]>([])
 const nativeCommandError = ref('')
 let nativeCommandsRequestId = 0
@@ -32,12 +33,7 @@ async function loadNativeCommands() {
   const binding = props.deviceData?.device_config
   nativeCommands.value = []
   nativeCommandError.value = ''
-  if (!hasNativeDeviceBinding(binding)) {
-    nativeCommandsResolved.value = deviceBindingRequiresNativeModel(binding)
-    if (nativeCommandsResolved.value) nativeCommandError.value = '此设备模板尚未绑定固定版本的原生物模型命令。'
-    return
-  }
-  nativeCommandsResolved.value = true
+  if (!hasModel.value) return
   try {
     const resolved = await resolveDeviceNativeModel(binding)
     if (requestId !== nativeCommandsRequestId) return
@@ -149,7 +145,7 @@ const columns = [
     title: $t('generate.status'),
     minWidth: '140px',
     key: 'status',
-    render: row => row.status_label || '--'
+    render: row => (hasModel.value ? row.status_label || '--' : controlLogStatus(row.status))
   },
   { title: $t('generate.commandConetnt'), minWidth: '140px', key: 'data' },
   {
@@ -186,17 +182,20 @@ const columns = [
     </n-alert>
     <DistributionAndTable
       :id="props.id"
+      :key="`${props.id}:${hasModel}`"
       ref="tableRef"
       :native-command-options="nativeCommands"
-      :native-commands-resolved="nativeCommandsResolved"
+      :native-commands-resolved="hasModel"
       :button-name="$t('generate.issueCommand')"
       :is-command="true"
       :table-columns="columns"
-      :fetch-data-api="fetchNativeCommands"
-      :submit-api="submitNativeCommand"
-      :expect="true"
+      :fetch-data-api="hasModel ? fetchNativeCommands : getCommandDataSetLogs"
+      :submit-api="hasModel ? submitNativeCommand : commandDataPub"
+      :expect="hasModel"
       :expect-api="submitNativeExpected"
       :native-only="true"
+      :manual-command="!hasModel"
+      live-only
     />
   </div>
 </template>

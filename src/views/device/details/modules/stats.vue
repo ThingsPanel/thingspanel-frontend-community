@@ -5,11 +5,13 @@ import dayjs from 'dayjs'
 import { $t } from '@/locales'
 import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue'
 import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
+import { attributeDataPub, getAttributeDataSetLogs } from '@/service/api/device'
 import { latestRowsFromReadings } from '@/service/api/device-runtime-rows'
 import type { DeviceConfigNativeBinding } from '@/service/api/native-template-binding'
 import { resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
 import { formatNativeAttributeValue } from '@/views/device/native-device-model-contract'
 import { useNativeDeviceMetadata } from '@/views/device/use-native-device-metadata'
+import { controlLogStatus } from './public/control-log-status'
 const props = defineProps<{
   id: string
   deviceData?: { device_config?: DeviceConfigNativeBinding | null }
@@ -59,6 +61,24 @@ const columns = [
     render: (row: any) => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss')
   }
 ]
+
+const logColumns = [
+  { title: $t('generate.issue-attribute'), key: 'data', minWidth: 200 },
+  {
+    title: $t('generate.status'),
+    key: 'status',
+    minWidth: 120,
+    render: (row: { status: string }) => controlLogStatus(row.status)
+  },
+  {
+    title: $t('generate.attributeDeliveryTime'),
+    key: 'created_at',
+    minWidth: 160,
+    render: (row: { created_at: string }) => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
+  },
+  { title: $t('generate.deviceResponse'), key: 'rsp_data', minWidth: 200 },
+  { title: $t('generate.errorMessage'), key: 'error_message', minWidth: 140 }
+]
 </script>
 
 <template>
@@ -68,15 +88,22 @@ const columns = [
     </NAlert>
     <NAlert v-if="loadError" type="warning" :show-icon="true" class="mb-12px">{{ loadError }}</NAlert>
     <NAlert v-if="truncated" type="info" :show-icon="true" class="mb-12px">仅显示前 100 个属性的最新值。</NAlert>
-    <NAlert type="info" :show-icon="false" class="mb-12px">
-      属性下发和下发记录暂未提供原生入口，本页只读显示设备当前上报的属性值。
-    </NAlert>
     <DistributionAndTable
       :id="id as string"
       :no-refresh="true"
       :table-columns="columns"
       :fetch-data-api="fetchNativeAttributes"
       :decorate-rows="decorateRows"
+    />
+    <h3 class="mt-20px mb-12px font-medium">{{ $t('generate.attributeDeliveryLog') }}</h3>
+    <DistributionAndTable
+      :id="id"
+      :key="id"
+      :button-name="$t('generate.issue-attribute')"
+      :table-columns="logColumns"
+      :fetch-data-api="getAttributeDataSetLogs"
+      :submit-api="attributeDataPub"
+      live-only
     />
   </div>
 </template>

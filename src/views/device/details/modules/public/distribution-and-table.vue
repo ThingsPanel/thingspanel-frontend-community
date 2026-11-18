@@ -67,6 +67,8 @@ const props = defineProps<{
   tableColumns: any[] | undefined
   expect?: boolean
   nativeOnly?: boolean
+  manualCommand?: boolean
+  liveOnly?: boolean
   submitApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
   expectApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
   fetchDataApi: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
@@ -79,6 +81,7 @@ const page_coune = ref(0)
 const the_page = ref(1)
 const showDialog = ref(false)
 const formRef = ref<FormInst | null>(null)
+const submitting = ref(false)
 const formModel = reactive({
   commandValue: '',
   textValue: '',
@@ -86,6 +89,8 @@ const formModel = reactive({
   time: null as number | null
 })
 const options = ref()
+const commandHistoryLoading = ref(false)
+const commandHistoryOptions = ref<{ data_name: string; data_identifier: string }[]>([])
 let commandDefinitionsRequestId = 0
 let deviceDataRequestId = 0
 let lastDeviceDataId: string | undefined
@@ -132,7 +137,7 @@ const fetchDataFunction = async () => {
     if (requestId !== deviceDataRequestId || deviceId !== props.id || error) return
 
     const list = data?.value || data?.list || (Array.isArray(data) ? data : []) || []
-    if (list.length > 0 || !isDeviceDetailDemo(deviceId)) {
+    if (props.liveOnly || list.length > 0 || !isDeviceDetailDemo(deviceId)) {
       tableData.value = props.decorateRows ? props.decorateRows(list) : list
     } else if (props.tableColumns?.some(column => column.key === 'identify')) {
       const demoRows = props.isCommand ? demoCommands() : demoEvents()
@@ -151,8 +156,31 @@ const fetchDataFunction = async () => {
 
 const openDialog = async () => {
   showDialog.value = true
-  if (!props.isCommand) {
+  if (props.manualCommand) {
+    await loadCommandHistory()
+  } else if (!props.isCommand) {
     await loadAttributeList()
+  }
+}
+
+async function loadCommandHistory() {
+  if (commandHistoryLoading.value) return
+  commandHistoryLoading.value = true
+  const deviceId = props.id
+  try {
+    const { data, error } = await props.fetchDataApi({ device_id: deviceId, page: 1, page_size: 100 })
+    if (error || deviceId !== props.id) return
+    const identifiers = new Set<string>()
+    for (const row of data?.list ?? []) {
+      const identifier = typeof row.identify === 'string' ? row.identify.trim() : ''
+      if (identifier) identifiers.add(identifier)
+    }
+    commandHistoryOptions.value = Array.from(identifiers, identifier => ({
+      data_name: identifier,
+      data_identifier: identifier
+    }))
+  } finally {
+    commandHistoryLoading.value = false
   }
 }
 
@@ -170,6 +198,8 @@ const closeDialog = () => {
 }
 
 const submit = async () => {
+  if (submitting.value) return
+  submitting.value = true
   try {
     await formRef.value?.validate()
 
@@ -177,7 +207,7 @@ const submit = async () => {
     const params: any = {}
 
     // 处理可视化配置页签的参数
-    if (activeTab.value === 'visual') {
+    if (!props.manualCommand && activeTab.value === 'visual') {
       if (props.isCommand && paramsData.value.length > 0) {
         paramsData.value.forEach((item: any) => {
           params[item.data_identifier] = item[item.data_identifier]
@@ -200,11 +230,19 @@ const submit = async () => {
       return
     }
 
+    if (props.manualCommand || !props.isCommand) {
+      const json = formModel.textValue.trim()
+      if ((!props.isCommand || json) && !(json.startsWith('{') && isJSON(json))) {
+        window.$message?.error($t('generate.inputRightJson'))
+        return
+      }
+    }
+
     if (props.isCommand) {
       parms = {
         device_id: props.id,
         value: formModel.textValue ? formModel.textValue : null,
-        identify: formModel.commandValue
+        identify: formModel.commandValue.trim()
       }
     } else {
       parms = { device_id: props.id, value: formModel.textValue ? formModel.textValue : null }
@@ -213,23 +251,27 @@ const submit = async () => {
     if (formModel.expected) {
       if (props.expectApi) {
         const expiry = formModel.time ? new Date().getTime() + formModel.time * 60 * 60 * 1000 : null
-        await props.expectApi({
+        const { error } = await props.expectApi({
           device_id: props.id,
           payload: formModel.textValue ? formModel.textValue : null,
           send_type: props.isCommand ? 'command' : 'attribute',
           expiry: expiry ? moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ') : null,
           identify: props.isCommand ? formModel.commandValue : null
         })
+        if (error) return
       }
     } else if (props.submitApi) {
-      await props.submitApi(parms)
+      const { error } = await props.submitApi(parms)
+      if (error) return
     }
 
-    await fetchDataFunction()
     closeDialog()
+    refresh()
   } catch (errors) {
     window.$message?.error($t('common.validateFail') || 'Validation failed, please check your input.')
     logger.error('Form validation failed:', errors)
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -254,7 +296,7 @@ const refresh = () => {
 
 defineExpose({ refresh })
 const getOptions = async show => {
-  if (show) {
+  if (show && !props.manualCommand) {
     if (props.nativeCommandsResolved) {
       options.value = props.nativeCommandOptions || []
       return
@@ -272,8 +314,9 @@ const getOptions = async show => {
 }
 
 // 新增：处理命令标识符输入（支持输入和选择）
-const handleCommandInput = (value: string) => {
-  formModel.commandValue = value
+const handleCommandInput = (value: string | null) => {
+  formModel.commandValue = value ?? ''
+  if (props.manualCommand) return
   // 如果输入的是现有选项，自动解析参数
   const option = options.value?.find((opt: any) => opt.data_identifier === value)
   if (option && option.params) {
@@ -308,10 +351,13 @@ watch(
       tableData.value = undefined
       page_coune.value = 0
       lastDeviceDataId = props.id
+      commandHistoryOptions.value = []
     }
     options.value = props.nativeCommandsResolved ? props.nativeCommandOptions || [] : undefined
     commandList.value = []
-    if (props.isCommand && !props.nativeCommandsResolved && !props.nativeOnly) void getListData(requestId)
+    if (props.isCommand && !props.manualCommand && !props.nativeCommandsResolved && !props.nativeOnly) {
+      void getListData(requestId)
+    }
     void fetchDataFunction()
   },
   { immediate: true }
@@ -350,7 +396,7 @@ const isAttributeIndeterminate = computed(() => {
 
 const isSubmitDisabled = computed(() => {
   // 条件1：如果是命令下发且命令标识符为空，则禁用
-  if (props.isCommand && !formModel.commandValue) {
+  if (props.isCommand && !formModel.commandValue.trim()) {
     return true
   }
   // 条件2：如果载荷文本框有内容但不是有效的 JSON，则禁用（命令和属性下发都校验）
@@ -547,10 +593,11 @@ const buildAttributePayload = () => {
             class="command-selector"
           >
             <NSelect
-              v-model:value="formModel.commandValue"
+              :value="formModel.commandValue || null"
               label-field="data_name"
               value-field="data_identifier"
-              :options="options"
+              :options="manualCommand ? commandHistoryOptions : options"
+              :loading="manualCommand && commandHistoryLoading"
               filterable
               tag
               clearable
@@ -561,7 +608,15 @@ const buildAttributePayload = () => {
           </NFormItem>
 
           <!-- 切换页签：可视化配置和命令行 -->
-          <NTabs v-model:value="activeTab" type="line" animated>
+          <NFormItem
+            v-if="manualCommand"
+            :label="$t('generate.commandConetnt')"
+            :validation-status="validationJson"
+            :feedback="inputFeedback"
+          >
+            <NInput v-model:value="formModel.textValue" type="textarea" placeholder="{}" />
+          </NFormItem>
+          <NTabs v-else v-model:value="activeTab" type="line" animated>
             <NTabPane name="visual" :tab="visualTabLabel">
               <template v-if="isCommand">
                 <div v-if="formModel.commandValue !== ''">
@@ -657,7 +712,7 @@ const buildAttributePayload = () => {
           </NTabs>
           <NFlex justify="end" class="button-group">
             <NButton @click="closeDialog">{{ $t('generate.cancel') }}</NButton>
-            <NButton type="primary" :disabled="isSubmitDisabled" @click="submit">
+            <NButton type="primary" :disabled="isSubmitDisabled" :loading="submitting" @click="submit">
               {{ $t('page.irrigation.distribute') }}
             </NButton>
           </NFlex>
