@@ -233,6 +233,20 @@ check('联动：模板设备触发时只操作指定的设备', () => {
   assert.equal(definitionToLinkageForm(value, '联动', true).trigger_condition_groups[0][0].trigger_source, 'cfg-1')
 })
 
+check('原生联动的 self 和 target 分别回显触发设备和执行设备', () => {
+  const { value } = linkageFormToDefinition({
+    name: '点对点',
+    trigger_condition_groups: [[condition()]],
+    actions: [deviceAction('dev-b', 'switch', '1')]
+  })
+  value.trigger.groups[0].conditions[0].source = 'self'
+  delete value.trigger.groups[0].conditions[0].device_id
+  value.steps[0].device_ref = 'target'
+  const form = definitionToLinkageForm(value, '点对点', true)
+  assert.equal(form.trigger_condition_groups[0][0].trigger_source, 'dev-a')
+  assert.equal(form.actions[0].action_target, 'dev-b')
+})
+
 check('联动：单个设备和整类设备混在触发里，报错', () => {
   const form: LinkageForm = {
     name: '混',

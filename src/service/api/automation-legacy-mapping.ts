@@ -324,18 +324,29 @@ export function sceneFormToDefinition(form: SceneForm): MappingResult<RuleDefini
   }
 }
 
+function formActionTarget(definition: RuleDefinition, step: Step) {
+  const ref = text(step.device_ref)
+  if (ref && ref !== CONFIG_FANOUT_REF && ref !== 'self') {
+    return { action_type: LegacyActionType.singleDevice, action_target: ref }
+  }
+  const { device_ids: devices = [], device_config_ids: configs = [] } = definition.targets ?? {}
+  if (configs.length === 1 && !devices.length) {
+    return { action_type: LegacyActionType.deviceConfig, action_target: configs[0] }
+  }
+  return {
+    action_type: LegacyActionType.singleDevice,
+    action_target: devices.length === 1 && !configs.length ? devices[0] : ''
+  }
+}
+
 /** 规则定义 → 场景表单，用于编辑页回显。 */
 export function definitionToSceneForm(definition: RuleDefinition, name: string, id = ''): SceneForm {
-  const configID = definition.targets?.device_config_ids?.[0] ?? ''
-  const singleTarget = definition.targets?.device_ids?.length === 1 ? definition.targets.device_ids[0] : ''
   const actions: LegacyAction[] = []
 
   ;(definition.steps ?? []).forEach(step => {
     if (step.kind === 'action') {
-      const isConfig = step.device_ref === CONFIG_FANOUT_REF || (!step.device_ref && !!configID)
       const action: LegacyAction = {
-        action_type: isConfig ? LegacyActionType.deviceConfig : LegacyActionType.singleDevice,
-        action_target: isConfig ? configID : text(step.device_ref || singleTarget),
+        ...formActionTarget(definition, step),
         action_param_type: step.action ?? 'telemetry',
         action_param: step.identifier ?? '',
         action_value: ''
@@ -731,13 +742,17 @@ export function definitionToLinkageForm(
   id = ''
 ): LinkageForm {
   const configID = definition.targets?.device_config_ids?.[0] ?? ''
-  const triggerConfigID = definition.trigger_scope?.device_config_ids?.[0] ?? configID
+  const subject = definition.trigger_scope
+  const triggerConfigID = subject ? subject.device_config_ids?.[0] : configID
+  const triggerDeviceID = subject?.device_ids?.length === 1 ? subject.device_ids[0] : ''
   const groups: LegacyCondition[][] = (definition.trigger?.groups ?? []).map(group =>
     (group.conditions ?? []).map(condition => {
       const raw: LegacyCondition = {
         trigger_conditions_type:
-          condition.source === 'self' ? LegacyConditionType.deviceConfig : LegacyConditionType.singleDevice,
-        trigger_source: condition.source === 'self' ? triggerConfigID : text(condition.device_id),
+          condition.source === 'self' && triggerConfigID
+            ? LegacyConditionType.deviceConfig
+            : LegacyConditionType.singleDevice,
+        trigger_source: condition.source === 'self' ? triggerConfigID || triggerDeviceID : text(condition.device_id),
         trigger_param_type: condition.signal,
         trigger_param: condition.key,
         trigger_operator: condition.operator,
@@ -772,10 +787,8 @@ export function definitionToLinkageForm(
 
   const actions: LegacyAction[] = (definition.steps ?? []).flatMap(step => {
     if (step.kind === 'action') {
-      const isConfig = step.device_ref === CONFIG_FANOUT_REF || (!step.device_ref && !!configID)
       const action: LegacyAction = {
-        action_type: isConfig ? LegacyActionType.deviceConfig : LegacyActionType.singleDevice,
-        action_target: isConfig ? configID : text(step.device_ref),
+        ...formActionTarget(definition, step),
         action_param_type: step.action ?? 'telemetry',
         action_param: step.identifier ?? '',
         action_value: ''
