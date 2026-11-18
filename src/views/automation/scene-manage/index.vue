@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { ref } from 'vue'
 import type { Ref } from 'vue'
-import { NButton, NCard, NEmpty, NFlex, NPagination, NPopconfirm, NSpace, useDialog, useMessage } from 'naive-ui'
+import { NButton, NCard, NEmpty, NFlex, NPagination, NSpace, useDialog, useMessage } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { IosSearch } from '@vicons/ionicons4'
 import moment from 'moment'
@@ -169,16 +169,9 @@ const columns: Ref<any> = ref([
           <NButton size={'small'} type="tertiary" onClick={() => openLog(row)}>
             {$t('page.irrigation.time.log.name')}
           </NButton>
-          <NPopconfirm onPositiveClick={() => deleteScene(row)}>
-            {{
-              default: () => $t('common.confirmDelete'),
-              trigger: () => (
-                <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
-                </NButton>
-              )
-            }}
-          </NPopconfirm>
+          <NButton type="error" size="small" onClick={() => deleteScene(row)}>
+            {$t('common.delete')}
+          </NButton>
         </NSpace>
       )
     }

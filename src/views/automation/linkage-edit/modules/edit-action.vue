@@ -230,7 +230,7 @@ const handleFocus = (ifIndex: any) => {
 }
 
 // 设备配置列表
-const deviceConfigOption = ref([])
+const deviceConfigOption = ref<{ id: string; name: string }[]>([])
 // 设备配置列表查询条件
 const queryDeviceConfig = ref({
   device_config_name: ''
