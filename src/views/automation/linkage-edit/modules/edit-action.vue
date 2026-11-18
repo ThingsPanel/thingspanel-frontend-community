@@ -27,27 +27,6 @@ const props = withDefaults(defineProps<Props>(), {
   actionData: []
 })
 
-// 条件中单个/单类设备变化时,重置操作动作中的设备内容
-const resetActionData = () => {
-  actionForm.value.actionGroups.map((item: any) => {
-    if (item.actionInstructList && item.actionInstructList.length > 0) {
-      const data = [] as any
-      const instructItem = JSON.parse(JSON.stringify(instructListItem.value))
-      instructItem.action_type = props.conditionsType
-      data.push(instructItem)
-      item.actionInstructList = data
-    }
-  })
-}
-
-watch(
-  () => props.conditionsType,
-  newValue => {
-    if (newValue) {
-      resetActionData()
-    }
-  }
-)
 watch(
   () => props.actionData,
   newValue => {
@@ -138,36 +117,18 @@ const actionOptions = ref([
 ])
 
 // 动作选择action值改变时
-const actionChange = (actionGroupItem: any, actionGroupIndex: any, data: any) => {
+const actionChange = (actionGroupItem: any, data: any) => {
   // eslint-disable-next-line array-callback-return
   actionOptions.value.map(item => {
     item.disabled = false
   })
-  actionGroupItem.actionInstructList = [
-    {
-      actionParamOptionsData: [],
-      actionParamTypeOptions: [],
-      actionParamOptions: [],
-      action_param_type: null,
-      action_param: null,
-      action_target: null,
-      action_type: null,
-      actionValue: null,
-      deviceGroupId: null
-    }
-  ]
+  actionGroupItem.actionInstructList = []
   actionGroupItem.action_type = null
   actionGroupItem.action_target = null
-
   if (data === '1') {
-    // eslint-disable-next-line array-callback-return
-    actionOptions.value.map(item => {
-      if (item.value === '1') {
-        // item.disabled = true;
-        // if (actionGroupItem.actionInstructList.length <= 0) actionForm.value.actionGroups = JSON.parse(JSON.stringify(props.actionData));
-      }
-    })
-    addIfGroupsSubItem(actionGroupIndex)
+    const instruction = JSON.parse(JSON.stringify(instructListItem.value))
+    instruction.action_type = props.conditionsType || null
+    actionGroupItem.actionInstructList.push(instruction)
   }
 }
 // 设备类型选项
@@ -510,7 +471,7 @@ onMounted(() => {
                 v-model:value="actionGroupItem.actionType"
                 :options="actionOptions"
                 class="max-w-40"
-                @update:value="data => actionChange(actionGroupItem, actionGroupIndex, data)"
+                @update:value="data => actionChange(actionGroupItem, data)"
               />
               <template v-if="actionGroupItem.actionType === '1'">
                 <!--          执行动作是操作设备->添加指令--->
@@ -520,21 +481,19 @@ onMounted(() => {
                     :key="instructIndex"
                     class="mb-2 mr-30"
                   >
-                    <template v-if="props.conditionsType !== '11'">
-                      <NFormItem
-                        :show-label="false"
-                        :path="`actionGroups[${actionGroupIndex}].actionInstructList[${instructIndex}].action_type`"
-                        :rule="configFormRules.action_type"
-                        class="w-40"
-                      >
-                        <NSelect
-                          v-model:value="instructItem.action_type"
-                          :options="actionTypeOptions"
-                          class="max-w-40"
-                          @update:value="data => actionTypeChange(instructItem, data)"
-                        />
-                      </NFormItem>
-                    </template>
+                    <NFormItem
+                      :show-label="false"
+                      :path="`actionGroups[${actionGroupIndex}].actionInstructList[${instructIndex}].action_type`"
+                      :rule="configFormRules.action_type"
+                      class="w-40"
+                    >
+                      <NSelect
+                        v-model:value="instructItem.action_type"
+                        :options="actionTypeOptions"
+                        class="max-w-40"
+                        @update:value="data => actionTypeChange(instructItem, data)"
+                      />
+                    </NFormItem>
                     <template v-if="instructItem.action_type === '10'">
                       <!--                      选择单个设备-->
                       <NFormItem

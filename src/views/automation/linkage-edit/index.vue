@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import type { FormInst } from 'naive-ui'
 import { NButton, NCard, useDialog } from 'naive-ui'
 import moment from 'moment'
+import { splitBetweenBounds } from '@/service/api/automation-legacy-mapping'
 import EditAction from '@/views/automation/linkage-edit/modules/edit-action.vue'
 import EditPremise from '@/views/automation/linkage-edit/modules/edit-premise.vue'
 import { sceneAutomationsAdd, sceneAutomationsEdit, sceneAutomationsInfo } from '@/service/api/automation-native'
@@ -162,32 +163,33 @@ const handleIfData = () => {
       // ifItem.expiration_time = moment().format();
       if (ifItem.trigger_conditions_type === '10' || ifItem.trigger_conditions_type === '11') {
         if (ifItem.trigger_param_type === 'event') {
+          // Preserve a loaded scalar event comparison when the user edits only the rule name or actions.
+          const fields = (ifItem.eventParamConditions || []).filter((condition: any) => condition.field)
+          if (!fields.length && ifItem.trigger_operator && !String(ifItem.trigger_value ?? '').startsWith('{')) return
           ifItem.trigger_operator = '='
           ifItem.trigger_value = JSON.stringify({
             match_mode: 'field',
-            conditions: (ifItem.eventParamConditions || [])
-              .filter((condition: any) => condition.field)
-              .map((condition: any) => {
-                const operator = condition.operator || '='
-                let value = condition.value
-                if (operator === 'between') {
-                  value = [condition.minValue, condition.maxValue]
-                } else if (operator === 'in') {
-                  value = Array.isArray(condition.value)
-                    ? condition.value
-                    : String(condition.value || '')
-                        .split(',')
-                        .map(item => item.trim())
-                        .filter(Boolean)
-                } else if (operator === 'exists') {
-                  value = condition.value !== false
-                }
-                return {
-                  field: condition.field,
-                  operator,
-                  value
-                }
-              })
+            conditions: fields.map((condition: any) => {
+              const operator = condition.operator || '='
+              let value = condition.value
+              if (operator === 'between') {
+                value = [condition.minValue, condition.maxValue]
+              } else if (operator === 'in') {
+                value = Array.isArray(condition.value)
+                  ? condition.value
+                  : String(condition.value || '')
+                      .split(',')
+                      .map(item => item.trim())
+                      .filter(Boolean)
+              } else if (operator === 'exists') {
+                value = condition.value !== false
+              }
+              return {
+                field: condition.field,
+                operator,
+                value
+              }
+            })
           })
         } else if (ifItem.trigger_operator === 'between') {
           ifItem.trigger_value = `${ifItem.minValue}-${ifItem.maxValue}`
@@ -306,8 +308,9 @@ const echoIfData = (ifData: any) => {
             // 旧版完整 JSON 或空值不按字段级规则回显，保持空条件表示仅按事件名触发。
           }
         } else if (ifItem.trigger_operator === 'between') {
-          ifItem.minValue = ifItem.trigger_value.split('-')[0]
-          ifItem.maxValue = ifItem.trigger_value.split('-')[1]
+          const [min, max] = splitBetweenBounds(ifItem.trigger_value)
+          ifItem.minValue = min
+          ifItem.maxValue = max
         }
         ifItem.trigger_param_key = `${ifItem.trigger_param_type}/${ifItem.trigger_param}`
       }
@@ -356,7 +359,6 @@ const echoIfData = (ifData: any) => {
 // 回显时处理条件数据
 const echoActionData = (actionsData: any) => {
   const actionGroupsData = [] as any
-  const actionInstructList = [] as any
   // eslint-disable-next-line array-callback-return
   actionsData.map((item: any) => {
     if (item.action_type === '10' || item.action_type === '11') {
@@ -378,19 +380,15 @@ const echoActionData = (actionsData: any) => {
       if (item.action_param_type === 'command') {
         item.actionValue = actionValueObj.params
       }
-      actionInstructList.push(item)
+      const previous = actionGroupsData[actionGroupsData.length - 1]
+      if (previous?.actionType === '1') previous.actionInstructList.push(item)
+      else actionGroupsData.push({ actionType: '1', actionInstructList: [item] })
     } else {
       item.actionType = item.action_type
       actionGroupsData.push(item)
     }
   })
-  if (actionInstructList.length > 0) {
-    const type1Data = {
-      actionType: '1',
-      actionInstructList
-    }
-    actionGroupsData.push(type1Data)
-  }
+
   return actionGroupsData
 }
 if (configId.value) {

@@ -219,14 +219,18 @@ check('联动：整类设备触发，条件作用在自己身上，按设备隔�
   assert.equal(value.steps[0].device_ref, 'target')
 })
 
-check('联动：整类设备触发却点名单台设备，报错', () => {
+check('联动：模板设备触发时只操作指定的设备', () => {
   const form: LinkageForm = {
     name: '错配',
     trigger_condition_groups: [[condition({ trigger_conditions_type: '11', trigger_source: 'cfg-1' })]],
     actions: [deviceAction('dev-1', 'switch', '1')]
   }
-  const { issues } = linkageFormToDefinition(form)
-  assert.ok(issues.some(item => item.code === 'action_device_needs_config_trigger'))
+  const { value, issues } = linkageFormToDefinition(form)
+  assert.deepEqual(issues, [])
+  assert.deepEqual(value.trigger_scope, { device_config_ids: ['cfg-1'] })
+  assert.deepEqual(value.targets, { device_ids: ['dev-1'] })
+  assert.equal(value.steps[0].device_ref, 'dev-1')
+  assert.equal(definitionToLinkageForm(value, '联动', true).trigger_condition_groups[0][0].trigger_source, 'cfg-1')
 })
 
 check('联动：单个设备和整类设备混在触发里，报错', () => {
@@ -285,7 +289,7 @@ check('联动：状态「全部」新模型没有，报错', () => {
   assert.ok(issues.some(item => item.code === 'status_any_transition_unsupported'))
 })
 
-check('联动：事件按名字触发可以转，按字段匹配不行', () => {
+check('联动：事件按名字触发和字段过滤可保存并回显', () => {
   const plain = linkageFormToDefinition({
     name: '事件',
     trigger_condition_groups: [
@@ -309,7 +313,22 @@ check('联动：事件按名字触发可以转，按字段匹配不行', () => {
     ],
     actions: [deviceAction('dev-1', 'switch', '1')]
   })
-  assert.ok(byField.issues.some(item => item.code === 'event_field_match_unsupported'))
+  assert.deepEqual(byField.issues, [])
+  const leaf = byField.value.trigger.groups[0].conditions[0]
+  assert.equal(leaf.operator, 'exists')
+  assert.equal(leaf.value, 'true')
+  assert.equal(leaf.event_match, undefined)
+  leaf.event_match = {
+    fields: [
+      { path: 'body.temperature', operator: 'between', value: '-10--1e-2' },
+      { path: 'mode', operator: 'in', value: 'hot,cold' },
+      { path: 'flag', operator: 'exists', value: 'false' }
+    ]
+  }
+  const form = definitionToLinkageForm(byField.value, '事件字段', true)
+  const rebuilt = linkageFormToDefinition(form)
+  assert.deepEqual(rebuilt.issues, [])
+  assert.deepEqual(rebuilt.value.trigger.groups[0].conditions[0], leaf)
 })
 
 check('联动：比较符留空按旧引擎的行为补成等于', () => {

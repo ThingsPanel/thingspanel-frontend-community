@@ -6,13 +6,7 @@
  * `definition`：目标集 + 触发组 + 步骤。两者的差别不是字段改名，而是
  * 「一条规则作用在哪些设备上」这件事从隐式变成了显式。
  *
- * 所以翻译集中在这一个文件里，页面只负责收集用户填的东西。这样做有三个好处：
- *
- * 1. 规则只有一份。页面各写各的，四个页面就会有四份互相矛盾的翻译。
- * 2. 可以被单独验证。这里的函数不碰网络，见 `scripts/check-automation-mapping.ts`。
- * 3. 后端 `automation/legacy/*.go` 是同一套映射的权威实现（升级脚本用的就是它）。
- *    两边的判断必须一致，否则「页面上新建的规则」和「升级脚本搬过来的规则」
- *    会长得不一样，同一个业务在两处表现不同是最难查的那类问题。
+ * 页面使用当前自动化引擎的契约。回归用例见 src/__tests__/automation/check-automation-mapping.ts。
  *
  * 转不了的情况一律返回 issue，不猜。猜出来的规则会安静地做错事，而报出来的
  * 问题用户当场就能改。
@@ -106,6 +100,14 @@ function issue(field: string, code: string, message: string): MappingIssue {
 
 function text(value: unknown): string {
   return typeof value === 'string' ? value.trim() : value === null || value === undefined ? '' : String(value).trim()
+}
+
+// A minus sign may belong to either bound or its exponent.
+const numberPattern = /[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/.source
+const betweenPattern = new RegExp(`^\\s*(${numberPattern})\\s*-\\s*(${numberPattern})\\s*$`)
+
+export function splitBetweenBounds(value: string): string[] {
+  return betweenPattern.exec(value)?.slice(1) ?? []
 }
 
 function uniqueSorted(ids: Iterable<string>): string[] {
@@ -412,9 +414,7 @@ function conditionSignal(paramType: unknown): Condition['signal'] | null {
 /**
  * 一条旧触发条件 → 新条件。
  *
- * 这里和 `automation/legacy/automation.go` 的 buildCondition 逐条对应：
- * 时间范围属于排程、状态「全部」表示任意上下线、事件字段级匹配需要按字段重建，
- * 这三种在新模型里都不是「条件」，所以报出来而不是硬塞。
+ * 设备事件可按名称或字段过滤。时间范围不属于设备信号条件。
  */
 function buildCondition(
   raw: LegacyCondition,
@@ -481,21 +481,45 @@ function buildCondition(
 
   if (signal === 'event') {
     const value = text(raw.trigger_value)
-    if (value.startsWith('{')) {
-      return {
-        issue: issue(
-          field,
-          'event_field_match_unsupported',
-          '这个事件条件按事件里的字段做匹配，新模型需要按字段重建，页面暂不支持'
-        )
-      }
-    }
     if (!text(raw.trigger_param)) {
       return { issue: issue(field, 'condition_param_missing', '事件条件没有选择事件') }
     }
     base.key = text(raw.trigger_param)
-    base.operator = '='
+    base.operator = raw.trigger_operator || '='
     base.value = value
+    if (value.startsWith('{')) {
+      try {
+        const spec = JSON.parse(value)
+        if (spec.match_mode !== 'field' || !Array.isArray(spec.conditions)) throw new Error()
+        const fields = spec.conditions.map((item: { field: string; operator: string; value: unknown }) => {
+          const path = text(item.field)
+          const operator = item.operator
+          if (!path || !['=', '!=', '>', '<', '>=', '<=', 'between', 'in', 'exists'].includes(operator))
+            throw new Error()
+          let expected = text(item.value)
+          if (operator === 'between') {
+            if (
+              !Array.isArray(item.value) ||
+              item.value.length !== 2 ||
+              item.value.some(bound => !text(bound) || !Number.isFinite(Number(bound))) ||
+              !splitBetweenBounds(item.value.join('-')).length ||
+              Number(item.value[0]) > Number(item.value[1])
+            )
+              throw new Error()
+            expected = item.value.join('-')
+          } else if (operator === 'in') {
+            if (!Array.isArray(item.value) || !item.value.length) throw new Error()
+            expected = item.value.join(',')
+          } else if (operator === 'exists' && !['true', 'false'].includes(expected)) throw new Error()
+          return { path, operator, value: expected }
+        })
+        base.operator = 'exists'
+        base.value = 'true'
+        if (fields.length) base.event_match = { fields }
+      } catch {
+        return { issue: issue(field, 'invalid_event_match', '请检查事件字段、比较符和比较值') }
+      }
+    }
     return { condition: base }
   }
 
@@ -658,16 +682,12 @@ export function linkageFormToDefinition(form: LinkageForm): MappingResult<RuleDe
         )
       )
     }
-    if (uniqueActionDevices.length > 0) {
+    if (uniqueActionDevices.length && uniqueActionConfigs.length) {
       issues.push(
-        issue(
-          'actions',
-          'action_device_needs_config_trigger',
-          '触发条件是整类设备，动作却点名了单台设备。请把动作也改成整类设备，或把触发条件改成单台设备'
-        )
+        issue('actions', 'mixed_device_and_config_actions', '同一条联动不能混合模板广播和点名设备动作，请拆成两条联动')
       )
     }
-    targets = { device_config_ids: [only] }
+    targets = uniqueActionDevices.length ? { device_ids: uniqueActionDevices } : { device_config_ids: [only] }
     // 整类设备触发：一条规则，每台设备各自判定、各自执行。
     scope = 'device'
   } else {
@@ -711,16 +731,34 @@ export function definitionToLinkageForm(
   id = ''
 ): LinkageForm {
   const configID = definition.targets?.device_config_ids?.[0] ?? ''
+  const triggerConfigID = definition.trigger_scope?.device_config_ids?.[0] ?? configID
   const groups: LegacyCondition[][] = (definition.trigger?.groups ?? []).map(group =>
     (group.conditions ?? []).map(condition => {
       const raw: LegacyCondition = {
         trigger_conditions_type:
           condition.source === 'self' ? LegacyConditionType.deviceConfig : LegacyConditionType.singleDevice,
-        trigger_source: condition.source === 'self' ? configID : text(condition.device_id),
+        trigger_source: condition.source === 'self' ? triggerConfigID : text(condition.device_id),
         trigger_param_type: condition.signal,
         trigger_param: condition.key,
         trigger_operator: condition.operator,
         trigger_value: condition.value
+      }
+      if (condition.signal === 'event' && condition.event_match) {
+        raw.trigger_value = JSON.stringify({
+          match_mode: 'field',
+          conditions: condition.event_match.fields.map(({ path, operator, value }) => ({
+            field: path,
+            operator,
+            value:
+              operator === 'between'
+                ? splitBetweenBounds(value)
+                : operator === 'in'
+                  ? value.split(',')
+                  : operator === 'exists'
+                    ? value === 'true' || value === '1'
+                    : value
+          }))
+        })
       }
       if (condition.signal === 'status') {
         raw.trigger_param = condition.value === '1' ? 'ON-LINE' : 'OFF-LINE'

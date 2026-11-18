@@ -122,42 +122,12 @@ const premiseFormRules = ref({
 })
 
 /** if分组的数据类型 */
-// 选项一条件类型的下拉
-// const ifTypeOptions = ref([
-//   {
-//     label: $t('common.deviceConditions'),
-//     value: '1'
-//   },
-//   {
-//     label: $t('common.timeConditions'),
-//     value: '2'
-//   }
-//   // {
-//   //   label: '服务条件',
-//   //   value: '3'
-//   // }
-// ]);
-
-const getIfTypeOptions = (ifGroup, ifIndex) => {
-  return [
-    {
-      label: $t('common.deviceConditions'),
-      value: '1',
-      disabled: ifGroup.some(item => {
-        return (item.trigger_conditions_type === '20' || item.trigger_conditions_type === '21') && ifIndex > 0
-      })
-    },
-    {
-      label: $t('common.timeConditions'),
-      value: '2'
-    }
-  ]
-}
-const ifTypeChange = (ifItem: any, data: any) => {
-  ifItem.trigger_conditions_type = null
-  ifItem = judgeItem.value
-  ifItem.ifType = data
-}
+// Native linkage rules accept device conditions. Schedules use a separate contract.
+const deviceConditionType = computed(() => [{ label: $t('common.deviceConditions'), value: '1' }])
+const existingTimeConditionType = computed(() => [
+  ...deviceConditionType.value,
+  { label: $t('common.timeConditions'), value: '2', disabled: true }
+])
 
 // 设备条件类型下选项2使用的下拉
 const deviceConditionOptions = computed(() => [
@@ -980,9 +950,9 @@ watch(locale, () => {
               >
                 <NSelect
                   v-model:value="ifItem.ifType"
-                  :options="getIfTypeOptions(ifGroupItem, ifIndex)"
+                  :options="ifItem.ifType === '2' ? existingTimeConditionType : deviceConditionType"
                   :placeholder="$t('common.select')"
-                  @update-value="data => ifTypeChange(ifItem, data)"
+                  @update:value="ifItem.trigger_conditions_type = null"
                 />
               </NFormItem>
               <NFlex v-if="ifItem.ifType === '1'" class="flex-1">

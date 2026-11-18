@@ -517,7 +517,6 @@ const getSceneInfo = async () => {
 // 处理页面回去回显
 const dataEcho = actionsData => {
   const actionGroupsData = [] as any
-  const actionInstructList = [] as any
   // eslint-disable-next-line array-callback-return
   actionsData.map((item: any) => {
     if (item.action_type === '10' || item.action_type === '11') {
@@ -541,19 +540,15 @@ const dataEcho = actionsData => {
       }
       item.actionParamOptions = []
       actionParamShow(item)
-      actionInstructList.push(item)
+      const previous = actionGroupsData[actionGroupsData.length - 1]
+      if (previous?.actionType === '1') previous.actionInstructList.push(item)
+      else actionGroupsData.push({ actionType: '1', actionInstructList: [item] })
     } else {
       item.actionType = item.action_type
       actionGroupsData.push(item)
     }
   })
-  if (actionInstructList.length > 0) {
-    const type1Data = {
-      actionType: '1',
-      actionInstructList
-    }
-    actionGroupsData.push(type1Data)
-  }
+
   configForm.value.actions = actionGroupsData
 }
 

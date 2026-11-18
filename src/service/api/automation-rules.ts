@@ -174,6 +174,7 @@ export interface Condition {
   operator: string
   value: string
   unit?: string
+  event_match?: { fields: { path: string; operator: string; value: string }[] }
 }
 
 export interface ConditionGroup {
