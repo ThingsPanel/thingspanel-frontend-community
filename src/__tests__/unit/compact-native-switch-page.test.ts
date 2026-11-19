@@ -183,6 +183,44 @@ describe('compact native control lifecycle', () => {
     expect(mocks.submit).not.toHaveBeenCalled()
     wrapper.unmount()
   })
+  it('pages devices at the API and resets to page one after a filter change', async () => {
+    mocks.list.mockImplementation(async ({ page }) => ({ items: [{ id: 'd' + page }], total: 23 }))
+    mocks.telemetry.mockResolvedValue({ items: [], total: 0, page: 1 })
+    const wrapper = await page()
+    expect(mocks.list).toHaveBeenCalledTimes(1)
+    wrapper.findComponent({ name: 'Pagination' }).vm.$emit('update:page', 2)
+    await flushPromises()
+    expect(mocks.list).toHaveBeenLastCalledWith({ page: 2, pageSize: 10 })
+    expect(mocks.telemetry).toHaveBeenLastCalledWith('d2', expect.anything())
+    await wrapper.setProps({ filters: { name: 'sensor' } })
+    await flushPromises()
+    expect(mocks.list).toHaveBeenLastCalledWith({ name: 'sensor', page: 1, pageSize: 10 })
+    wrapper.unmount()
+  })
+
+  it('opens metric history from an expanded device row', async () => {
+    mocks.list.mockResolvedValue({ items: [{ id: 'd' }], total: 1 })
+    mocks.telemetry.mockResolvedValue({
+      items: ['a', 'b', 'c', 'voltage'].map(identifier => ({
+        identifier,
+        deviceId: 'd',
+        kind: 'telemetry',
+        value: 220,
+        observedAt: new Date().toISOString()
+      })),
+      total: 4,
+      page: 1
+    })
+    const wrapper = await page()
+    expect(wrapper.findAll('.device-reading__history-trigger')).toHaveLength(3)
+    await wrapper.get('button[aria-expanded="false"]').trigger('click')
+    const rows = wrapper.findAll('.expanded-readings tbody tr')
+    expect(rows).toHaveLength(4)
+    expect(rows[3].text()).toContain('voltage')
+    await rows[3].get('button').trigger('click')
+    expect(wrapper.findComponent({ name: 'Drawer' }).props('show')).toBe(true)
+    wrapper.unmount()
+  })
   it('fails closed when the runtime owner cannot resolve an identity', async () => {
     mocks.telemetry.mockRejectedValue(new Error('runtime identity unavailable'))
     const wrapper = await page()

@@ -168,9 +168,6 @@ onBeforeUnmount(() => {
       <NAlert v-if="importedAccess" type="info" :show-icon="false">
         既有接入配置由源系统管理；设备名称和分组可正常修改，接入配置、编号和删除暂不可在此修改。
       </NAlert>
-      <NAlert v-else type="info" :show-icon="false">
-        以下修改提交后为"已受理"，由后台投递给设备平台，应用成功后状态才变为已完成。
-      </NAlert>
       <NAlert v-if="loadError" type="error">{{ loadError }}</NAlert>
 
       <NativeDeviceAdministrativeState
