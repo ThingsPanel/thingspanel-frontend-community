@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { NumberAnimationInst } from 'naive-ui'
 import dayjs from 'dayjs'
 import { useWebSocket } from '@vueuse/core'
@@ -12,7 +12,12 @@ import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool'
 import { deviceBindingRequiresNativeModel, resolveDeviceNativeModel } from '@/views/device/native-model-consumption'
 import { decorateNativeTelemetryRows } from '@/views/device/native-device-model-contract'
-import { getReadingDisplayValue } from '@/utils/device-readings'
+import { ListOutline, PulseOutline } from '@vicons/ionicons5'
+import { getReadingDisplayValue, isNumericReading } from '@/utils/device-readings'
+const HistoryData = defineAsyncComponent(() => import('./modules/history-data.vue'))
+const TimeSeriesData = defineAsyncComponent(() => import('./modules/time-series-data.vue'))
+const readingView = ref<{ item: DeviceManagement.telemetryData; mode: 'history' | 'curve' } | null>(null)
+
 const props = defineProps<{
   id: string
   deviceData?: Record<string, any>
@@ -157,6 +162,13 @@ watch([() => props.id, () => props.deviceData?.device_config], () => void loadNa
   deep: true
 })
 
+watch(
+  () => props.id,
+  () => {
+    readingView.value = null
+  }
+)
+
 let disposed = false
 onMounted(async () => {
   await fetchTelemetry()
@@ -226,6 +238,33 @@ onUnmounted(() => {
               </template>
             </div>
           </template>
+          <template #header-extra>
+            <n-button
+              quaternary
+              circle
+              size="small"
+              :aria-label="(i.label || i.key) + ' · ' + $t('custom.device_details.history')"
+              :title="$t('custom.device_details.history')"
+              @click="readingView = { item: i, mode: 'history' }"
+            >
+              <template #icon>
+                <n-icon><ListOutline /></n-icon>
+              </template>
+            </n-button>
+            <n-button
+              v-if="isNumericReading(i) && !isEnumTelemetry(i)"
+              quaternary
+              circle
+              size="small"
+              :aria-label="(i.label || i.key) + ' · ' + $t('card.curve')"
+              :title="$t('card.curve')"
+              @click="readingView = { item: i, mode: 'curve' }"
+            >
+              <template #icon>
+                <n-icon><PulseOutline /></n-icon>
+              </template>
+            </n-button>
+          </template>
           <template #footer>
             <div class="flex justify-end">
               {{ i.ts ? dayjs(i.ts).format('YYYY-MM-DD HH:mm:ss') : nowTime }}
@@ -234,6 +273,35 @@ onUnmounted(() => {
         </n-card>
       </n-gi>
     </n-grid>
+    <n-drawer
+      :show="Boolean(readingView)"
+      placement="right"
+      width="min(920px, 100vw)"
+      @update:show="
+        visible => {
+          if (!visible) readingView = null
+        }
+      "
+    >
+      <n-drawer-content
+        v-if="readingView"
+        closable
+        :title="
+          (readingView.item.label || readingView.item.key) +
+          ' · ' +
+          $t(readingView.mode === 'curve' ? 'card.curve' : 'custom.device_details.history')
+        "
+      >
+        <TimeSeriesData
+          v-if="readingView.mode === 'curve'"
+          :device-id="id"
+          :the-key="readingView.item.key"
+          :the-name="readingView.item.label || readingView.item.key"
+          :the-unit="readingView.item.unit || ''"
+        />
+        <HistoryData v-else :device-id="id" :the-key="readingView.item.key" />
+      </n-drawer-content>
+    </n-drawer>
   </section>
 </template>
 

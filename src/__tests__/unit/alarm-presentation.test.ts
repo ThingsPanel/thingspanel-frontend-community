@@ -12,7 +12,8 @@ describe('alarm lifecycle presentation', () => {
   it('formats condition evidence without losing zero or plain descriptions', () => {
     expect(
       formatAlarmEvidence(JSON.stringify({ reasons: [{ key: 'temperature', actual: 0, expected: '> 30' }] }))
-    ).toBe('temperature：当前值 0，条件 > 30')
+    ).toBe('温度：当前值 0，条件 > 30')
+    expect(formatAlarmEvidence('{"source":"detector"}')).toBe('')
     expect(formatAlarmEvidence('普通说明')).toBe('普通说明')
   })
 })

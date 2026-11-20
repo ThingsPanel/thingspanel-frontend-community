@@ -62,7 +62,7 @@ watch(() => [props.deviceId, props.deviceConfigId], load, { immediate: true })
 function sourceLabel(source: string) {
   if (source === 'template') return '来自设备模板'
   if (source === 'device') return '本设备专属'
-  if (source === 'condition') return '条件匹配（不限设备）'
+  if (source === 'condition') return '条件匹配'
   return source
 }
 
@@ -84,18 +84,22 @@ function paramText(params: Record<string, string> | undefined, overridden: strin
     .join('，')
 }
 
+const automationRules = computed(() => device.value?.rules.filter(rule => rule.kind !== 'alarm_policy') ?? [])
 const directoryIssue = computed(() =>
   (device.value?.issues ?? []).find(issue => issue.code === 'directory_unavailable')
 )
 </script>
 
 <template>
-  <NCard v-if="nativeEnabled || failure" size="small" :bordered="false" class="mb-4">
+  <NCard
+    v-if="failure || (nativeEnabled && (!isDevice || automationRules.length || directoryIssue))"
+    size="small"
+    :bordered="false"
+    class="mb-4"
+  >
     <template #header>
       <NFlex align="center" :size="10">
-        <span class="title">对这个对象生效的规则</span>
-        <NTag v-if="isDevice" size="small" :bordered="false">设备 {{ deviceId }}</NTag>
-        <NTag v-else size="small" :bordered="false">设备模板 {{ deviceConfigId }}</NTag>
+        <span class="title">{{ isDevice ? '适用的自动化规则' : '模板绑定规则' }}</span>
         <NButton text type="primary" size="tiny" @click="load">刷新</NButton>
       </NFlex>
     </template>
@@ -111,8 +115,12 @@ const directoryIssue = computed(() =>
 
     <NSpin :show="loading">
       <template v-if="isDevice">
-        <NEmpty v-if="(device?.rules ?? []).length === 0" size="small" description="这台设备目前没有生效的规则" />
-        <NTable v-else size="small" :bordered="false" :single-line="false">
+        <NEmpty
+          v-if="!automationRules.length && !failure && !directoryIssue"
+          size="small"
+          description="这台设备目前没有生效的规则"
+        />
+        <NTable v-else-if="automationRules.length" size="small" :bordered="false" :single-line="false">
           <thead>
             <tr>
               <th>规则</th>
@@ -123,7 +131,7 @@ const directoryIssue = computed(() =>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="rule in device?.rules ?? []" :key="rule.rule_id">
+            <tr v-for="rule in automationRules" :key="rule.rule_id">
               <td>{{ rule.rule_name }}</td>
               <td>
                 <NTag size="small" :type="sourceTone(rule.source)" :bordered="false">

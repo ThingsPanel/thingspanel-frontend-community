@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { NAlert, NButton, NCard, NEmpty, NFlex, NPopconfirm, NSelect, NTag, NTabs, NTabPane } from 'naive-ui'
+import { NAlert, NButton, NEmpty, NFlex, NPopconfirm, NSelect, NTag, NTabs, NTabPane } from 'naive-ui'
+import { RouterLink, useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/modules/auth'
 import {
   AutomationNativeError,
@@ -9,19 +10,23 @@ import {
   mergeAutomationAlarmPages,
   type AutomationAlarm
 } from '@/service/api/automation-native-client'
+import { alarmLifecycleLabel, formatAlarmEvidence } from '@/utils/alarm-presentation'
+import { formatDateTime } from '@/utils/common/datetime'
 import NativeAutomationPanel from './native-automation-panel.vue'
 
 const props = defineProps<{ deviceId: string }>()
 const authStore = useAuthStore()
 const canAcknowledge = computed(() => authStore.userInfo.roles?.includes('TENANT_ADMIN') ?? false)
-const selectedTab = ref<'history' | 'policies'>('history')
+const route = useRoute()
+const selectedTab = ref<'history' | 'policies'>(route.query.alarmTab === 'policies' ? 'policies' : 'history')
 const selectedState = ref<'all' | 'active' | 'cleared'>('all')
 const stateOptions = [
-  { label: '全部（活动与已恢复）', value: 'all' },
-  { label: '活动', value: 'active' },
+  { label: '全部状态', value: 'all' },
+  { label: '未恢复', value: 'active' },
   { label: '已恢复', value: 'cleared' }
 ]
 const alarms = ref<AutomationAlarm[]>([])
+const expandedId = ref<string | null>(null)
 const loading = ref(false)
 const totalAlarms = ref(0)
 const nextOffset = ref(0)
@@ -54,6 +59,7 @@ function syncVisibleAlarm(value: AutomationAlarm, state: 'all' | 'active' | 'cle
 }
 
 async function loadAlarms() {
+  expandedId.value = null
   const generation = ++requestGeneration
   if (!props.deviceId) {
     alarms.value = []
@@ -193,8 +199,27 @@ async function acknowledge(alarm: AutomationAlarm) {
   }
 }
 
-const levelLabel = (level?: string) => ({ H: '高 H', M: '中 M', L: '低 L' })[level || ''] || '等级未提供'
-const stateLabel = (state: string) => (state === 'active' ? '活动' : state === 'cleared' ? '已恢复' : state)
+const ruleNames = ref<Record<string, string>>({})
+watch(
+  () => props.deviceId,
+  async (deviceId, _, onCleanup) => {
+    let current = true
+    onCleanup(() => {
+      current = false
+    })
+    ruleNames.value = {}
+    if (!deviceId) return
+    try {
+      const result = await automationNative.deviceAutomation(deviceId)
+      if (current) ruleNames.value = Object.fromEntries(result.rules.map(rule => [rule.rule_id, rule.rule_name]))
+    } catch {
+      // Alarm history remains available if the rule directory is unavailable.
+    }
+  },
+  { immediate: true }
+)
+
+const levelLabel = (level?: string) => ({ H: '高级', M: '中级', L: '低级' })[level || '']
 const isReadingBack = (id: string) => readingBack.value.includes(id)
 const isAckPending = (id: string) => pendingAckIds.value.includes(id)
 
@@ -207,88 +232,258 @@ watch(
 
 <template>
   <NTabs v-model:value="selectedTab" type="line" animated>
-    <NTabPane name="history" tab="告警历史">
-      <NFlex justify="space-between" align="center" class="mb-4">
-        <span class="text-secondary">仅查询活动与已恢复告警；已读取 {{ alarms.length }} / {{ totalAlarms }} 条。</span>
-        <NFlex>
-          <NSelect v-model:value="selectedState" :options="stateOptions" class="w-220px" />
-          <NButton :loading="loading" @click="loadAlarms">刷新</NButton>
-        </NFlex>
+    <template #suffix>
+      <NFlex v-if="selectedTab === 'history'" align="center" :size="8">
+        <NSelect
+          v-model:value="selectedState"
+          aria-label="告警状态"
+          :options="stateOptions"
+          size="small"
+          class="alarm-filter"
+        />
+        <NButton size="small" :loading="loading" @click="loadAlarms">刷新</NButton>
       </NFlex>
+    </template>
+    <NTabPane name="history">
+      <template #tab>
+        告警历史
+        <span v-if="!loading && !pageError" class="alarm-count">（{{ totalAlarms }}）</span>
+      </template>
       <NAlert v-if="pageError" class="mb-4" type="error" :show-icon="false">{{ pageError }}</NAlert>
       <div v-if="loading && !alarms.length" class="py-8 text-center text-secondary">读取告警中…</div>
-      <NEmpty v-else-if="!alarms.length && !pageError" description="当前没有活动或已恢复告警。" />
-      <NCard v-for="alarm in alarms" :key="alarm.id" size="small" class="mb-3">
-        <NFlex justify="space-between" align="center">
-          <div>
-            <strong>{{ alarm.policy_key }}</strong>
-            <NTag class="ml-2" :type="alarm.state === 'active' ? 'warning' : 'default'">
-              {{ stateLabel(alarm.state) }}
-            </NTag>
-            <NTag class="ml-2" type="info">{{ levelLabel(alarm.level) }}</NTag>
-          </div>
-          <NPopconfirm
-            v-if="canAcknowledge && alarm.state === 'active' && !alarm.acked_at"
-            :positive-text="pendingRequestIds[alarm.id] ? '重试确认' : '确认告警'"
-            negative-text="取消"
-            @positive-click="acknowledge(alarm)"
-          >
-            <template #trigger>
-              <NButton
-                size="small"
-                type="warning"
-                :disabled="isAckPending(alarm.id) || isReadingBack(alarm.id)"
-                :loading="isAckPending(alarm.id) || isReadingBack(alarm.id)"
-              >
-                {{ pendingRequestIds[alarm.id] ? '重试确认' : '确认告警' }}
-              </NButton>
+      <NEmpty v-else-if="!alarms.length && !pageError" description="暂无告警记录" />
+      <div v-if="alarms.length" class="alarm-list">
+        <table aria-label="告警历史">
+          <thead>
+            <tr>
+              <th>发生时间</th>
+              <th>告警名称</th>
+              <th>级别</th>
+              <th>状态</th>
+              <th>最近检测</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="alarm in alarms" :key="alarm.id">
+              <tr class="alarm-row">
+                <td data-label="发生时间">
+                  <time :datetime="alarm.opened_at">{{ formatDateTime(alarm.opened_at) }}</time>
+                </td>
+                <td data-label="告警名称">
+                  <RouterLink
+                    v-if="canAcknowledge && ruleNames[alarm.policy_id]"
+                    class="rule-link"
+                    :to="{
+                      path: '/automation/rule-edit',
+                      query: { id: alarm.policy_id, device_id: deviceId, backType: 'device', alarmTab: 'history' }
+                    }"
+                  >
+                    {{ ruleNames[alarm.policy_id] }}
+                  </RouterLink>
+                  <span v-else>{{ ruleNames[alarm.policy_id] || '历史告警（名称不可用）' }}</span>
+                </td>
+                <td data-label="级别">{{ levelLabel(alarm.level) || '—' }}</td>
+                <td data-label="状态">
+                  <NTag size="small" :bordered="false" :type="alarm.state === 'active' ? 'warning' : 'default'">
+                    {{ alarmLifecycleLabel(alarm) || '状态未知' }}
+                  </NTag>
+                </td>
+                <td data-label="最近检测">{{ formatAlarmEvidence(alarm.last_evidence) || '—' }}</td>
+                <td data-label="操作">
+                  <NFlex align="center" :size="12">
+                    <NButton
+                      text
+                      size="small"
+                      type="primary"
+                      :aria-expanded="expandedId === alarm.id"
+                      @click="expandedId = expandedId === alarm.id ? null : alarm.id"
+                    >
+                      {{ expandedId === alarm.id ? '收起' : '详情' }}
+                    </NButton>
+                    <NPopconfirm
+                      v-if="canAcknowledge && alarm.state === 'active' && !alarm.acked_at"
+                      :positive-text="pendingRequestIds[alarm.id] ? '重试确认' : '确认告警'"
+                      negative-text="取消"
+                      @positive-click="acknowledge(alarm)"
+                    >
+                      <template #trigger>
+                        <NButton
+                          size="small"
+                          text
+                          type="primary"
+                          :disabled="isAckPending(alarm.id) || isReadingBack(alarm.id)"
+                          :loading="isAckPending(alarm.id) || isReadingBack(alarm.id)"
+                        >
+                          {{ pendingRequestIds[alarm.id] ? '重试确认' : '确认告警' }}
+                        </NButton>
+                      </template>
+                      确认只记录已知悉，不会恢复或清除告警。
+                    </NPopconfirm>
+                    <NButton
+                      v-else-if="ackWarnings[alarm.id]"
+                      size="small"
+                      :loading="isReadingBack(alarm.id)"
+                      @click="loadAlarms"
+                    >
+                      刷新状态
+                    </NButton>
+                  </NFlex>
+                </td>
+              </tr>
+              <tr v-if="expandedId === alarm.id" class="detail-row">
+                <td colspan="6">
+                  <div class="timeline">
+                    <span>发生 {{ formatDateTime(alarm.opened_at) }}</span>
+                    <span v-if="alarm.acked_at">确认 {{ formatDateTime(alarm.acked_at) }}</span>
+                    <span v-if="alarm.cleared_at">恢复 {{ formatDateTime(alarm.cleared_at) }}</span>
+                  </div>
+                  <details class="alarm-details">
+                    <summary>技术详情</summary>
+                    <dl>
+                      <dt>规则标识</dt>
+                      <dd>{{ alarm.policy_key }}</dd>
+                      <dt>规则 ID</dt>
+                      <dd>{{ alarm.policy_id }}</dd>
+                      <dt>设备 ID</dt>
+                      <dd>{{ alarm.subject_id }}</dd>
+                      <template v-if="alarm.acked_by">
+                        <dt>确认人 ID</dt>
+                        <dd>{{ alarm.acked_by }}</dd>
+                      </template>
+                      <template v-if="alarm.last_evidence">
+                        <dt>原始证据</dt>
+                        <dd>{{ alarm.last_evidence }}</dd>
+                      </template>
+                    </dl>
+                  </details>
+                </td>
+              </tr>
+              <tr v-if="ackWarnings[alarm.id]">
+                <td colspan="6">
+                  <NAlert v-if="ackWarnings[alarm.id]" class="mt-3" type="warning" :show-icon="false">
+                    <NFlex justify="space-between" align="center">
+                      <span>{{ ackWarnings[alarm.id] }}</span>
+                      <NButton size="small" :loading="isReadingBack(alarm.id)" @click="readBackAlarm(alarm.id)">
+                        重新读回
+                      </NButton>
+                    </NFlex>
+                  </NAlert>
+                </td>
+              </tr>
             </template>
-            确认只记录已知悉，不会恢复或清除告警。
-          </NPopconfirm>
-          <NButton
-            v-else-if="ackWarnings[alarm.id]"
-            size="small"
-            :loading="isReadingBack(alarm.id)"
-            @click="loadAlarms"
-          >
-            刷新状态
-          </NButton>
-        </NFlex>
-        <div class="alarm-meta mt-2">
-          <span>策略：{{ alarm.policy_id }}</span>
-          <span>对象：{{ alarm.subject_id }}</span>
-          <span>开始：{{ alarm.opened_at }}</span>
-          <span v-if="alarm.acked_at">确认：{{ alarm.acked_at }}（{{ alarm.acked_by || '操作者未提供' }}）</span>
-          <span v-if="alarm.cleared_at">恢复：{{ alarm.cleared_at }}</span>
-          <span v-if="alarm.last_evidence">最近证据：{{ alarm.last_evidence }}</span>
-        </div>
-        <NAlert v-if="ackWarnings[alarm.id]" class="mt-3" type="warning" :show-icon="false">
-          <NFlex justify="space-between" align="center">
-            <span>{{ ackWarnings[alarm.id] }}</span>
-            <NButton size="small" :loading="isReadingBack(alarm.id)" @click="readBackAlarm(alarm.id)">重新读回</NButton>
-          </NFlex>
-        </NAlert>
-      </NCard>
+          </tbody>
+        </table>
+      </div>
       <NFlex v-if="hasMoreAlarms" justify="center" class="mt-4">
         <NButton :loading="loading" @click="loadMoreAlarms">加载更多告警</NButton>
       </NFlex>
     </NTabPane>
-    <NTabPane name="policies" tab="告警策略">
+    <NTabPane name="policies" tab="告警规则">
       <NativeAutomationPanel scope="device" :target-id="deviceId" kind="alarm_policy" />
     </NTabPane>
   </NTabs>
 </template>
 
 <style scoped>
-.alarm-meta {
+.alarm-filter {
+  width: clamp(88px, 12vw, 128px);
+}
+.alarm-count {
+  font-size: 0.88em;
+  font-variant-numeric: tabular-nums;
+}
+.alarm-list {
+  container-type: inline-size;
+}
+.alarm-list table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+.alarm-list th,
+.alarm-list td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--n-tab-border-color, var(--border-color, #e5e7eb));
+  overflow-wrap: anywhere;
+}
+.alarm-list th {
+  font-weight: 600;
+}
+.alarm-list time {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.rule-link {
+  color: var(--primary-color, #555bd8);
+  text-decoration: none;
+}
+.rule-link:hover,
+.rule-link:focus-visible {
+  text-decoration: underline;
+}
+.timeline {
   display: flex;
+  gap: 8px 24px;
   flex-wrap: wrap;
-  gap: 8px 20px;
-  color: var(--text-color-3);
+}
+.text-secondary,
+.timeline {
+  font-size: 13px;
+  color: var(--text-color-2);
+}
+@container (max-width: 820px) {
+  .alarm-list thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    clip-path: inset(50%);
+    overflow: hidden;
+  }
+  .alarm-list table,
+  .alarm-list tbody,
+  .alarm-list tr {
+    display: block;
+  }
+  .alarm-list .alarm-row {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+  }
+  .alarm-list .alarm-row td {
+    display: grid;
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 8px;
+    align-items: baseline;
+    padding: 4px 8px;
+    border: 0;
+    justify-items: start;
+  }
+  .alarm-row td::before {
+    content: attr(data-label);
+    color: var(--text-color-2);
+  }
+  .alarm-list .detail-row td {
+    display: block;
+  }
+}
+.alarm-details {
+  margin-top: 10px;
   font-size: 13px;
 }
-.text-secondary {
-  color: var(--text-color-3);
-  font-size: 13px;
+.alarm-details summary {
+  width: fit-content;
+  cursor: pointer;
+  color: var(--text-color-2);
+}
+.alarm-details dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 16px;
+  margin: 8px 0 0;
+}
+.alarm-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 </style>

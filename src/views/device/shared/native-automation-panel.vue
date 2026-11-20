@@ -80,12 +80,12 @@ function operationKey(fingerprint: string): string {
   return key
 }
 
-function createRule() {
+function openRule(id?: string) {
   const query =
     props.scope === 'device'
       ? { device_id: props.targetId, backType: 'device', kind: props.kind }
       : { device_config_id: props.targetId, backType: 'config', kind: props.kind }
-  void router.push({ path: '/automation/rule-edit', query })
+  void router.push({ path: '/automation/rule-edit', query: { ...query, ...(id ? { id } : {}) } })
 }
 
 function visibleError(error: unknown): string {
@@ -319,13 +319,13 @@ watch(
           filterable
           clearable
           class="min-w-260px flex-1"
-          :placeholder="kind === 'automation' ? '选择已有自动化规则' : '选择已有告警策略'"
+          :placeholder="kind === 'automation' ? '选择已有自动化规则' : '选择已有告警规则'"
           @update:value="resetParameters"
         />
         <NButton type="primary" :disabled="!selectedRule || writing" :loading="writing" @click="attachRule">
           {{ scope === 'device' ? '绑定到本设备' : '绑定到模板' }}
         </NButton>
-        <NButton @click="createRule">新建规则</NButton>
+        <NButton @click="openRule()">{{ kind === 'alarm_policy' ? '新建告警规则' : '新建规则' }}</NButton>
       </NFlex>
       <div v-if="selectedRule" class="mt-3 grid gap-3 md:grid-cols-2">
         <label v-for="param in parameters" :key="param.key" class="parameter-field">
@@ -383,12 +383,7 @@ watch(
               </NTag>
             </div>
             <NFlex v-if="canManage" align="center">
-              <NButton
-                size="small"
-                @click="router.push({ path: '/automation/rule-edit', query: { id: rule.rule_id } })"
-              >
-                管理规则
-              </NButton>
+              <NButton size="small" @click="openRule(rule.rule_id)">管理规则</NButton>
               <NButton
                 v-if="canManage && rule.source === 'device' && rule.binding_id"
                 size="small"
@@ -406,13 +401,8 @@ watch(
             <strong>生效参数</strong>
             <div v-for="[key, value] in Object.entries(rule.effective_params)" :key="key">{{ key }}：{{ value }}</div>
           </div>
-          <div v-else class="mt-2 text-secondary">此响应未提供生效参数。</div>
           <div v-if="rule.overridden?.length" class="mt-2 text-secondary">
             本设备覆盖：{{ rule.overridden.join('、') }}
-          </div>
-          <div v-else-if="rule.source === 'template'" class="mt-2 text-secondary">本设备没有覆盖模板参数。</div>
-          <div v-else-if="rule.source === 'condition'" class="mt-2 text-secondary">
-            条件匹配规则没有设备绑定覆盖值。
           </div>
         </NCard>
       </div>
@@ -458,12 +448,7 @@ watch(
               </NTag>
             </div>
             <NFlex v-if="canManage" align="center">
-              <NButton
-                size="small"
-                @click="router.push({ path: '/automation/rule-edit', query: { id: binding.rule_id } })"
-              >
-                管理规则
-              </NButton>
+              <NButton size="small" @click="openRule(binding.rule_id)">管理规则</NButton>
               <NButton
                 v-if="canManage && binding.enabled && !binding.detached_at"
                 size="small"

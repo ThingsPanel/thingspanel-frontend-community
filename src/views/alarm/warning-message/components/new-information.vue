@@ -8,6 +8,10 @@
 -->
 <script setup lang="tsx">
 import { computed, getCurrentInstance, h, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { getAutomationMode } from '@/service/api/automation-runtime'
+import { useAuthStore } from '@/store/modules/auth'
+import { onMounted } from 'vue'
 import type { Ref } from 'vue'
 import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import { NButton, NEmpty, NPopconfirm, useMessage } from 'naive-ui'
@@ -19,6 +23,17 @@ import { tableThemeOverrides } from '@/utils/table-theme'
 import type { ModalType } from './pop-up.vue'
 import popUp from './pop-up.vue'
 import { useBoolean } from '~/packages/hooks'
+const router = useRouter()
+const auth = useAuthStore()
+const nativeRules = ref(false)
+onMounted(async () => {
+  try {
+    nativeRules.value =
+      (await getAutomationMode()) === 'native' && Boolean(auth.userInfo.roles?.includes('TENANT_ADMIN'))
+  } catch {
+    nativeRules.value = false
+  }
+})
 const logger = createLogger('Information')
 const rowKey = (row: DeviceManagement.DeviceData) => row.id
 const { bool: visible, setTrue: openModal } = useBoolean()
@@ -47,6 +62,10 @@ const editData = ref<Api.Alarm.NotificationGroupList | null>(null)
 
 function handleEditPwd(row, type) {
   // type:edit编辑，enable停用启用
+  if (type === 'edit' && nativeRules.value) {
+    void router.push({ path: '/automation/rule-edit', query: { id: row.id, kind: 'alarm_policy' } })
+    return
+  }
   if (type === 'edit') {
     editData.value = row
     setModalType('edit')
@@ -262,8 +281,16 @@ const getPlatform = computed(() => {
 
 <template>
   <div class="p-y-12px">
-    <NButton type="primary" @click="addWarningMessageBut">
-      {{ $t('generate.addAlarm') }}
+    <NButton
+      v-if="nativeRules"
+      type="primary"
+      class="mr-2"
+      @click="router.push({ path: '/automation/rule-edit', query: { kind: 'alarm_policy' } })"
+    >
+      新建告警规则
+    </NButton>
+    <NButton :type="nativeRules ? 'default' : 'primary'" @click="addWarningMessageBut">
+      {{ nativeRules ? '新建事件告警' : $t('generate.addAlarm') }}
     </NButton>
   </div>
   <div class="h-full flex-col">

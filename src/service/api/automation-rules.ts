@@ -265,6 +265,8 @@ export interface RuleDefinition {
     allowed_sources?: string[]
     level?: string
     notify_use_default?: boolean
+    notify_policy_id?: string
+    notify_revision?: number
     notify_alias_id?: string
   }
 }

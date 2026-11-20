@@ -351,22 +351,19 @@ watch(
       tableData.value = sortedData
       if (sourceData.length > 0) {
         let sumValue = 0
-        let currentMin: number = sourceData[0].y || Number.NEGATIVE_INFINITY
-        let currentMax: number = sourceData[0].y || Number.POSITIVE_INFINITY
-        sourceData.forEach(item => {
-          if (item.y) {
-            sumValue += item.y
-            if (item.y < (minValue.value ?? Infinity)) {
-              minValue.value = item.y
-            }
-            if (item.y > (maxValue.value ?? -Infinity)) {
-              maxValue.value = item.y
-            }
-          }
-        })
-        minValue.value = currentMin
-        maxValue.value = currentMax
-        avgValue.value = sumValue / sourceData.length
+        let currentMin = Infinity
+        let currentMax = -Infinity
+        let count = 0
+        for (const { y } of sourceData) {
+          if (typeof y !== 'number' || !Number.isFinite(y)) continue
+          sumValue += y
+          count++
+          currentMin = Math.min(currentMin, y)
+          currentMax = Math.max(currentMax, y)
+        }
+        minValue.value = count ? currentMin : undefined
+        maxValue.value = count ? currentMax : undefined
+        avgValue.value = count ? sumValue / count : undefined
         // 这里是当 通过接口改变 initialOptions的数据
 
         initialOptions.value.series.forEach(series => {

@@ -58,6 +58,8 @@ import {
   validateForm
 } from '@/utils/automation/form'
 import { firstIssueMessage, summarizeDefinition, toFormFieldErrors } from '@/utils/automation/summary'
+import AlarmRuleFields from '../modules/alarm-rule-fields.vue'
+import { newDeviceAlarm } from '@/utils/automation/device-alarm'
 import ConditionEditor from '../modules/condition-editor.vue'
 import StepEditor from '../modules/step-editor.vue'
 import SimulateDrawer from '../modules/simulate-drawer.vue'
@@ -76,7 +78,7 @@ const deviceConfigId = ref(String(route.query.device_config_id ?? ''))
 
 const form = ref(
   emptyForm({
-    kind: props.initialKind,
+    kind: route.query.kind === 'alarm_policy' ? 'alarm_policy' : props.initialKind,
     deviceID: deviceId.value || undefined,
     deviceConfigID: deviceConfigId.value || undefined
   })
@@ -97,6 +99,9 @@ const simulateVisible = ref(false)
 const impact = ref<ChangePreviewResponse | null>(null)
 const impactVisible = ref(false)
 
+const alarmDraft = ref(newDeviceAlarm(deviceId.value, deviceConfigId.value))
+const alarmEditor = ref<InstanceType<typeof AlarmRuleFields> | null>(null)
+const hasLoaded = ref(!ruleId.value)
 const isEdit = computed(() => Boolean(ruleId.value))
 const isAlarm = computed(() => form.value.kind === 'alarm_policy')
 const deviceLocked = computed(() => Boolean(deviceId.value) || Boolean(deviceConfigId.value))
@@ -136,6 +141,8 @@ async function loadRule() {
     const rule = await getRule(ruleId.value)
     form.value = definitionToForm(rule.definition, rule.name, rule.enabled)
     originalDefinition.value = rule.definition
+    if (rule.definition.kind === 'alarm_policy') alarmDraft.value = structuredClone(rule.definition)
+    hasLoaded.value = true
     version.value = rule.version
     savedEnabled.value = rule.enabled
   } catch (error) {
@@ -175,16 +182,42 @@ async function toggleEnabled(next: boolean) {
 
 /** The payload for every check and save: the form, plus what it does not own. */
 function buildDefinition(): RuleDefinition {
+  if (isAlarm.value) return alarmDraft.value
   return mergeDefinition(originalDefinition.value, formToDefinition(form.value))
+}
+
+function requestAlarmEnabled(next: boolean) {
+  if (!isEdit.value) return toggleEnabled(next)
+  const action = next ? '启用' : '停用'
+  dialog.warning({
+    title: '立即' + action + '告警规则？',
+    content: '确认后立即生效。',
+    positiveText: action,
+    negativeText: '取消',
+    onPositiveClick: () => toggleEnabled(next)
+  })
 }
 
 function goBack() {
   if (backType.value === 'device' && deviceId.value) {
-    router.replace({ path: '/device/details', query: { d_id: deviceId.value } })
+    router.replace({
+      path: '/device/details',
+      query: {
+        d_id: deviceId.value,
+        ...(isAlarm.value ? { tab: 'give-an-alarm', alarmTab: route.query.alarmTab || 'policies' } : {})
+      }
+    })
     return
   }
   if (backType.value === 'config' && deviceConfigId.value) {
-    router.replace({ path: '/device/template/detail', query: { id: deviceConfigId.value } })
+    router.replace({
+      path: '/device/template/detail',
+      query: { id: deviceConfigId.value, ...(isAlarm.value ? { tab: 'alarm' } : {}) }
+    })
+    return
+  }
+  if (isAlarm.value) {
+    router.replace('/alarm/warning-message')
     return
   }
   router.replace({ path: form.value.kind === 'scene' ? '/automation/scene-manage' : '/automation/scene-linkage' })
@@ -212,6 +245,12 @@ async function persist(options: { force?: boolean; previewToken?: string } = {})
         definition,
         enabled: form.value.enabled
       })
+      if (isAlarm.value) {
+        message.success('告警规则已创建')
+        await tabStore.removeTab(route.path)
+        goBack()
+        return
+      }
       ruleId.value = created.id
       version.value = created.version
       message.success('已创建')
@@ -282,7 +321,15 @@ async function save() {
   fieldErrors.value = {}
   formError.value = ''
 
-  const issues = validateForm(form.value)
+  if (!hasLoaded.value) return
+  if (isAlarm.value) {
+    const issue = alarmEditor.value?.validation()
+    if (issue) {
+      formError.value = issue
+      return
+    }
+  }
+  const issues = isAlarm.value ? [] : validateForm(form.value)
   if (issues.length) {
     fieldErrors.value = issuesToFieldMap(issues)
     message.error(issues[0].message)
@@ -296,7 +343,9 @@ async function save() {
     const validation = await validateRule(definition)
     if (!validation.valid) {
       fieldErrors.value = toFormFieldErrors(validation.issues)
-      message.error(firstIssueMessage(validation.issues) ?? '规则没有通过校验')
+      const problem = firstIssueMessage(validation.issues) ?? '规则没有通过校验'
+      if (isAlarm.value) formError.value = problem
+      else message.error(problem)
       return
     }
   } catch (error) {
@@ -354,18 +403,39 @@ async function confirmImpact() {
 
 onMounted(() => {
   if (isEdit.value) loadRule()
-  loadAlarmPolicies()
+  if (!isAlarm.value) loadAlarmPolicies()
 })
 </script>
 
 <template>
   <div class="rule-edit">
-    <NCard :bordered="false" :title="isEdit ? '编辑规则' : '新建规则'">
-      <NAlert v-if="formError" type="error" :bordered="false" class="mb-4" closable @close="formError = ''">
+    <NCard :bordered="false" :title="isAlarm || !hasLoaded ? undefined : isEdit ? '编辑规则' : '新建规则'">
+      <NAlert
+        v-if="formError && (!hasLoaded || !isAlarm)"
+        type="error"
+        :bordered="false"
+        class="mb-4"
+        closable
+        @close="formError = ''"
+      >
         {{ formError }}
       </NAlert>
 
-      <NForm label-placement="left" label-width="90" size="small">
+      <div v-if="!hasLoaded">
+        <NButton v-if="!loading" @click="loadRule">重新读取规则</NButton>
+        <span v-else>正在读取规则…</span>
+      </div>
+      <AlarmRuleFields
+        v-else-if="isAlarm"
+        ref="alarmEditor"
+        v-model="alarmDraft"
+        v-model:name="form.name"
+        :locked="deviceLocked"
+        :enabled="form.enabled"
+        :editing="isEdit"
+        @enabled="requestAlarmEnabled"
+      />
+      <NForm v-else label-placement="left" label-width="90" size="small">
         <NFlex>
           <NFormItem label="名称" required class="w-160">
             <NInput v-model:value="form.name" placeholder="例如：高温开风机" />
@@ -561,17 +631,27 @@ onMounted(() => {
         </NCollapse>
       </NForm>
 
-      <NDivider />
+      <NDivider v-if="!isAlarm && hasLoaded" />
 
-      <div class="summary">
+      <div v-if="!isAlarm && hasLoaded" class="summary">
         <span class="summary__label">保存后它会这样做</span>
         <span class="summary__text">{{ summary }}</span>
       </div>
 
-      <NFlex justify="center" :size="12" class="mt-4">
-        <NButton :disabled="!isEdit" @click="simulateVisible = true">试运行（不会真的执行）</NButton>
-        <NButton type="primary" :loading="saving" @click="save">保存</NButton>
-        <NButton quaternary @click="goBack">返回</NButton>
+      <NFlex
+        v-if="hasLoaded"
+        :justify="isAlarm ? 'end' : 'center'"
+        :size="12"
+        class="mt-4"
+        :class="{ 'alarm-actions': isAlarm }"
+      >
+        <span v-if="isAlarm && formError" role="alert" class="alarm-action-error">{{ formError }}</span>
+        <NButton v-if="isAlarm" @click="goBack">取消</NButton>
+        <NButton v-if="!isAlarm || isEdit" :disabled="!isEdit" @click="simulateVisible = true">
+          {{ isAlarm ? '试运行' : '试运行（不会真的执行）' }}
+        </NButton>
+        <NButton type="primary" :loading="saving" @click="save">{{ isAlarm ? '保存规则' : '保存' }}</NButton>
+        <NButton v-if="!isAlarm" quaternary @click="goBack">返回</NButton>
       </NFlex>
     </NCard>
 
@@ -594,7 +674,7 @@ onMounted(() => {
           <div v-if="impact.scope.truncated" class="hint">仅显示前 50 台设备。</div>
           <NSpace :size="6">
             <NTag v-for="id in (impact.scope.deviceIds ?? []).slice(0, 50)" :key="id" size="small" :bordered="false">
-              {{ id }}
+              {{ isAlarm ? alarmEditor?.names[id] || '受影响设备' : id }}
             </NTag>
           </NSpace>
           <NAlert v-if="impact.bindingIssues?.length" type="warning" :bordered="false">
@@ -620,6 +700,33 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.alarm-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  box-sizing: border-box;
+  max-width: 1080px;
+  margin-inline: auto;
+  padding: 10px 0 max(10px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--n-border-color);
+  background: var(--n-color);
+}
+.alarm-action-error {
+  align-self: center;
+  margin-inline-end: auto;
+  color: var(--n-text-color-error, #b42318);
+}
+@media (max-width: 700px) {
+  .alarm-action-error {
+    flex-basis: 100%;
+  }
+}
+.rule-edit :deep(.alarm-editor section:last-child) {
+  border-bottom: 0;
+}
+.rule-edit :deep(.alarm-editor :is(input, button, [tabindex])) {
+  scroll-margin-bottom: 70px;
+}
 .group {
   padding: 10px 12px;
   border: 1px solid var(--border-color);

@@ -9,15 +9,20 @@ export function formatAlarmEvidence(value: string | undefined) {
   if (!value) return ''
   try {
     const parsed = JSON.parse(value)
-    if (Array.isArray(parsed.reasons))
-      return parsed.reasons
-        .map(
-          (item: any) =>
-            `${item.key || '条件'}：当前值 ${item.actual ?? '--'}，条件 ${item.expected || item.message || '--'}`
-        )
-        .join('；')
+    if (!Array.isArray(parsed?.reasons)) return ''
+    const labels: Record<string, string> = { temperature: '温度', humidity: '湿度' }
+    return parsed.reasons
+      .filter((reason: unknown) => reason && typeof reason === 'object')
+      .map((reason: { key?: string; actual?: string | number; expected?: string; message?: string }) => {
+        const key = reason.key || '条件'
+        const parts: string[] = []
+        if (reason.actual != null) parts.push(`当前值 ${reason.actual}`)
+        if (reason.expected) parts.push(`条件 ${reason.expected}`)
+        return parts.length ? `${labels[key] || key}：${parts.join('，')}` : reason.message || ''
+      })
+      .filter(Boolean)
+      .join('；')
   } catch {
-    /* Plain descriptions remain readable. */
+    return /^[{[]/.test(value.trimStart()) ? '' : value
   }
-  return value
 }
