@@ -385,7 +385,7 @@ watch(
             <NFlex v-if="canManage" align="center">
               <NButton
                 size="small"
-                @click="router.push({ path: '/automation/rule-manage', query: { rule_id: rule.rule_id } })"
+                @click="router.push({ path: '/automation/rule-edit', query: { id: rule.rule_id } })"
               >
                 管理规则
               </NButton>
@@ -460,7 +460,7 @@ watch(
             <NFlex v-if="canManage" align="center">
               <NButton
                 size="small"
-                @click="router.push({ path: '/automation/rule-manage', query: { rule_id: binding.rule_id } })"
+                @click="router.push({ path: '/automation/rule-edit', query: { id: binding.rule_id } })"
               >
                 管理规则
               </NButton>

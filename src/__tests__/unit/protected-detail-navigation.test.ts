@@ -11,6 +11,13 @@ vi.mock('@/router/elegant/transform', () => ({ transformElegantRoutesToVueRoutes
 import { createRoutes } from '@/router/routes'
 
 describe('protected detail links after authenticated menus replace route names', () => {
+  it('resolves a saved alarm policy link to its protected editor', async () => {
+    const router = createRouter({ history: createMemoryHistory(), routes: createRoutes().constantVueRoutes })
+    await router.push('/automation/rule-manage?rule_id=alarm-1')
+    expect(router.currentRoute.value.fullPath).toBe('/automation/rule-edit?id=alarm-1')
+    expect(router.currentRoute.value.meta.roles).toEqual(['TENANT_ADMIN'])
+  })
+
   it.each([
     ['/device/details', 'device_details', 'device-details-reference'],
     ['/automation/rule-edit', 'automation_rule-edit', 'automation-rule-edit-reference']

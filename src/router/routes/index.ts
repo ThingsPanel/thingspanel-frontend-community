@@ -252,6 +252,13 @@ export function createRoutes() {
       ]
     },
     {
+      path: '/automation/rule-manage',
+      redirect: to =>
+        typeof to.query.rule_id === 'string' && to.query.rule_id
+          ? { path: '/automation/rule-edit', query: { id: to.query.rule_id } }
+          : { path: '/automation/scene-linkage' }
+    },
+    {
       path: '/automation/rule-edit',
       component: layouts.base,
       children: [
