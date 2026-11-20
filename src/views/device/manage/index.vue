@@ -1329,6 +1329,13 @@ const toggleGroupPanel = () => {
   overflow: hidden;
 }
 
+.device-manage-page:has(.readings-layout),
+.device-manage-layout:has(.readings-layout),
+.device-manage-content:has(.readings-layout) {
+  height: auto;
+  overflow: visible;
+}
+
 .device-group-filter-toggle {
   flex-shrink: 0;
   height: 36px;

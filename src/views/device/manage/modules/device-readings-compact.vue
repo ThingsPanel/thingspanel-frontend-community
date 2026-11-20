@@ -593,9 +593,9 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => changePage
 <style scoped lang="scss">
 .device-readings-compact {
   min-height: 240px;
-  height: 100%;
-  overflow: auto;
   color: var(--text-color);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .device-readings-compact__header {
@@ -617,7 +617,7 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => changePage
     margin: 0;
     overflow: hidden;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 400;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -641,18 +641,18 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => changePage
 
 .device-readings-row {
   display: grid;
-  grid-template-columns: minmax(150px, 220px) minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: minmax(120px, 1.4fr) minmax(100px, 0.8fr) minmax(240px, 3.5fr) minmax(140px, 1fr);
   align-items: center;
-  padding: 12px 6px;
-  border-bottom: 1px solid var(--border-color);
+  gap: 16px;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgb(226 232 240 / 85%);
+  font-weight: 400;
 }
 
-.device-readings-row__device {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  min-width: 0;
+article.device-readings-row:hover {
+  background: rgb(239 246 255);
 }
 
 .device-readings-row__name {
@@ -661,16 +661,15 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => changePage
   padding: 0;
   border: 0;
   background: transparent;
-  color: var(--text-color);
+  color: var(--n-color-target, #646cff);
   font: inherit;
-  font-weight: 600;
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
 
   &:hover {
-    color: var(--primary-color);
+    text-decoration: underline;
   }
 
   &:focus-visible {
@@ -690,23 +689,8 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => changePage
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  min-height: 32px;
   max-width: 100%;
-  padding: 4px 9px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: var(--card-color);
-  color: var(--text-color);
   font: inherit;
-  font-size: 13px;
-  transition:
-    border-color 160ms ease,
-    background-color 160ms ease;
-
-  &:hover {
-    border-color: var(--primary-color);
-    background: var(--primary-color-suppl);
-  }
 }
 
 .device-reading__history-trigger {
@@ -737,7 +721,7 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => changePage
 
 .device-reading__value {
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: 400;
   white-space: nowrap;
 
   small {
@@ -757,16 +741,8 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => changePage
   font-size: 12px;
 }
 
-.device-readings-row {
-  grid-template-columns: minmax(120px, 1.4fr) minmax(100px, 0.8fr) minmax(240px, 3.5fr) minmax(140px, 1fr);
-  border-bottom: 1px solid var(--n-border-color, #e4e7ec);
-  padding: 12px;
-}
-.column-head,
-.expanded-readings {
-  background: var(--n-color-embedded, rgba(120, 130, 150, 0.06));
-}
 .column-head {
+  min-height: 44px;
   font-weight: 600;
 }
 .connectivity::before {
@@ -781,26 +757,25 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => changePage
 .connectivity.online::before {
   background: #43ad70;
 }
-.device-reading {
-  border: 0;
-  padding: 0 5px 0 0;
-  background: transparent;
-}
 .expanded-readings {
   grid-column: 1 / -1;
-  overflow-x: auto;
+  min-width: 0;
   border-inline-start: 2px solid #646cff;
   padding: 8px 14px;
 }
 .expanded-readings table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 .expanded-readings th,
 .expanded-readings td {
   text-align: start;
   padding: 7px;
   overflow-wrap: anywhere;
+}
+.expanded-readings th {
+  font-weight: 600;
 }
 .readings-pagination {
   display: flex;

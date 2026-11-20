@@ -1,5 +1,5 @@
 <template>
-  <div class="advanced-list-container">
+  <div class="advanced-list-container" :class="{ 'readings-layout': currentView === 'dense' }">
     <n-card class="full-height-card" footer-style="padding-top: 0px; padding-bottom: 0px;">
       <div class="advanced-list-layout">
         <!-- 搜索区域 -->
@@ -645,5 +645,19 @@ onUnmounted(() => {
 
 :deep(.n-scrollbar > .n-scrollbar-container > .n-scrollbar-content) {
   min-height: 100%;
+}
+
+/* Paginated readings grow with expanded metrics; the application page owns scrolling. */
+.advanced-list-container.readings-layout,
+.readings-layout :deep(.full-height-card),
+.readings-layout .advanced-list-layout,
+.readings-layout .list-content,
+.readings-layout .list-content-body .view-wrapper {
+  height: auto;
+  overflow: visible;
+}
+
+.readings-layout .list-content-header {
+  position: static;
 }
 </style>
