@@ -669,6 +669,7 @@ const isEmbeddedHost = computed(() => {
                 :device-config-id="deviceData?.device_config_id || ''"
                 :title="component.pendingTitle"
                 @change="getDeviceDetail"
+                @credential-activated="refreshRuntimeState"
               />
             </n-spin>
           </n-tab-pane>

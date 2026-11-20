@@ -24,15 +24,18 @@ import {
 } from './native-device-credentials-flow'
 
 const props = defineProps<{ id: string }>()
+const emit = defineEmits<{ credentialActivated: [deviceId: string] }>()
 const message = useMessage()
 const authStore = useAuthStore()
 const pageSize = 20
 const summaries = ref<DeviceCredentialSummary[]>([])
 const importedAccess = ref(false)
 const connectionLoading = ref(true)
+const connectionInfo = ref<ConnectionInfo | null>(null)
 const total = ref(0)
 const page = ref(1)
 const listLoading = ref(false)
+const activationPolling = ref(false)
 const listError = ref('')
 const createError = ref('')
 const showCredentialForm = ref(false)
@@ -52,6 +55,14 @@ const hasPendingWrite = computed(() => Boolean(createAttempt.value))
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / pageSize)))
 const currentLogin = computed(() => summaries.value.find(item => item.status === 'active'))
 const hasCurrentLogin = computed(() => Boolean(currentLogin.value))
+const awaitingFirstActivation = computed(
+  () =>
+    page.value === 1 &&
+    !hasCurrentLogin.value &&
+    summaries.value.some(item => item.status === 'pending' && item.kind !== 'x509') &&
+    connectionInfo.value?.protocol.toLowerCase() === 'mqtt' &&
+    !importedAccess.value
+)
 const createButtonLabel = computed(() => {
   if (createAttempt.value) return '重试保存'
   const isCustom = credentialKind.value === 'x509' || credentialSource.value === 'import'
@@ -84,23 +95,40 @@ onBeforeRouteUpdate((to, from) => {
   return true
 })
 
-async function loadCredentialPage(deviceId: string, requestedPage = page.value): Promise<void> {
+async function loadCredentialPage(deviceId: string, requestedPage = page.value, background = false): Promise<void> {
   if (importedAccess.value) return
+  const wasAwaitingActivation =
+    awaitingFirstActivation.value ||
+    (!hasCurrentLogin.value &&
+      createdResult.value?.credential.credential.status === 'pending' &&
+      createdResult.value.credential.credential.kind !== 'x509')
   const requestGeneration = ++listRequestGeneration
-  listLoading.value = true
-  listError.value = ''
+  if (!background) {
+    listLoading.value = true
+    listError.value = ''
+  }
   try {
     const result = await deviceCredentialsNative.list(deviceId, { page: requestedPage, pageSize })
     if (requestGeneration !== listRequestGeneration || deviceId !== props.id) return
     summaries.value = result.items
     total.value = result.total
     page.value = result.page
+    listError.value = ''
+    if (
+      requestedPage === 1 &&
+      wasAwaitingActivation &&
+      result.items.some(item => item.status === 'active' && item.kind !== 'x509')
+    ) {
+      void loadConnectionInfo(deviceId, true)
+      emit('credentialActivated', deviceId)
+    }
   } catch {
     if (requestGeneration !== listRequestGeneration || deviceId !== props.id) return
+    if (background) return
     listError.value = '凭据摘要暂时无法读取。创建结果仍会单独显示。'
     throw new Error('credential summary read failed')
   } finally {
-    if (requestGeneration === listRequestGeneration) listLoading.value = false
+    if (!background && requestGeneration === listRequestGeneration) listLoading.value = false
   }
 }
 
@@ -316,21 +344,30 @@ async function changeCredential(
   if (deviceId === props.id) await loadCredentialPage(deviceId, page.value).catch(() => undefined)
 }
 
-const connectionInfo = ref<ConnectionInfo | null>(null)
 const connectionInfoError = ref('')
 const topicRows = computed(() => connectionTopicRows(connectionInfo.value))
-async function loadConnectionInfo(deviceId: string) {
-  connectionLoading.value = true
-  connectionInfo.value = null
-  connectionInfoError.value = ''
+let connectionRequestGeneration = 0
+async function loadConnectionInfo(deviceId: string, background = false) {
+  const requestGeneration = ++connectionRequestGeneration
+  const sessionGeneration = credentialSessionGeneration
+  const isCurrent = () =>
+    requestGeneration === connectionRequestGeneration &&
+    sessionGeneration === credentialSessionGeneration &&
+    deviceId === props.id
+  if (!background) {
+    connectionLoading.value = true
+    connectionInfo.value = null
+    connectionInfoError.value = ''
+  }
   try {
     const info = await deviceRuntimeNative.readConnectionInfo(deviceId)
-    if (deviceId === props.id) {
+    if (isCurrent()) {
       connectionInfo.value = info
       importedAccess.value = Boolean(info.importedAccess)
+      connectionInfoError.value = ''
     }
   } catch (error) {
-    if (deviceId === props.id) {
+    if (isCurrent() && !background) {
       const message = error instanceof Error ? error.message : ''
       // 未绑定模板的设备没有接入配置，后端返回英文原文；这是预期状态，不是读取失败。
       connectionInfoError.value =
@@ -339,7 +376,7 @@ async function loadConnectionInfo(deviceId: string) {
           : message || '接入信息读取失败'
     }
   } finally {
-    if (deviceId === props.id) connectionLoading.value = false
+    if (isCurrent()) connectionLoading.value = false
   }
 }
 watch(
@@ -349,6 +386,31 @@ watch(
       if (id === props.id && !importedAccess.value) return loadCredentialPage(id, 1).catch(() => undefined)
     }),
   { immediate: true }
+)
+
+watch(
+  [() => props.id, awaitingFirstActivation, () => Boolean(authStore.token)],
+  ([deviceId, pending, authenticated], _, onCleanup) => {
+    if (!pending || !authenticated) return
+    const deadline = Date.now() + 75_000
+    const sessionGeneration = credentialSessionGeneration
+    let timer: ReturnType<typeof setTimeout>
+    let stopped = false
+    activationPolling.value = true
+    onCleanup(() => {
+      stopped = true
+      clearTimeout(timer)
+      activationPolling.value = false
+    })
+    async function poll() {
+      if (stopped || sessionGeneration !== credentialSessionGeneration || !awaitingFirstActivation.value) return
+      if (!listLoading.value && !creating.value) await loadCredentialPage(deviceId, 1, true)
+      if (stopped || !awaitingFirstActivation.value) return
+      if (Date.now() < deadline) timer = setTimeout(poll, 1500)
+      else activationPolling.value = false
+    }
+    timer = setTimeout(poll, 1500)
+  }
 )
 
 function clearCreatedResult() {
@@ -440,6 +502,9 @@ onBeforeUnmount(() => {
           收起表单
         </n-button>
       </template>
+      <n-alert v-if="activationPolling" type="info" class="mb-3">
+        正在激活设备凭据，确认后会自动更新状态和连接参数。
+      </n-alert>
       <n-spin :show="listLoading">
         <n-list v-if="summaries.length" bordered>
           <n-list-item v-for="credential in summaries" :key="credential.id">

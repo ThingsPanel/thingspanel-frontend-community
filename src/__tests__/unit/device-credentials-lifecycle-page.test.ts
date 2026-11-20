@@ -198,4 +198,37 @@ describe('device credentials page: rotation, revocation and connection info', ()
     const wrapper = await mountPage()
     expect(wrapper.text()).toContain('runtime unavailable')
   })
+
+  it('automatically refreshes connection and runtime state when the first MQTT credential becomes active', async () => {
+    vi.useFakeTimers()
+    credentials.list
+      .mockResolvedValueOnce({ items: [summary(pendingId, 'pending')], page: 1, total: 1 })
+      .mockResolvedValueOnce({ items: [summary(pendingId, 'active')], page: 1, total: 1 })
+    const wrapper = await mountPage()
+    try {
+      expect(wrapper.text()).toContain('正在激活设备凭据')
+      await vi.advanceTimersByTimeAsync(1500)
+      expect(wrapper.text()).toContain('已生效')
+      expect(runtime.readConnectionInfo).toHaveBeenCalledTimes(2)
+      expect(wrapper.emitted('credentialActivated')).toEqual([[deviceId]])
+      await vi.advanceTimersByTimeAsync(3000)
+      expect(credentials.list).toHaveBeenCalledTimes(2)
+    } finally {
+      wrapper.unmount()
+      vi.useRealTimers()
+    }
+  })
+
+  it('does not poll a pending replacement when an active credential already exists', async () => {
+    vi.useFakeTimers()
+    const wrapper = await mountPage()
+    try {
+      await vi.advanceTimersByTimeAsync(3000)
+      expect(credentials.list).toHaveBeenCalledTimes(1)
+      expect(wrapper.text()).not.toContain('正在激活设备凭据')
+    } finally {
+      wrapper.unmount()
+      vi.useRealTimers()
+    }
+  })
 })
