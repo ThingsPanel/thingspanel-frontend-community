@@ -6,6 +6,14 @@ vi.mock('vue-router', () => ({
   useRoute: () => ({ query: { id: 'rule-a' }, path: '/automation/rule-edit' }),
   useRouter: () => ({ replace: vi.fn() })
 }))
+// The alarm fields load the notification directory on mount; mocking it keeps the app graph
+// (auth store -> hooks/common/router -> router/index.ts) out of this test.
+vi.mock('@/service/api/notification', () => ({
+  getNotificationDefaultPolicy: vi.fn(async () => ({ data: null, error: null }))
+}))
+vi.mock('@/service/api/notification-v2', () => ({
+  notificationV2: { getGroup: vi.fn(async () => ({ data: null })) }
+}))
 vi.mock('@/store/modules/tab', () => ({ useTabStore: () => ({ removeTab: vi.fn() }) }))
 vi.mock('@/service/api/automation-rules', () => ({
   AutomationApiError: class extends Error {},

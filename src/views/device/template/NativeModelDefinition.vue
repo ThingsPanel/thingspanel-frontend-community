@@ -4,6 +4,7 @@ import { NButton, NPopconfirm } from 'naive-ui'
 import ModelModal from './components/ModelModal.vue'
 import { fromNativeField, toNativeFieldFromEditor } from './native-field-mapping'
 import type { FieldKind, ModelDraft, ModelField } from '@/service/api/thingmodel-native-transport'
+import { $t } from '@/locales'
 
 type FormRecord = Record<string, any>
 type FieldTab = { kind: FieldKind; label: string }

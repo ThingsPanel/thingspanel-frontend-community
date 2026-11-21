@@ -14,6 +14,7 @@ import { deviceBindingRequiresNativeModel, resolveDeviceNativeModel } from '@/vi
 import { decorateNativeTelemetryRows } from '@/views/device/native-device-model-contract'
 import { ListOutline, PulseOutline } from '@vicons/ionicons5'
 import { getReadingDisplayValue, isNumericReading } from '@/utils/device-readings'
+import { $t } from '@/locales'
 const HistoryData = defineAsyncComponent(() => import('./modules/history-data.vue'))
 const TimeSeriesData = defineAsyncComponent(() => import('./modules/time-series-data.vue'))
 const readingView = ref<{ item: DeviceManagement.telemetryData; mode: 'history' | 'curve' } | null>(null)

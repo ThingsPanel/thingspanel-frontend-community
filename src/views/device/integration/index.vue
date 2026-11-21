@@ -8,6 +8,7 @@ import DevCardItem from '@/components/dev-card-item/index.vue'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import CardGrid from '@/components/card-grid/index.vue'
 import { GridOutline as CardIcon, SearchOutline } from '@vicons/ionicons5'
+import { $t } from '@/locales'
 const loading = ref(false)
 const router = useRouter()
 const pagination: PaginationProps = reactive({
