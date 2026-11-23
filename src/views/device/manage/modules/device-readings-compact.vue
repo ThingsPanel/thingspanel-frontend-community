@@ -586,7 +586,7 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => changePage
       </template>
       <template #header-extra>
         <NButton v-if="historyUsesCurve" :disabled="!curve?.canExport" @click="curve?.exportData()">
-          ↓ {{ $t('card.exportData') }}
+          {{ $t('card.exportData') }}
         </NButton>
       </template>
       <TimeSeriesData

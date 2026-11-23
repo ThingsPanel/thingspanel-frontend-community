@@ -4,7 +4,7 @@ import { NDataTable, NDatePicker, NEmpty, NSelect, NSpace } from 'naive-ui'
 import { useFullscreen } from '@vueuse/core'
 import dayjs from 'dayjs'
 import { useThemeStore } from '@/store/modules/theme'
-import { TrendingUpOutline, BarChartOutline } from '@vicons/ionicons5'
+import { CalendarOutline, TrendingUpOutline, BarChartOutline } from '@vicons/ionicons5'
 import { ChartScatter } from '@vicons/carbon'
 import { telemetryStatisticData } from '@/service/api/device'
 import { $t } from '@/locales'
@@ -464,14 +464,25 @@ const exportData = () => {
 }
 
 defineExpose({ exportData, canExport: computed(() => !loading.value && tableData.value.length > 0) })
-const jumps = [
-  { step: -1, unit: 'month', label: 'card.lastOneMonth' },
-  { step: -1, unit: 'day', label: 'card.yesterday' },
-  { step: -1, unit: 'hour', label: 'card.lastOneHour' },
-  { step: 1, unit: 'hour', label: 'card.nextOneHour' },
-  { step: 1, unit: 'day', label: 'card.tomorrow' },
-  { step: 1, unit: 'month', label: 'card.nextOneMonth' }
+const jumpGroups = [
+  { unit: 'hour', prev: 'card.lastOneHour', next: 'card.nextOneHour' },
+  { unit: 'day', prev: 'card.yesterday', next: 'card.tomorrow' },
+  { unit: 'month', prev: 'card.lastOneMonth', next: 'card.nextOneMonth' }
 ] as const
+const jumpOptions = computed(() =>
+  jumpGroups.flatMap(({ unit, prev, next }) => [
+    { key: unit + '-prev', label: $t(prev) },
+    { key: unit + '-next', label: $t(next) }
+  ])
+)
+function selectJump(key: string) {
+  for (const { unit } of jumpGroups) {
+    if (key === unit + '-prev' || key === unit + '-next') navigateTime(key.endsWith('-prev') ? -1 : 1, unit)
+  }
+}
+const dateLabel = computed(
+  () => datePickerValue.value?.map(t => dayjs(t).format('YYYY-MM-DD HH:mm')).join(' – ') || $t('card.customDates')
+)
 </script>
 
 <template>
@@ -487,17 +498,33 @@ const jumps = [
             @update:value="onTimeRangeChange"
           />
         </div>
-        <NDatePicker
+        <n-popover
           v-model:show="dateOpen"
-          :value="datePickerValue"
-          type="datetimerange"
-          format="yyyy-MM-dd HH:mm:ss"
-          @update:value="onCustomDateChange"
-        />
+          trigger="click"
+          placement="bottom-start"
+          :show-arrow="false"
+          style="max-width: 94vw; overflow: auto; padding: 0"
+        >
+          <template #trigger>
+            <n-button class="custom-date" :title="dateLabel" :aria-expanded="dateOpen">
+              <template #icon>
+                <n-icon><CalendarOutline /></n-icon>
+              </template>
+              <span>{{ dateLabel }}</span>
+            </n-button>
+          </template>
+          <NDatePicker panel :value="datePickerValue" type="datetimerange" @update:value="onCustomDateChange" />
+        </n-popover>
         <div class="time-jumps">
-          <n-button v-for="j in jumps" :key="j.label" size="small" @click="navigateTime(j.step, j.unit)">
-            {{ $t(j.label) }}
-          </n-button>
+          <n-button-group v-for="group in jumpGroups" :key="group.unit">
+            <n-button @click="navigateTime(-1, group.unit)">{{ $t(group.prev) }}</n-button>
+            <n-button @click="navigateTime(1, group.unit)">{{ $t(group.next) }}</n-button>
+          </n-button-group>
+        </div>
+        <div class="compact-jumps">
+          <n-dropdown trigger="click" :options="jumpOptions" @select="selectJump">
+            <n-button>{{ $t('card.switchPeriod') }} ▾</n-button>
+          </n-dropdown>
         </div>
       </div>
       <div class="aggregate-controls">
@@ -588,19 +615,12 @@ const jumps = [
   container-type: inline-size;
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 16px;
+  align-items: center;
+  gap: 12px;
   padding: 16px 0;
   border-block: 1px solid var(--border-color, #ddd);
 }
-.time-controls {
-  flex: 2 1 580px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: 8px 12px;
-  min-width: 0;
-}
+.time-controls,
 .time-selector,
 .aggregate-controls,
 .aggregate-controls > div,
@@ -610,26 +630,48 @@ const jumps = [
   align-items: center;
   gap: 8px;
 }
+.time-controls,
+.aggregate-controls {
+  flex-wrap: wrap;
+}
 .time-selector span,
 .aggregate-controls span {
   white-space: nowrap;
 }
 .time-selector .n-select {
-  width: 118px;
+  width: 110px;
 }
-.time-jumps {
-  grid-column: 2;
-  flex-wrap: wrap;
-  gap: 5px;
+.custom-date {
+  max-width: 190px;
+}
+.custom-date :deep(.n-button__content) {
+  min-width: 0;
+}
+.custom-date span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.time-jumps .n-button {
+  padding-inline: 9px;
+}
+.compact-jumps {
+  display: none;
 }
 .aggregate-controls {
-  flex: 1 1 325px;
-  flex-wrap: wrap;
-  padding-left: 16px;
+  padding-left: 14px;
   border-left: 1px solid var(--border-color, #ddd);
 }
 .aggregate-controls .n-select {
-  width: 106px;
+  width: 105px;
+}
+@container (max-width: 1200px) {
+  .time-jumps {
+    display: none;
+  }
+  .compact-jumps {
+    display: block;
+  }
 }
 .chart-tools {
   position: absolute;
@@ -641,17 +683,6 @@ const jumps = [
   .aggregate-controls {
     padding-left: 0;
     border-left: 0;
-  }
-}
-@container (max-width:650px) {
-  .time-controls {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .time-jumps {
-    grid-column: 1;
-  }
-  .time-controls .n-date-picker {
-    min-width: 0;
   }
 }
 .container-table-chart {

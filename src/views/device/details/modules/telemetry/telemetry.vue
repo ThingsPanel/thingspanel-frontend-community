@@ -293,7 +293,7 @@ onUnmounted(() => {
       </template>
       <template #header-extra>
         <n-button v-if="readingView?.mode === 'curve'" :disabled="!curve?.canExport" @click="curve?.exportData()">
-          ↓ {{ $t('card.exportData') }}
+          {{ $t('card.exportData') }}
         </n-button>
       </template>
       <template v-if="readingView">
