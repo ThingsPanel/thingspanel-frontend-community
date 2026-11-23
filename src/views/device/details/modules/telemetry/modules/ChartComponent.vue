@@ -10,12 +10,14 @@ import {
   TooltipComponent
 } from 'echarts/components'
 import { useTpECharts } from '@/hooks/tp-chart/use-tp-echarts'
+import { registerEChartsExtensions } from '@/utils/echarts/echarts-manager'
 
 // Props
 const props = defineProps<{
   initialOptions: EChartsCoreOption
 }>()
 use([DataZoomComponent, GridComponent, LegendComponent, ToolboxComponent, TooltipComponent])
+registerEChartsExtensions(['scatter'])
 const { domRef, updateOptions } = useTpECharts(() => props.initialOptions)
 watch(
   () => props.initialOptions,
