@@ -12,6 +12,8 @@ import { demoHistory, isDeviceDetailDemo } from '@/utils/device-detail-demo-data
 
 interface Created {
   deviceId: string
+  theName?: string
+  theUnit?: string
   theKey: string
 }
 
@@ -20,7 +22,6 @@ interface Params {
   device_id: string
   end_time: number
   start_time: number
-  export_excel: boolean
   key: string
   page: number
   page_size: number
@@ -29,7 +30,7 @@ interface Params {
 interface HistoryData {
   key: string
   ts: string
-  value: number
+  value: unknown
 }
 const { loading, startLoading, endLoading } = useLoading()
 
@@ -38,15 +39,14 @@ const MAX_RANGE_MS = 24 * 60 * 60 * 1000
 const MAX_EXPORT_RANGE_MS = 31 * MAX_RANGE_MS
 const exportRange = ref<[number, number] | null>(null)
 const end_time = dayjs().valueOf()
-const start_time = earliestStartWithin(end_time, MAX_RANGE_MS)
+const start_time = earliestStartWithin(end_time, 3600000)
 const params = reactive<Params>({
   device_id: props.deviceId,
   end_time,
   start_time,
-  export_excel: false,
   key: props.theKey,
   page: 1,
-  page_size: 5
+  page_size: 10
 })
 
 const tableData = ref<HistoryData[]>([])
@@ -58,21 +58,21 @@ const tableThemeOverrides = {
   lineHeight: '1.5',
   thColor: 'var(--body-color)',
   thColorHover: 'var(--body-color)',
-  thFontWeight: '400',
+  thFontWeight: '600',
   thTextColor: 'var(--text-color)',
   tdColor: 'var(--card-color)',
   tdColorHover: 'var(--primary-color-suppl)',
   tdColorSorting: 'var(--primary-color-suppl)',
   tdTextColor: 'var(--text-color)',
   thPaddingMedium: '12px',
-  tdPaddingMedium: '13px 12px'
+  tdPaddingMedium: '9px 12px'
 }
 
 const historyRowKey = (row: HistoryData) => `${row.ts}-${row.key}`
 
 const pagination = reactive({
   page: 1,
-  pageSize: 5,
+  pageSize: 10,
   showSizePicker: true,
   pageSizes: [5, 10, 15, 20],
   itemCount: 0,
@@ -90,44 +90,68 @@ const pagination = reactive({
   }
 })
 
-// 定义函数
-const getTelemetryHistoryData = async () => {
-  if (!props.deviceId && !props.theKey) {
-    tableData.value = []
-    return
+function saveFile(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = name
+  anchor.click()
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+async function exportVisibleRange(from: string, to: string) {
+  const rows = [['identifier', 'observedAt', 'value']]
+  let total = 0
+  for (let page = 1; ; page++) {
+    const result = await deviceRuntimeNative.listReadings(props.deviceId, {
+      kind: 'telemetry',
+      identifier: props.theKey,
+      from,
+      to,
+      page,
+      pageSize: 100
+    })
+    if (page === 1) total = result.total
+    if (result.total !== total || (rows.length - 1 < total && !result.items.length))
+      throw new Error($t('page.dataForward.requestFailed'))
+    for (const item of result.items) rows.push([item.identifier, item.observedAt, JSON.stringify(item.value)])
+    if (rows.length - 1 >= total) break
   }
-  startLoading()
-  if (params.export_excel) {
-    // 通过 Encore 导出任务生成 CSV，再用登录令牌下载（单次最多 24 小时、5 万行）。
+  const csv = rows.map(row => row.map(v => '"' + String(v ?? '').replaceAll('"', '""') + '"').join(',')).join('\r\n')
+  saveFile(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }), props.theKey + '.csv')
+}
+
+const exporting = ref(false)
+const exportHistory = async () => {
+  if (exporting.value) return
+  exporting.value = true
+  const [start, end] = exportRange.value ?? [params.start_time, params.end_time]
+  const from = new Date(start).toISOString()
+  const to = new Date(end + 1).toISOString()
+  try {
     try {
-      const [exportFrom, exportTo] = exportRange.value ?? [params.start_time, params.end_time]
       const submitted = await deviceRuntimeNative.exportReadings(
         props.deviceId,
-        {
-          identifiers: [props.theKey],
-          from: new Date(exportFrom).toISOString(),
-          to: new Date(exportTo + 1).toISOString(),
-          format: 'csv'
-        },
+        { identifiers: [props.theKey], from, to, format: 'csv' },
         newIdempotencyKey()
       )
-      if (submitted.state !== 'succeeded') message.info('导出任务已提交，正在生成，请稍候')
       const job = await waitForReadingExport(deviceRuntimeNative, submitted)
       const file = await deviceRuntimeNative.downloadArtifact(job.downloadId)
-      const url = URL.createObjectURL(file.blob)
-      const anchor = document.createElement('a')
-      anchor.href = url
-      anchor.download = file.fileName
-      anchor.click()
-      URL.revokeObjectURL(url)
+      saveFile(file.blob, file.fileName)
     } catch (error) {
-      message.error(error instanceof Error ? error.message : String(error))
-    } finally {
-      params.export_excel = false
-      endLoading()
+      if ((error as { status?: number })?.status !== 503 || exceedsInclusiveSpan(start, end, MAX_RANGE_MS)) throw error
+      await exportVisibleRange(from, to)
     }
-    return
+  } catch (error) {
+    message.error(error instanceof Error ? error.message : String(error))
+  } finally {
+    exporting.value = false
   }
+}
+let latestRequest = 0
+const getTelemetryHistoryData = async () => {
+  const request = ++latestRequest
+  startLoading()
   try {
     // 区间为 [from, to)，包含用户选择的结束时刻需加 1 毫秒
     const page = await deviceRuntimeNative.listReadings(props.deviceId, {
@@ -138,15 +162,17 @@ const getTelemetryHistoryData = async () => {
       page: params.page,
       pageSize: params.page_size
     })
-    const list = page.items.map(item => ({ key: item.identifier, ts: item.observedAt, value: item.value as number }))
+    if (request !== latestRequest) return
+    const list = page.items.map(item => ({ key: item.identifier, ts: item.observedAt, value: item.value }))
     tableData.value = list.length > 0 || !isDeviceDetailDemo(props.deviceId) ? list : demoHistory(props.theKey)
     pagination.itemCount = page.total || tableData.value.length
   } catch (error) {
+    if (request !== latestRequest) return
     tableData.value = []
     pagination.itemCount = 0
     message.error(error instanceof Error ? error.message : String(error))
   } finally {
-    endLoading()
+    if (request === latestRequest) endLoading()
   }
 }
 
@@ -158,47 +184,63 @@ const dateRange = ref<[number, number] | null>([params.start_time, params.end_ti
 // 修复类型实例化过深的问题
 const columns = [
   {
-    title: $t('common.time'),
+    title: $t('card.reportTime'),
     key: 'time',
-    render: (row: HistoryData) => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss')
+    render: (row: HistoryData) => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss.SSS')
   },
   {
-    title: $t('device_template.table_header.dataIdentifier'),
-    key: 'key'
-  },
-  {
-    title: $t('generate.fieldValue'),
+    title: [props.theName || props.theKey, props.theUnit && '(' + props.theUnit + ')'].filter(Boolean).join(' '),
+    align: 'right' as const,
     key: 'value',
-    render: (row: HistoryData) => row.value.toString()
+    render: (row: HistoryData) => (typeof row.value === 'object' ? JSON.stringify(row.value) : String(row.value))
   }
 ]
 
+const rangeOpen = ref(false)
+const presetHours = ref<number | null>(1)
+const historyPresets = [
+  { label: $t('common.lastHours1'), value: 1 },
+  { label: $t('common.lastHours6'), value: 6 },
+  { label: $t('common.lastHours24'), value: 24 }
+]
+
+function applyHistoryRange(start: number, end: number) {
+  dateRange.value = [start, end]
+  params.start_time = start
+  params.end_time = end
+  params.page = pagination.page = 1
+  rangeOpen.value = false
+  getTelemetryHistoryData()
+}
+
+function selectHistoryPreset(hours: number) {
+  presetHours.value = hours
+  const end = Date.now()
+  applyHistoryRange(earliestStartWithin(end, hours * 3600000), end)
+}
+
 const checkDateRange = value => {
+  if (!value) return
   const [start, end] = value
 
   if (start && end && exceedsInclusiveSpan(start, end, MAX_RANGE_MS)) {
-    dateRange.value = null
+    dateRange.value = [params.start_time, params.end_time]
     message.error('原始历史单次最多查询 24 小时')
   } else {
-    // 直接使用用户选择的时间
-    params.start_time = start
-    params.end_time = end
-    params.page = 1
-    pagination.page = 1
-    params.export_excel = false
-    getTelemetryHistoryData()
+    presetHours.value = null
+    applyHistoryRange(start, end)
   }
 }
 
 const checkExportRange = (value: [number, number] | null) => {
   if (value && exceedsInclusiveSpan(value[0], value[1], MAX_EXPORT_RANGE_MS)) {
-    exportRange.value = null
     message.error('导出区间最多 31 天')
   }
 }
 
 const refresh = () => {
-  params.export_excel = false
+  if (presetHours.value) return selectHistoryPreset(presetHours.value)
+  params.page = 1
   pagination.page = 1
   getTelemetryHistoryData()
 }
@@ -206,38 +248,65 @@ onMounted(getTelemetryHistoryData)
 </script>
 
 <template>
-  <n-card>
+  <section>
     <n-flex justify="space-between" align="center">
       <n-flex justify="space-between" align="center">
-        <n-date-picker
-          v-model:value="dateRange"
-          type="datetimerange"
-          format="yyyy-MM-dd HH:mm:ss"
-          :default-time="['00:00:00', '23:59:59']"
-          :time-picker-props="[{ defaultValue: 0 }, { defaultValue: 86399 }]"
-          @update:value="checkDateRange"
-        />
+        <n-popover v-model:show="rangeOpen" trigger="click" placement="bottom-start">
+          <template #trigger>
+            <n-button>
+              {{ historyPresets.find(p => p.value === presetHours)?.label || $t('common.custom') }} ·
+              {{ dayjs(params.start_time).format('MM/DD HH:mm') }} –
+              {{
+                dayjs(params.end_time).format(
+                  dayjs(params.start_time).isSame(params.end_time, 'day') ? 'HH:mm' : 'MM/DD HH:mm'
+                )
+              }}
+              ﹀
+            </n-button>
+          </template>
+          <n-flex vertical>
+            <n-button-group>
+              <n-button
+                v-for="preset in historyPresets"
+                :key="preset.value"
+                size="small"
+                :type="presetHours === preset.value ? 'primary' : 'default'"
+                @click="selectHistoryPreset(preset.value)"
+              >
+                {{ preset.label }}
+              </n-button>
+            </n-button-group>
+            <n-date-picker
+              v-model:value="dateRange"
+              type="datetimerange"
+              format="yyyy-MM-dd HH:mm:ss"
+              :default-time="['00:00:00', '23:59:59']"
+              :time-picker-props="[{ defaultValue: 0 }, { defaultValue: 86399 }]"
+              @update:value="checkDateRange"
+            />
+          </n-flex>
+        </n-popover>
         <n-button class="ml-2" @click="refresh">{{ $t('generate.refresh') }}</n-button>
       </n-flex>
 
-      <n-date-picker
-        v-model:value="exportRange"
-        type="datetimerange"
-        clearable
-        placeholder="导出区间（可选，最多 31 天）"
-        @update:value="checkExportRange"
-      />
-      <n-button
-        type="primary"
-        @click="
-          () => {
-            params.export_excel = true
-            getTelemetryHistoryData()
-          }
-        "
-      >
-        {{ $t('generate.export') }}
-      </n-button>
+      <n-popover trigger="click" placement="bottom-end">
+        <template #trigger>
+          <n-button>{{ $t('generate.export') }}</n-button>
+        </template>
+        <n-flex vertical>
+          <n-date-picker v-model:value="exportRange" type="datetimerange" clearable @update:value="checkExportRange" />
+          <n-button
+            type="primary"
+            :loading="exporting"
+            :disabled="
+              Boolean(exportRange && exceedsInclusiveSpan(exportRange[0], exportRange[1], MAX_EXPORT_RANGE_MS))
+            "
+            @click="exportHistory"
+          >
+            {{ $t('generate.export') }} CSV
+          </n-button>
+        </n-flex>
+      </n-popover>
     </n-flex>
     <div class="mt-4">
       <n-text v-if="!dateRange" depth="3">{{ $t('generate.hour-24') }}</n-text>
@@ -252,7 +321,6 @@ onMounted(getTelemetryHistoryData)
         :bottom-bordered="true"
         :single-column="false"
         :single-line="true"
-        :scroll-x="720"
         :row-key="historyRowKey"
       >
         <template #empty>
@@ -261,8 +329,9 @@ onMounted(getTelemetryHistoryData)
       </NDataTable>
       <div class="mt-4 flex justify-end">
         <n-pagination
-          v-model:page="pagination.page"
-          v-model:page-size="pagination.pageSize"
+          :page="pagination.page"
+          :page-size="pagination.pageSize"
+          :page-slot="5"
           :item-count="pagination.itemCount"
           :page-sizes="pagination.pageSizes"
           :show-size-picker="pagination.showSizePicker"
@@ -271,7 +340,7 @@ onMounted(getTelemetryHistoryData)
         />
       </div>
     </div>
-  </n-card>
+  </section>
 </template>
 
 <style scoped>

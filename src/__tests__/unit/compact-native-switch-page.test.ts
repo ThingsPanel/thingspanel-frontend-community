@@ -53,8 +53,7 @@ async function page() {
           template:
             '<button class="switch" :disabled="disabled" @click="$emit(\'update:value\', !value)">{{value}}</button>'
         },
-        NDrawer: true,
-        NDrawerContent: true
+        NModal: true
       }
     }
   })
@@ -218,7 +217,7 @@ describe('compact native control lifecycle', () => {
     expect(rows).toHaveLength(4)
     expect(rows[3].text()).toContain('voltage')
     await rows[3].get('button').trigger('click')
-    expect(wrapper.findComponent({ name: 'Drawer' }).props('show')).toBe(true)
+    expect(wrapper.findComponent({ name: 'Modal' }).props('show')).toBe(true)
     wrapper.unmount()
   })
   it('fails closed when the runtime owner cannot resolve an identity', async () => {

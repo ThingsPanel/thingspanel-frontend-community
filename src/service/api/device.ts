@@ -334,6 +334,10 @@ function normalizeTelemetryHistoryPageData(payload: any) {
     .filter((item: any) => Number.isFinite(item.x) && Number.isFinite(item.y))
 }
 
+// Curves and their summaries must use the complete statistical result.
+export const telemetryStatisticData = (params: Record<string, unknown>, requestConfig: Record<string, unknown> = {}) =>
+  request.get<any>('/telemetry/datas/statistic', { ...requestConfig, params })
+
 /**
  * @param params { device_id: string, key: string, start_time: string, end_time: string, aggregate_window: string,
  *   aggregate_function: string, time_range: string }
@@ -343,10 +347,7 @@ export const telemetryDataHistoryList = async (params: any, requestConfig: Recor
   const normalized = { ...params }
   let statisticResponse: any
   try {
-    statisticResponse = await request.get<any>('/telemetry/datas/statistic', {
-      ...(requestConfig as any),
-      params: normalized
-    })
+    statisticResponse = await telemetryStatisticData(normalized, requestConfig)
   } catch (error) {
     statisticResponse = error
   }

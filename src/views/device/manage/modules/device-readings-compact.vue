@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { NButton, NDrawer, NDrawerContent, NEmpty, NIcon, NSpin, NSwitch, NPagination } from 'naive-ui'
+import { NButton, NModal, NEmpty, NIcon, NSpin, NSwitch, NPagination } from 'naive-ui'
 import { RefreshOutline, TrendingUpOutline, TimeOutline } from '@vicons/ionicons5'
 import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
 import { deviceCommandNative } from '@/service/api/device-command-native'
@@ -65,6 +65,7 @@ const nativeMetadataErrorsByDevice = ref<Record<string, string>>({})
 const listLoading = ref(false)
 const readingsLoading = ref(false)
 const loadError = ref('')
+const curve = ref<{ exportData: () => void; canExport: boolean } | null>(null)
 const historyVisible = ref(false)
 const selectedDevice = ref<DeviceRow | null>(null)
 const selectedReading = ref<Reading | null>(null)
@@ -571,26 +572,52 @@ watch([filterKey, () => props.groupId, () => props.groupScope], () => changePage
         @update:page-size="changePage(1, $event)"
       />
     </footer>
-    <NDrawer v-model:show="historyVisible" placement="right" :width="'min(920px, 100vw)'">
-      <NDrawerContent :title="historyTitle" closable>
-        <TimeSeriesData
-          v-if="historyUsesCurve && selectedReading && selectedDevice"
-          :device-id="selectedDevice.id"
-          :the-key="selectedReading.key"
-          :the-name="selectedReading.label || selectedReading.key"
-          :the-unit="selectedReading.unit || ''"
-        />
-        <HistoryData
-          v-else-if="selectedReading && selectedDevice"
-          :device-id="selectedDevice.id"
-          :the-key="selectedReading.key"
-        />
-      </NDrawerContent>
-    </NDrawer>
+    <NModal
+      v-model:show="historyVisible"
+      preset="card"
+      :style="{ width: historyUsesCurve ? 'min(92vw, 1520px)' : 'min(92vw, 880px)' }"
+      :content-style="{ maxHeight: '76vh', overflow: 'auto' }"
+    >
+      <template #header>
+        <div class="readings-modal-heading">
+          <strong>{{ historyTitle }} {{ $t(historyUsesCurve ? 'card.trendTitle' : 'card.historyTitle') }}</strong>
+          <small>{{ selectedDevice?.name }}</small>
+        </div>
+      </template>
+      <template #header-extra>
+        <NButton v-if="historyUsesCurve" :disabled="!curve?.canExport" @click="curve?.exportData()">
+          ↓ {{ $t('card.exportData') }}
+        </NButton>
+      </template>
+      <TimeSeriesData
+        v-if="historyUsesCurve && selectedReading && selectedDevice"
+        ref="curve"
+        header-export
+        :device-id="selectedDevice.id"
+        :the-key="selectedReading.key"
+        :the-name="selectedReading.label || selectedReading.key"
+        :the-unit="selectedReading.unit || ''"
+      />
+      <HistoryData
+        v-else-if="selectedReading && selectedDevice"
+        :the-name="selectedReading.label"
+        :the-unit="selectedReading.unit"
+        :device-id="selectedDevice.id"
+        :the-key="selectedReading.key"
+      />
+    </NModal>
   </section>
 </template>
 
 <style scoped lang="scss">
+.readings-modal-heading {
+  display: grid;
+  gap: 3px;
+}
+.readings-modal-heading small {
+  font-size: 14px;
+  font-weight: normal;
+}
 .device-readings-compact {
   min-height: 240px;
   color: var(--text-color);

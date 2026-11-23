@@ -1,15 +1,20 @@
 <script setup lang="ts">
-import { defineProps, onMounted, reactive, ref, watch } from 'vue'
+import { computed, defineProps, reactive, ref, watch } from 'vue'
 import { NDataTable, NDatePicker, NEmpty, NSelect, NSpace } from 'naive-ui'
 import { useFullscreen } from '@vueuse/core'
 import dayjs from 'dayjs'
-import { telemetryDataHistoryList } from '@/service/api/device'
+import { useThemeStore } from '@/store/modules/theme'
+import { TrendingUpOutline, BarChartOutline } from '@vicons/ionicons5'
+import { ChartScatter } from '@vicons/carbon'
+import { telemetryStatisticData } from '@/service/api/device'
 import { $t } from '@/locales'
 import { message } from '@/utils/common/discrete'
 import ChartComponent from './ChartComponent.vue'
 import { useLoading } from '~/packages/hooks'
 import { demoTimeSeries, isDeviceDetailDemo } from '@/utils/device-detail-demo-data'
 
+const theme = useThemeStore()
+const queryFailed = ref(false)
 const tableData = ref<any[]>([])
 
 const tableThemeOverrides = {
@@ -19,14 +24,14 @@ const tableThemeOverrides = {
   lineHeight: '1.5',
   thColor: 'var(--body-color)',
   thColorHover: 'var(--body-color)',
-  thFontWeight: '400',
+  thFontWeight: '600',
   thTextColor: 'var(--text-color)',
   tdColor: 'var(--card-color)',
   tdColorHover: 'var(--primary-color-suppl)',
   tdColorSorting: 'var(--primary-color-suppl)',
   tdTextColor: 'var(--text-color)',
   thPaddingMedium: '12px',
-  tdPaddingMedium: '13px 12px'
+  tdPaddingMedium: '9px 12px'
 }
 
 const timeSeriesRowKey = (row: any) => `${row.x}-${row.y}`
@@ -40,6 +45,7 @@ const minValue = ref<number | undefined>(undefined)
 interface Created {
   deviceId: string
   theKey: string
+  headerExport?: boolean
   theName: string
   theUnit: string
 }
@@ -64,21 +70,28 @@ const selectedOption = ref<HistorySelection>({
   aggregate_function: undefined
 })
 const { loading, startLoading, endLoading } = useLoading()
+function displayReading(value: number | undefined) {
+  if (value === undefined) return '—'
+  return selectedOption.value.aggregate_window === 'no_aggregate'
+    ? String(value)
+    : String(Number(value.toPrecision(10)))
+}
 const columns = [
   {
-    title: $t('common.time'),
+    title: $t('card.reportTime'),
     key: 'x',
-    render: row => dayjs(row.x).format('YYYY-MM-DD HH:mm:ss')
+    render: row => dayjs(row.x).format('YYYY-MM-DD HH:mm:ss.SSS')
   },
   {
     title: (props.theName ? props.theName : props.theKey) + (props.theUnit ? `(${props.theUnit})` : ''),
-    key: 'y'
+    key: 'y',
+    render: row => displayReading(row.y)
   }
 ]
 const pagination = reactive({
   page: 1,
   pageSize: 10,
-  pageCount: 1,
+  pageSlot: 5,
   onChange: (page: number) => {
     pagination.page = page
   }
@@ -86,13 +99,14 @@ const pagination = reactive({
 const initialOptions = ref({
   baseOption: undefined,
   title: {
-    text: props.theName ? props.theName : props.theKey
+    text: [props.theName || props.theKey, props.theUnit && '(' + props.theUnit + ')'].filter(Boolean).join(' '),
+    textStyle: { fontSize: 15 }
   },
   options: [],
   tooltip: {
     trigger: 'axis',
     formatter(params) {
-      let result = `${dayjs(params[0].value[0]).format('YYYY-MM-DD HH:mm:ss')}<br/>`
+      let result = `${dayjs(params[0].value[0]).format('YYYY-MM-DD HH:mm:ss.SSS')}<br/>`
       params.forEach(param => {
         result += `${param.marker} ${props.theName ? props.theName : props.theKey}: ${param.value[1]}${
           props.theUnit ? props.theUnit : ''
@@ -108,6 +122,8 @@ const initialOptions = ref({
     {
       type: 'slider', // 添加一个滑动条型的 dataZoom
       show: true,
+      dataBackground: { lineStyle: { color: theme.themeColor } },
+      fillerColor: theme.themeColor + '20',
       xAxisIndex: [0],
       start: 0,
       end: 100
@@ -122,58 +138,8 @@ const initialOptions = ref({
   grid: {
     left: '3%',
     right: '4%',
-    bottom: '3%',
+    bottom: 64,
     containLabel: true
-  },
-  toolbox: {
-    right: 44,
-    feature: {
-      myTool1: {
-        show: true,
-        title: $t('common.switchLineChart'),
-        icon: 'path://M-7.5 -1.036L-5.428 -1.036L-2.714 -7.4562L-0.5545 3.6333L2.2763 -2.1158L3.1518 1.6196L7.5 1.6196M-7.5 7.4562L7.5 7.4562',
-        onclick: () => {
-          if (initialOptions.value.series) {
-            if (initialOptions.value.series[0].type === 'line') {
-              message.destroyAll()
-              message.info($t('common.alreadyCurveChart'))
-              return
-            }
-            initialOptions.value.series[0].type = 'line'
-          }
-        }
-      },
-      myTool2: {
-        show: true,
-        title: $t('common.switchBarChart'),
-        icon: 'path://M-6.2277 -1.9018L-3.5491 -1.9018L-3.5491 4.8214L-6.2277 4.8214L-6.2277 -1.9018ZM-1.3527 -4.5536L1.3259 -4.5536L1.3259 4.8214L-1.3527 4.8214L-1.3527 -4.5536ZM3.5491 -7.5L6.2277 -7.5L6.2277 4.8214L3.5491 4.8214L3.5491 -7.5ZM-7.192 7.5L7.192 7.5\n',
-        onclick: () => {
-          if (initialOptions.value.series) {
-            if (initialOptions.value.series[0].type === 'bar') {
-              window.NMessage.destroyAll()
-              message.info($t('common.alreadyToChart'))
-              return
-            }
-            initialOptions.value.series[0].type = 'bar'
-          }
-        }
-      },
-      myTool3: {
-        show: true,
-        title: $t('common.alreadyToChart'),
-        icon: 'path://M6 6V42H42 M20 24C22.2091 24 24 22.2091 24 20C24 17.7909 22.2091 16 20 16C17.7909 16 16 17.7909 16 20C16 22.2091 17.7909 24 20 24Z M37 16C39.7614 16 42 13.7614 42 11C42 8.23858 39.7614 6 37 6C34.2386 6 32 8.23858 32 11C32 13.7614 34.2386 16 37 16Z M15 36C16.6569 36 18 34.6569 18 33C18 31.3431 16.6569 30 15 30C13.3431 30 12 31.3431 12 33C12 34.6569 13.3431 36 15 36Z M33 32C34.6569 32 36 30.6569 36 29C36 27.3431 34.6569 26 33 26C31.3431 26 30 27.3431 30 29C30 30.6569 31.3431 32 33 32Z\n',
-        onclick: () => {
-          if (initialOptions.value.series) {
-            if (initialOptions.value.series[0].type === 'scatter') {
-              window.NMessage.destroyAll()
-              message.info($t('common.alreadyScatterPlot'))
-              return
-            }
-            initialOptions.value.series[0].type = 'scatter'
-          }
-        }
-      }
-    }
   },
   xAxis: {
     boundaryGap: false,
@@ -189,10 +155,27 @@ const initialOptions = ref({
     {
       data: [] as any[],
       type: 'line',
-      smooth: true
+      smooth: false,
+      color: theme.themeColor
     }
   ]
 })
+
+watch(
+  () => theme.themeColor,
+  color => {
+    initialOptions.value.series[0].color = color
+    const slider = initialOptions.value.dataZoom[0]
+    if (slider.dataBackground) slider.dataBackground.lineStyle.color = color
+    slider.fillerColor = color + '20'
+  }
+)
+
+const chartModes = [
+  { type: 'line', icon: TrendingUpOutline, label: 'common.switchLineChart' },
+  { type: 'bar', icon: BarChartOutline, label: 'common.switchBarChart' },
+  { type: 'scatter', icon: ChartScatter, label: 'common.switchScatterPlots' }
+] as const
 
 const timeOptions = [
   { label: $t('common.custom'), value: 'custom' },
@@ -257,95 +240,71 @@ const statisticsOptions = [
   { label: $t('generate.diff'), value: 'diff' }
 ]
 
-const aggregationTtemToFalse = (weight: number) => {
-  aggregationIntervalOptions.forEach((item, index) => {
-    if (index < weight) {
-      item.disabled = true
-    } else {
-      item.disabled = false
-    }
-    if (index < weight + 1) {
-      selectedOption.value.aggregate_window = item.value
-      if (selectedOption.value.aggregate_window !== 'no_aggregate' && !selectedOption.value.aggregate_function) {
-        selectedOption.value.aggregate_function = 'avg'
-      }
-      if (selectedOption.value.aggregate_window === 'no_aggregate') {
-        selectedOption.value.aggregate_function = undefined
-      }
-    }
-  })
+const minWindowIndex = ref(0)
+const availableWindows = computed(() =>
+  aggregationIntervalOptions.map((item, index) => ({ ...item, disabled: index < minWindowIndex.value }))
+)
+function constrainWindow(weight: number) {
+  minWindowIndex.value = Math.min(weight, aggregationIntervalOptions.length - 1)
+  const currentIndex = aggregationIntervalOptions.findIndex(
+    item => item.value === selectedOption.value.aggregate_window
+  )
+  if (currentIndex < minWindowIndex.value) onAggregationChange(aggregationIntervalOptions[minWindowIndex.value].value)
 }
 
-const navigateTime = (direction: string) => {
-  let start: number | undefined = selectedOption.value.start_time
-  let end: number | undefined
-
-  if (!start) {
-    // 如果没有设置开始时间，使用当前时间
-    start = dayjs().startOf('hour').valueOf()
-  }
-
-  let startDate = dayjs(start)
-
-  switch (direction) {
-    case 'prevMonth':
-      startDate = startDate.subtract(1, 'month').startOf('month')
-      end = startDate.endOf('month').valueOf()
-      break
-    case 'prevDay':
-      startDate = startDate.subtract(1, 'day').startOf('day')
-      end = startDate.endOf('day').valueOf()
-      break
-    case 'prevHour':
-      startDate = startDate.subtract(1, 'hour').startOf('hour')
-      end = startDate.endOf('hour').valueOf()
-      break
-    case 'nextHour':
-      startDate = startDate.add(1, 'hour').startOf('hour')
-      end = startDate.endOf('hour').valueOf()
-      break
-    case 'nextDay':
-      startDate = startDate.add(1, 'day').startOf('day')
-      end = startDate.endOf('day').valueOf()
-      break
-    case 'nextMonth':
-      startDate = startDate.add(1, 'month').startOf('month')
-      end = startDate.endOf('month').valueOf()
-      break
-    default:
-      // 如果没有匹配的方向，保持当前开始时间不变，结束时间设置为开始时间的结束
-      end = startDate.endOf('hour').valueOf()
-      break
-  }
-
-  start = startDate.valueOf()
-
-  selectedOption.value.start_time = start
-  selectedOption.value.end_time = end
-  selectedOption.value.time_range = 'custom'
-
-  // 更新日期选择器的值
-  datePickerValue.value = [start, end]
+const anchorTime = ref(Date.now())
+const dateOpen = ref(false)
+const visibleRange = computed<[number, number]>(() => {
+  if (selectedOption.value.time_range === 'custom' && datePickerValue.value) return datePickerValue.value
+  const preset = selectedOption.value.time_range
+  const n = Number(preset.match(/\d+/)?.[0] || 1)
+  const duration =
+    preset === 'last_6m'
+      ? 180 * 86400000
+      : n * ({ m: 60000, h: 3600000, d: 86400000, y: 365 * 86400000 }[preset.slice(-1)] || 3600000)
+  return [anchorTime.value - duration, anchorTime.value]
+})
+const navigateTime = (amount: number, unit: 'hour' | 'day' | 'month') => {
+  const anchor = datePickerValue.value?.[0] ?? Date.now()
+  const period = dayjs(anchor).add(amount, unit)
+  onCustomDateChange([period.startOf(unit).valueOf(), period.endOf(unit).valueOf()])
 }
 
 watch(
-  selectedOption,
-  async v => {
+  [selectedOption, visibleRange] as const,
+  async ([v], _, onCleanup) => {
+    let current = true
+    onCleanup(() => {
+      current = false
+    })
     // 这里是当 selectedOption 变化时需要执行的逻辑
 
     if (v.time_range === 'custom' && (!v.start_time || !v.end_time)) {
-      window.NMessage.destroyAll()
+      endLoading()
       message.info($t('common.rangeMustSelected'))
       return
     }
     startLoading()
-    const { data, error } = await telemetryDataHistoryList({
-      ...v
+    const { data, error } = await telemetryStatisticData({
+      ...v,
+      time_range: 'custom',
+      start_time: visibleRange.value[0],
+      end_time: visibleRange.value[1]
     })
-    if (!error && data && initialOptions.value.series) {
+    if (!current) return
+    pagination.page = 1
+    queryFailed.value = Boolean(error) || (data != null && !Array.isArray(data))
+    if (!Array.isArray(data) || error) {
+      tableData.value = []
+      initialOptions.value.series[0].data = []
+      minValue.value = maxValue.value = avgValue.value = undefined
+      endLoading()
+      return
+    }
+    {
       // 对数据进行排序，确保最新的数据在前面
       const sourceData = data.length > 0 || !isDeviceDetailDemo(props.deviceId) ? data : demoTimeSeries(props.theKey)
-      const sortedData = sourceData.sort((a, b) => {
+      const sortedData = [...sourceData].sort((a, b) => {
         return b.x - a.x
       })
       tableData.value = sortedData
@@ -367,7 +326,7 @@ watch(
         // 这里是当 通过接口改变 initialOptions的数据
 
         initialOptions.value.series.forEach(series => {
-          series.data = sourceData.map(item => {
+          series.data = [...sortedData].reverse().map(item => {
             return [item.x, item.y]
           })
         })
@@ -382,17 +341,21 @@ watch(
     }
     endLoading()
   },
-  { deep: true }
+  { deep: true, immediate: true }
 )
 
-const onTimeRangeChange = value => {
-  selectedOption.value.time_range = value
-  if (value !== 'custom') {
-    selectedOption.value.start_time = undefined
-    selectedOption.value.end_time = undefined
-    datePickerValue.value = null
+const onTimeRangeChange = (value: string) => {
+  if (value === 'custom') {
+    dateOpen.value = true
+    return
   }
-  aggregationTtemToFalse(timeWeighting[value])
+  anchorTime.value = Date.now()
+  selectedOption.value.time_range = value
+  selectedOption.value.start_time = undefined
+  selectedOption.value.end_time = undefined
+  datePickerValue.value = null
+  dateOpen.value = false
+  constrainWindow(timeWeighting[value])
 }
 
 /**
@@ -402,7 +365,7 @@ const onTimeRangeChange = value => {
 const calculateTimeWeight = (start: number, end: number) => {
   const startDate = dayjs(start)
   const endDate = dayjs(end)
-  const diffInHours = endDate.diff(startDate, 'hour')
+  const diffInHours = endDate.diff(startDate, 'hour', true)
   if (diffInHours <= 1) {
     return 0
   }
@@ -439,7 +402,7 @@ const calculateTimeWeight = (start: number, end: number) => {
   if (diffInHours <= 6 * 30 * 24) {
     return 11
   }
-  if (diffInHours <= 365) {
+  if (diffInHours <= 365 * 24) {
     return 12
   }
   return 13
@@ -451,8 +414,9 @@ const onCustomDateChange = value => {
     selectedOption.value.end_time = value[1]
     selectedOption.value.time_range = 'custom'
     datePickerValue.value = value
+    dateOpen.value = false
     const weight = calculateTimeWeight(value[0], value[1])
-    aggregationTtemToFalse(weight)
+    constrainWindow(weight)
   }
 }
 
@@ -470,18 +434,19 @@ const onStatisticsChange = value => {
   selectedOption.value.aggregate_function = value
 }
 
-const initData = () => {
-  selectedOption.value = { ...selectedOption.value, time_range: 'last_1h' }
-}
-
 const exportData = () => {
   const excelData = [
-    ['时间', (props.theName ? props.theName : props.theKey) + (props.theUnit ? `(${props.theUnit})` : '')], // 表头
-    ...tableData.value.map(item => [dayjs(item.x).format('YYYY-MM-DD HH:mm:ss'), item.y])
+    [
+      $t('card.reportTime'),
+      (props.theName ? props.theName : props.theKey) + (props.theUnit ? `(${props.theUnit})` : '')
+    ], // 表头
+    ...tableData.value.map(item => [dayjs(item.x).format('YYYY-MM-DD HH:mm:ss.SSS'), item.y])
   ]
   // save as csv
-  const csvContent = excelData.map(row => row.join(',')).join('\n')
-  const excelBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const csvContent = excelData
+    .map(row => row.map(value => '"' + String(value ?? '').replaceAll('"', '""') + '"').join(','))
+    .join('\r\n')
+  const excelBlob = new Blob(['\uFEFF', csvContent], { type: 'text/csv;charset=utf-8;' })
 
   const excelUrl = URL.createObjectURL(excelBlob)
   const a = document.createElement('a')
@@ -498,71 +463,68 @@ const exportData = () => {
   }, 1000)
 }
 
-onMounted(() => {
-  initData()
-})
+defineExpose({ exportData, canExport: computed(() => !loading.value && tableData.value.length > 0) })
+const jumps = [
+  { step: -1, unit: 'month', label: 'card.lastOneMonth' },
+  { step: -1, unit: 'day', label: 'card.yesterday' },
+  { step: -1, unit: 'hour', label: 'card.lastOneHour' },
+  { step: 1, unit: 'hour', label: 'card.nextOneHour' },
+  { step: 1, unit: 'day', label: 'card.tomorrow' },
+  { step: 1, unit: 'month', label: 'card.nextOneMonth' }
+] as const
 </script>
 
 <template>
   <NSpace vertical>
-    <div class="w-full flex flex-row flex-wrap">
-      <div class="time-range flex flex-col items-center">
-        <div class="w-full flex flex-row items-center">
-          <span>{{ $t('common.timeFrame') }}：</span>
+    <div class="query-tools">
+      <div class="time-controls">
+        <div class="time-selector">
+          <span>{{ $t('common.timeFrame') }}</span>
           <NSelect
-            v-model:value="selectedOption.time_range"
+            :aria-label="$t('common.timeFrame')"
+            :value="selectedOption.time_range"
             :options="timeOptions"
-            :consistent-menu-width="false"
-            class="select-item mr-2"
             @update:value="onTimeRangeChange"
           />
-          <NDatePicker
-            v-model:value="datePickerValue"
-            type="datetimerange"
-            value-format="timestamp"
-            class="flex-1"
-            format="yyyy-MM-dd HH:mm"
-            :time-picker-props="{
-              format: 'HH',
-              isHourDisabled: () => false,
-              isMinuteDisabled: () => true,
-              isSecondDisabled: () => true
-            }"
-            @update:value="onCustomDateChange"
+        </div>
+        <NDatePicker
+          v-model:show="dateOpen"
+          :value="datePickerValue"
+          type="datetimerange"
+          format="yyyy-MM-dd HH:mm:ss"
+          @update:value="onCustomDateChange"
+        />
+        <div class="time-jumps">
+          <n-button v-for="j in jumps" :key="j.label" size="small" @click="navigateTime(j.step, j.unit)">
+            {{ $t(j.label) }}
+          </n-button>
+        </div>
+      </div>
+      <div class="aggregate-controls">
+        <div>
+          <span>{{ $t('card.aggregationScope') }}</span>
+          <NSelect
+            :aria-label="$t('card.aggregationScope')"
+            :value="selectedOption.aggregate_window"
+            :options="availableWindows"
+            @update:value="onAggregationChange"
           />
         </div>
-        <div class="mt-2 w-full flex flex-row flex-wrap justify-between pl-72px">
-          <NButton @click="navigateTime('prevMonth')">{{ $t('card.lastOneMonth') }}</NButton>
-          <NButton @click="navigateTime('prevDay')">{{ $t('card.yesterday') }}</NButton>
-          <NButton @click="navigateTime('prevHour')">{{ $t('card.lastOneHour') }}</NButton>
-          <NButton @click="navigateTime('nextHour')">{{ $t('card.nextOneHour') }}</NButton>
-          <NButton @click="navigateTime('nextDay')">{{ $t('card.tomorrow') }}</NButton>
-          <NButton @click="navigateTime('nextMonth')">{{ $t('card.nextOneMonth') }}</NButton>
+        <div v-if="selectedOption.aggregate_window !== 'no_aggregate'">
+          <span>{{ $t('card.aggregationMethod') }}</span>
+          <NSelect
+            :aria-label="$t('card.aggregationMethod')"
+            :value="selectedOption.aggregate_function"
+            :options="statisticsOptions"
+            @update:value="onStatisticsChange"
+          />
         </div>
       </div>
-      <div class="aggregation-range flex flex-row pl-2">
-        <span class="pt-1">{{ $t('card.aggregationScope') }}：</span>
-        <NSelect
-          v-model:value="selectedOption.aggregate_window"
-          :options="aggregationIntervalOptions"
-          :consistent-menu-width="false"
-          class="select-item mr-2"
-          @update:value="onAggregationChange"
-        />
-        <span v-if="selectedOption.aggregate_window !== 'no_aggregate'" class="pt-1">
-          {{ $t('card.aggregationMethod') }}：
-        </span>
-        <NSelect
-          v-if="selectedOption.aggregate_window !== 'no_aggregate'"
-          v-model:value="selectedOption.aggregate_function"
-          :options="statisticsOptions"
-          :consistent-menu-width="false"
-          class="select-item"
-          @update:value="onStatisticsChange"
-        />
-        <NButton class="ml-auto" @click="exportData()">{{ $t('card.exportData') }}</NButton>
-      </div>
+      <n-button v-if="!headerExport" :disabled="loading || !tableData.length" @click="exportData">
+        {{ $t('card.exportData') }}
+      </n-button>
     </div>
+    <n-alert v-if="queryFailed" type="error">{{ $t('page.dataForward.requestFailed') }}</n-alert>
     <div class="container-table-chart">
       <NDataTable
         class="telemetry-table device-detail-table"
@@ -575,7 +537,6 @@ onMounted(() => {
         :bottom-bordered="true"
         :single-column="false"
         :single-line="true"
-        :scroll-x="720"
         :row-key="timeSeriesRowKey"
         :pagination="pagination"
       >
@@ -587,13 +548,35 @@ onMounted(() => {
         <div :class="`${isFullscreen ? 'h-full' : 'chart-height'} p-2`">
           <ChartComponent :initial-options="initialOptions" />
         </div>
-        <div class="absolute right-0px top-5px">
-          <FullScreen v-if="!isFullscreen" :full="isFullscreen" @click="toggle" />
+        <div class="chart-tools">
+          <n-button
+            v-for="mode in chartModes"
+            :key="mode.type"
+            size="small"
+            :type="initialOptions.series[0].type === mode.type ? 'primary' : 'default'"
+            secondary
+            :title="$t(mode.label)"
+            :aria-label="$t(mode.label)"
+            :aria-pressed="initialOptions.series[0].type === mode.type"
+            @click="initialOptions.series[0].type = mode.type"
+          >
+            <n-icon><component :is="mode.icon" /></n-icon>
+          </n-button>
+          <n-button
+            quaternary
+            size="small"
+            :title="$t(isFullscreen ? 'icon.fullscreenExit' : 'icon.fullscreen')"
+            :aria-label="$t(isFullscreen ? 'icon.fullscreenExit' : 'icon.fullscreen')"
+            @click="toggle()"
+          >
+            <IconGridiconsFullscreenExit v-if="isFullscreen" />
+            <IconGridiconsFullscreen v-else />
+          </n-button>
         </div>
-        <div class="flex flex-row justify-between pl-4 pr-4 font-bold">
+        <div class="summary-strip">
           <span>{{ $t('card.average') }}：{{ avgValue !== undefined ? avgValue.toFixed(2) : '-' }}</span>
-          <span>{{ $t('card.maxValue') }}：{{ maxValue !== undefined ? maxValue : '-' }}</span>
-          <span>{{ $t('card.minValue') }}：{{ minValue !== undefined ? minValue : '-' }}</span>
+          <span>{{ $t('card.maxValue') }}：{{ displayReading(maxValue) }}</span>
+          <span>{{ $t('card.minValue') }}：{{ displayReading(minValue) }}</span>
         </div>
       </div>
     </div>
@@ -601,50 +584,113 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.container-table-chart {
+.query-tools {
+  container-type: inline-size;
   display: flex;
-  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 0;
+  border-block: 1px solid var(--border-color, #ddd);
+}
+.time-controls {
+  flex: 2 1 580px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 12px;
+  min-width: 0;
+}
+.time-selector,
+.aggregate-controls,
+.aggregate-controls > div,
+.time-jumps,
+.chart-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.time-selector span,
+.aggregate-controls span {
+  white-space: nowrap;
+}
+.time-selector .n-select {
+  width: 118px;
+}
+.time-jumps {
+  grid-column: 2;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.aggregate-controls {
+  flex: 1 1 325px;
+  flex-wrap: wrap;
+  padding-left: 16px;
+  border-left: 1px solid var(--border-color, #ddd);
+}
+.aggregate-controls .n-select {
+  width: 106px;
+}
+.chart-tools {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  gap: 4px;
+}
+@container (max-width:940px) {
+  .aggregate-controls {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+@container (max-width:650px) {
+  .time-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .time-jumps {
+    grid-column: 1;
+  }
+  .time-controls .n-date-picker {
+    min-width: 0;
+  }
+}
+.container-table-chart {
+  display: grid;
+  grid-template-columns: minmax(250px, 32fr) minmax(0, 68fr);
+  gap: 12px;
+}
+.telemetry-chart,
+.telemetry-table {
+  min-width: 0;
 }
 .telemetry-chart {
-  width: 60%;
-}
-.telemetry-table {
-  width: 40%;
-  min-height: 200px;
+  background: var(--card-color, #fff);
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 5px;
+  padding: 8px;
 }
 .chart-height {
-  height: calc(100% - 24px);
-  min-height: 200px;
+  height: clamp(360px, 50vh, 585px);
 }
-.time-range {
-  width: 60%;
-  flex-wrap: wrap;
+.summary-strip {
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid var(--border-color, #ddd);
+  padding: 12px 0 0;
+  font-variant-numeric: tabular-nums;
 }
-.aggregation-range {
-  width: 40%;
-  flex-wrap: wrap;
-}
-@media (max-width: 768px) {
+@media (max-width: 850px) {
   .container-table-chart {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
   .telemetry-chart {
-    width: 100%;
+    grid-row: 1;
   }
-  .telemetry-table {
-    width: 100%;
+  .shift-tools {
+    margin-left: 0;
   }
   .chart-height {
-    height: 400px;
+    height: 320px;
   }
-  .time-range {
-    width: 100%;
-  }
-  .aggregation-range {
-    width: 100%;
-  }
-}
-.select-item {
-  flex: 0;
 }
 </style>

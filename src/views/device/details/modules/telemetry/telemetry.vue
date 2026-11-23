@@ -6,7 +6,6 @@ import { useWebSocket } from '@vueuse/core'
 import { MovingNumbers } from 'moving-numbers-vue3'
 import { deviceRuntimeNative } from '@/service/api/device-runtime-native'
 import NativeDeviceSimulator from './native-device-simulator.vue'
-import NativeTelemetryHistory from './native-telemetry-history.vue'
 import { latestRowsFromReadings } from '@/service/api/device-runtime-rows'
 import { localStg } from '@/utils/storage'
 import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool'
@@ -17,6 +16,7 @@ import { getReadingDisplayValue, isNumericReading } from '@/utils/device-reading
 import { $t } from '@/locales'
 const HistoryData = defineAsyncComponent(() => import('./modules/history-data.vue'))
 const TimeSeriesData = defineAsyncComponent(() => import('./modules/time-series-data.vue'))
+const curve = ref<{ exportData: () => void; canExport: boolean } | null>(null)
 const readingView = ref<{ item: DeviceManagement.telemetryData; mode: 'history' | 'curve' } | null>(null)
 
 const props = defineProps<{
@@ -32,7 +32,6 @@ const nativeTelemetryFields = ref(new Map<string, any>())
 const nativeMetadataError = ref('')
 const truncated = ref(false)
 const showSimulator = ref(false)
-const showHistory = ref(false)
 const fetching = ref(false)
 let nativeMetadataRequestId = 0
 const initTelemetryData = ref<any>()
@@ -187,14 +186,12 @@ onUnmounted(() => {
     <div class="telemetry-toolbar">
       <span class="telemetry-heading">当前遥测</span>
       <n-space>
-        <n-button @click="showHistory = !showHistory">{{ showHistory ? '收起历史' : '历史查询' }}</n-button>
         <n-button :loading="fetching" @click="fetchTelemetry">刷新</n-button>
         <n-button :aria-expanded="showSimulator" @click="showSimulator = !showSimulator">
           {{ showSimulator ? '收起模拟上报' : '模拟上报' }}
         </n-button>
       </n-space>
     </div>
-    <NativeTelemetryHistory v-if="showHistory" :id="props.id" />
     <n-alert v-if="nativeMetadataError" type="error" :show-icon="false" class="mb-4">
       {{ nativeMetadataError }}
     </n-alert>
@@ -274,39 +271,65 @@ onUnmounted(() => {
         </n-card>
       </n-gi>
     </n-grid>
-    <n-drawer
+    <n-modal
       :show="Boolean(readingView)"
-      placement="right"
-      width="min(920px, 100vw)"
+      preset="card"
+      :style="{ width: readingView?.mode === 'curve' ? 'min(92vw, 1520px)' : 'min(92vw, 880px)' }"
+      :content-style="{ maxHeight: '76vh', overflow: 'auto' }"
       @update:show="
         visible => {
           if (!visible) readingView = null
         }
       "
     >
-      <n-drawer-content
-        v-if="readingView"
-        closable
-        :title="
-          (readingView.item.label || readingView.item.key) +
-          ' · ' +
-          $t(readingView.mode === 'curve' ? 'card.curve' : 'custom.device_details.history')
-        "
-      >
+      <template #header>
+        <div v-if="readingView" class="reading-heading">
+          <strong>
+            {{ readingView.item.label || readingView.item.key }}
+            {{ $t(readingView.mode === 'curve' ? 'card.trendTitle' : 'card.historyTitle') }}
+          </strong>
+          <small>{{ deviceData?.name }}</small>
+        </div>
+      </template>
+      <template #header-extra>
+        <n-button v-if="readingView?.mode === 'curve'" :disabled="!curve?.canExport" @click="curve?.exportData()">
+          ↓ {{ $t('card.exportData') }}
+        </n-button>
+      </template>
+      <template v-if="readingView">
         <TimeSeriesData
           v-if="readingView.mode === 'curve'"
+          ref="curve"
+          header-export
           :device-id="id"
           :the-key="readingView.item.key"
           :the-name="readingView.item.label || readingView.item.key"
           :the-unit="readingView.item.unit || ''"
         />
-        <HistoryData v-else :device-id="id" :the-key="readingView.item.key" />
-      </n-drawer-content>
-    </n-drawer>
+        <HistoryData
+          v-else
+          :the-name="readingView.item.label"
+          :the-unit="readingView.item.unit"
+          :device-id="id"
+          :the-key="readingView.item.key"
+        />
+      </template>
+    </n-modal>
   </section>
 </template>
 
 <style lang="scss">
+.reading-heading {
+  display: grid;
+  gap: 3px;
+}
+.reading-heading strong {
+  font-size: 21px;
+}
+.reading-heading small {
+  font-size: 14px;
+  font-weight: 400;
+}
 .telemetry-panel {
   width: 100%;
 }
