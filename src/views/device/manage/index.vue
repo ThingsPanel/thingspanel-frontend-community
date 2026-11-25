@@ -10,20 +10,13 @@ import type { TreeSelectOption } from 'naive-ui/es/tree-select/src/interface'
 import { AppsOutline, FolderOpenOutline, FolderOutline, LayersOutline } from '@vicons/ionicons5'
 import { localStg } from '@/utils/storage'
 import { createObservedAttributePoller } from '@/utils/thingsvis/observed-attribute-poller'
-import { useDeviceStatusWebSocket } from '@/utils/deviceStatusWebSocket'
 import {
   deviceDictProtocolServiceFirstLevel,
   deviceDictProtocolServiceSecondLevel,
   putDeviceActive
 } from '@/service/api/device'
 import { deviceNative } from '@/service/api/device-native'
-import {
-  deviceListRow,
-  connectivityLabel,
-  alarmLabel,
-  absentTelemetryLabel,
-  acceptsLegacyDeviceStatus
-} from '@/service/api/device-list-rows'
+import { deviceListRow, connectivityLabel, alarmLabel, absentTelemetryLabel } from '@/service/api/device-list-rows'
 import { formatDateTime } from '@/utils/common/datetime'
 import { deviceGroupNative } from '@/service/api/device-group-native'
 import { templateNative } from '@/service/api/template-native'
@@ -112,6 +105,10 @@ const deviceListError = ref('')
 const deviceListRefreshing = ref(false)
 const groupPanelVisible = ref(false)
 let deviceListRequestGeneration = 0
+let separateSummaries = false
+let summarySession: string | null | undefined
+let summaryRequest: AbortController | undefined
+type DeviceListRow = ReturnType<typeof deviceListRow> & { summary_pending: boolean }
 
 const renderGroupPrefix = ({ option }: { option: DeviceGroupTreeOption }) =>
   h(
@@ -130,44 +127,6 @@ const renderGroupLabel = ({ option }: { option: DeviceGroupTreeOption }) =>
     h('span', { class: 'device-group-tree__label-text' }, option.label),
     typeof option.deviceCount === 'number' ? h('span', { class: 'device-group-tree__count' }, option.deviceCount) : null
   ])
-
-// 初始化设备状态 WebSocket 管理器
-const deviceStatusWS = useDeviceStatusWebSocket()
-
-/**
- * 更新表格中设备状态的函数
- */
-const updateDeviceStatusInTable = (deviceId: string, isOnline: boolean) => {
-  try {
-    // 更新表格中的设备状态
-    if (tablePageRef.value?.dataList && Array.isArray(tablePageRef.value.dataList)) {
-      const deviceIndex = tablePageRef.value.dataList.findIndex(device => device.id === deviceId)
-
-      if (deviceIndex !== -1 && acceptsLegacyDeviceStatus(tablePageRef.value.dataList[deviceIndex])) {
-        tablePageRef.value.dataList[deviceIndex].is_online = isOnline ? 1 : 0
-      }
-    }
-  } catch (error) {
-    console.error('更新设备状态失败:', error)
-  }
-}
-
-/**
- * 订阅当前页面的设备状态
- */
-const subscribeDeviceStatus = () => {
-  // 获取当前页面的设备ID列表
-  const deviceIds =
-    tablePageRef.value?.dataList?.filter(acceptsLegacyDeviceStatus).map((device: any) => device.id) || []
-
-  if (deviceIds.length > 0) {
-    // 连接并订阅（第一次会建立连接，后续会更新订阅）
-    deviceStatusWS.connect(deviceIds, updateDeviceStatusInTable)
-  } else {
-    // 没有设备时断开连接
-    deviceStatusWS.disconnect()
-  }
-}
 
 const onNativeDeviceRegistered = (device: Device, credentialKind: FirstCredentialKind | null) => {
   firstCredentialKind.value = credentialKind
@@ -663,39 +622,95 @@ const setServiceParams = () => {
 }
 
 onBeforeMount(async () => {
-  await Promise.all([fetchFirstLevelOptions(), loadGroupOptions(), loadDeviceGroupCounts()])
-  setServiceParams()
+  await Promise.all([fetchFirstLevelOptions(), loadGroupOptions()])
+  if (queryOfServiceIdentifier.value || queryOfServiceAccessId.value) setServiceParams()
 })
 
-/**
- * 组件挂载完成后初始化 WebSocket
- */
-const listRefresh = createObservedAttributePoller({
+function stopSummaryRequest() {
+  summaryRequest?.abort()
+  summaryRequest = undefined
+}
+
+async function refreshDeviceSummaries() {
+  const rows: DeviceListRow[] | undefined = tablePageRef.value?.dataList
+  if (
+    !separateSummaries ||
+    !rows?.length ||
+    deviceListRefreshing.value ||
+    deviceListError.value ||
+    tablePageRef.value?.currentViewType === 'dense' ||
+    summaryRequest ||
+    summarySession !== localStg.get('token')
+  ) {
+    return
+  }
+
+  const generation = deviceListRequestGeneration
+  const request = new AbortController()
+  summaryRequest = request
+  const isCurrent = () =>
+    !request.signal.aborted &&
+    generation === deviceListRequestGeneration &&
+    tablePageRef.value?.dataList === rows &&
+    summarySession === localStg.get('token')
+  const apply = (
+    row: DeviceListRow,
+    runtimeSummary?: DeviceListRow['runtimeSummary'],
+    alarmSummary?: DeviceListRow['alarmSummary']
+  ) => {
+    Object.assign(row, deviceListRow({ ...row, runtimeSummary, alarmSummary }), { summary_pending: false })
+  }
+
+  try {
+    const items = await deviceNative.summaries(
+      rows.map(row => row.id),
+      request.signal
+    )
+    const byId = new Map(items.map(item => [item.id, item]))
+    if (items.length !== rows.length || byId.size !== rows.length || rows.some(row => !byId.has(row.id))) {
+      throw new Error('设备状态响应与当前列表不匹配')
+    }
+    if (!isCurrent()) return
+    for (const row of rows) {
+      const item = byId.get(row.id)
+      apply(row, item?.runtimeSummary ?? undefined, item?.alarmSummary ?? undefined)
+    }
+  } catch {
+    if (isCurrent()) rows.forEach(row => apply(row))
+  } finally {
+    if (summaryRequest === request) summaryRequest = undefined
+  }
+}
+
+watch(
+  () => [tablePageRef.value?.dataList, tablePageRef.value?.currentViewType] as const,
+  ([, viewType]) => {
+    if (viewType === 'dense') stopSummaryRequest()
+    else void refreshDeviceSummaries()
+  }
+)
+
+const summaryRefresh = createObservedAttributePoller({
   intervalMs: 15000,
-  isVisible: () =>
-    !document.hidden && Boolean(tablePageRef.value?.$el?.getClientRects().length) && !deviceListRefreshing.value,
+  isVisible: () => !document.hidden && Boolean(tablePageRef.value?.$el?.getClientRects().length),
   read: async () => {
-    await tablePageRef.value?.refreshCurrentPage()
+    await refreshDeviceSummaries()
     return {}
   },
   push: () => {},
-  onError: error => console.error('Device list refresh failed', error)
+  onError: error => console.error('Device summary refresh failed', error)
 })
 onMounted(() => {
-  listRefresh.start()
-  // 不需要在这里初始化，等待 fetchData 完成后自动订阅
+  summaryRefresh.start()
   if (initialDeviceConfigId.value) {
     void activate('bottom', 'hands')
   }
 })
 
-/**
- * 组件卸载前清理 WebSocket 连接
- */
 onUnmounted(() => {
-  listRefresh.stop()
+  summaryRefresh.stop()
+  stopSummaryRequest()
   deviceListRequestGeneration++
-  deviceStatusWS.disconnect()
 })
 
 const topActions = [
@@ -740,7 +755,7 @@ const completeAdd = async () => {
 
 const completeHandAdd = () => {
   tablePageRef.value?.handleSearch()
-  void loadDeviceGroupCounts()
+  if (groupPanelVisible.value) void loadDeviceGroupCounts()
 }
 
 async function handleSelect(key: string | number) {
@@ -777,6 +792,8 @@ watch(
 )
 const fetchData = async (params: Record<string, any>) => {
   const generation = ++deviceListRequestGeneration
+  const session = localStg.get('token')
+  stopSummaryRequest()
   deviceListRefreshing.value = true
   deviceListError.value = ''
   const requestParams = Object.fromEntries(
@@ -792,8 +809,11 @@ const fetchData = async (params: Record<string, any>) => {
     group_id: selectedGroupScope.value === 'group' ? selectedGroupId.value : '',
     group_scope: selectedGroupScope.value
   })
+  const filters = toNativeDeviceFilters(requestParams)
+  const summariesFilter = Boolean(filters.connectivity || filters.alarmState)
   const nativeQuery = {
-    ...toNativeDeviceFilters(requestParams),
+    ...filters,
+    includeSummaries: summariesFilter ? undefined : false,
     page: Number(requestParams.page) || 1,
     pageSize: Number(requestParams.page_size) || 10
   }
@@ -812,23 +832,18 @@ const fetchData = async (params: Record<string, any>) => {
   }
   deviceListRefreshing.value = false
   deviceListError.value = ''
-  const result = {
+  separateSummaries = !summariesFilter
+  summarySession = session
+  return {
     data: {
       list: nativePage.items.map(device => ({
         ...deviceListRow(device),
+        summary_pending: separateSummaries,
         device_config_name: deviceTemplateName({ device_config_id: device.templateId })
       })),
       total: nativePage.total
     }
   }
-
-  // 数据加载完成后，订阅当前页面的设备状态
-  // 使用 nextTick 确保 tablePageRef.value.dataList 已更新
-  setTimeout(() => {
-    subscribeDeviceStatus()
-  }, 100)
-
-  return result
 }
 
 const persistGroupSelection = () => {
@@ -872,6 +887,7 @@ const handleFilterReset = () => {
 
 const toggleGroupPanel = () => {
   groupPanelVisible.value = !groupPanelVisible.value
+  if (groupPanelVisible.value) void loadDeviceGroupCounts()
 }
 </script>
 

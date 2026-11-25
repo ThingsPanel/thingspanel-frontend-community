@@ -60,6 +60,7 @@ export function createViteProxy(env: Env.ImportMeta) {
     'device-groups',
     'device-group-tree',
     'device-statistics',
+    'device-status-summaries',
     'device-number-validations',
     'metadata-operations',
     'metadata-downloads',

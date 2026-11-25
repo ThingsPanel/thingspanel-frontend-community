@@ -370,6 +370,7 @@ defineExpose({
   handleSearch,
   handleReset,
   forceChangeParamsByKey,
+  currentViewType,
   dataList // 暴露dataList以便父组件能够直接更新数据
 })
 

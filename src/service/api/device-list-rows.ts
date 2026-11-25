@@ -41,19 +41,26 @@ export function deviceListRow(device: Device & DeviceListSummary) {
   }
 }
 
-export function connectivityLabel(row: { is_online?: number; runtime_available?: boolean }) {
+export function connectivityLabel(row: { is_online?: number; runtime_available?: boolean; summary_pending?: boolean }) {
+  if (row.summary_pending) return 'common.loading'
   if (row.is_online === 1) return 'custom.devicePage.online'
   if (row.is_online === 0) return 'custom.devicePage.offline'
   return row.runtime_available ? 'custom.devicePage.connectivityUnknown' : 'custom.devicePage.summaryUnavailable'
 }
 
-export function alarmLabel(row: { warn_status?: string; alarm_available?: boolean }) {
+export function alarmLabel(row: { warn_status?: string; alarm_available?: boolean; summary_pending?: boolean }) {
+  if (row.summary_pending) return 'common.loading'
   if (row.warn_status === 'Y') return 'custom.devicePage.alarmed'
   if (row.warn_status === 'N') return 'custom.devicePage.notAlarmed'
   return row.alarm_available ? 'custom.devicePage.alarmStateUnknown' : 'custom.devicePage.summaryUnavailable'
 }
 
-export function absentTelemetryLabel(row: { runtime_available?: boolean; telemetry_available?: boolean }) {
+export function absentTelemetryLabel(row: {
+  runtime_available?: boolean
+  telemetry_available?: boolean
+  summary_pending?: boolean
+}) {
+  if (row.summary_pending) return 'common.loading'
   return (row.telemetry_available ?? row.runtime_available)
     ? 'custom.devicePage.noTelemetryReported'
     : 'custom.devicePage.summaryUnavailable'

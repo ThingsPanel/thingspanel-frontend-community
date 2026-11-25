@@ -1,11 +1,15 @@
 import type { components, operations } from './generated/device-metadata/types'
+import type { DeviceListSummary } from './device-list-rows'
 import {
   createMetadataNativeRequester,
   requireNativeStrongEtag,
   type MetadataNativeErrorBody
 } from './metadata-native-http'
 
-export type DeviceListQuery = NonNullable<operations['listDevices']['parameters']['query']>
+export type DeviceListQuery = NonNullable<operations['listDevices']['parameters']['query']> & {
+  includeSummaries?: boolean
+}
+export type DeviceSummaryItem = DeviceListSummary & { id: string }
 export type DeviceStatisticsQuery = NonNullable<operations['getDeviceStatistics']['parameters']['query']>
 export type DeviceStatistics = components['schemas']['DeviceStatistics']
 export type DevicePage = components['schemas']['DevicePage']
@@ -38,6 +42,7 @@ export interface DeviceNativeOptions {
 
 export interface DeviceNativeClient {
   list(query: DeviceListQuery): Promise<DevicePage>
+  summaries(ids: string[], signal?: AbortSignal): Promise<DeviceSummaryItem[]>
   listSubdevices(id: string, query: { page?: number; pageSize?: number; search?: string }): Promise<DevicePage>
   statistics(query?: DeviceStatisticsQuery): Promise<DeviceStatistics>
   /** Advice for forms only; the database unique index is the real guard. */
@@ -132,6 +137,15 @@ export function createDeviceNativeClient(options: DeviceNativeOptions): DeviceNa
         200,
         (status, body) => new DeviceNativeError(status, body),
         { method: 'GET' }
+      )
+      return data
+    },
+    async summaries(ids, signal) {
+      const { data } = await request<DeviceSummaryItem[], DeviceNativeError>(
+        '/api/v2/device-status-summaries',
+        200,
+        (status, body) => new DeviceNativeError(status, body),
+        { method: 'POST', body: JSON.stringify({ deviceIds: ids }), signal }
       )
       return data
     },
