@@ -8,9 +8,9 @@
   "openapi": "3.2.1",
   "operationCount": 104,
   "outputs": {
-    "contract-metadata.json": "da16f7b5e66b529865feae095f9c4e5bf291175df7aa76d6f4d93a365c736393",
-    "types.ts": "378156a60e67fbd2c78373a39e0d1fcff024d249052810e3b23a06e1c1eba31b"
+    "contract-metadata.json": "3c00db96647fdcf47ac0ce33072fd8a2a6486bde515c9fb09726f22543b37971",
+    "types.ts": "208c6d2dcf45bf521f67ed94ef3ed572dd34228ecf178f012da92bf12cbc5f96"
   },
   "source": "thingspanel-backend-community/docs/initiatives/device-metadata-native-cutover/openapi.yaml",
-  "sourceSha256": "eeb810e2e00fd0a9f7cebe9414f4fa66473af13d2d8d574e08a5ccde44d57a52"
+  "sourceSha256": "27041eb61100e2a315f7dcd517a9cbbbddb70220a56f8fbccab109e66ef239cc"
 }

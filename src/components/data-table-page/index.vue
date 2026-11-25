@@ -1,6 +1,7 @@
 <script lang="tsx" setup>
 import type { VNode, VueElement } from 'vue'
-import { computed, defineProps, ref, watchEffect, onMounted, onUnmounted, useSlots } from 'vue'
+import { computed, defineProps, ref, watchEffect, onActivated, onMounted, onUnmounted, useSlots } from 'vue'
+import { useDelayedListLoading } from '@/hooks/common/delayed-list-loading'
 import _ from 'lodash'
 import {
   NButton,
@@ -132,6 +133,7 @@ const props = defineProps<{
   initPage?: number
   initPageSize?: number
   primarySearchKeys?: string[] // 主筛选栏中保留的高频筛选项
+  refreshOnActivate?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -139,6 +141,9 @@ const emit = defineEmits<{
 }>()
 
 const { loading, startLoading, endLoading } = useLoading()
+const delayedLoading = useDelayedListLoading(loading)
+const showLoading = computed(() => (props.refreshOnActivate ? delayedLoading.value : loading.value))
+let listRequestSequence = 0
 // 解构props以简化访问
 const { fetchData, columnsToShow, searchConfigs }: any = props
 
@@ -217,6 +222,7 @@ const slots = useSlots()
 
 // 获取数据的函数，结合搜索条件、分页等
 const getData = async () => {
+  const requestSequence = ++listRequestSequence
   // 处理搜索条件，特别是将日期对象转换为字符串
   startLoading()
   const processedSearchCriteria = Object.fromEntries(
@@ -231,19 +237,22 @@ const getData = async () => {
   )
   // 调用提供的fetchData函数获取数据
 
-  const response = await fetchData({
-    page: currentPage.value,
-    page_size: pageSize.value,
-    ...processedSearchCriteria
-  })
-  // 处理响应
-  if (!response.error) {
-    dataList.value = response.data.list
-    total.value = response.data.total
-  } else {
-    logger.error({ 'Error fetching data:': response.error })
+  try {
+    const response = await fetchData({
+      page: currentPage.value,
+      page_size: pageSize.value,
+      ...processedSearchCriteria
+    })
+    if (listRequestSequence !== requestSequence) return
+    if (!response.error) {
+      dataList.value = response.data.list
+      total.value = response.data.total
+    } else {
+      logger.error({ 'Error fetching data:': response.error })
+    }
+  } finally {
+    if (listRequestSequence === requestSequence) endLoading()
   }
-  endLoading()
 }
 
 // 使用计算属性动态生成表格的列配置
@@ -423,6 +432,11 @@ onMounted(() => {
   viewportWidth.value = window.innerWidth
   window.addEventListener('resize', handleViewportResize)
 })
+let hasActivated = false
+onActivated(() => {
+  if (hasActivated && props.refreshOnActivate) void getData()
+  hasActivated = true
+})
 
 const handleViewportResize = () => {
   viewportWidth.value = window.innerWidth
@@ -443,6 +457,7 @@ const handleSelectChange = () => {
 }
 
 onUnmounted(() => {
+  listRequestSequence += 1
   debouncedInputSearch.cancel()
   window.removeEventListener('resize', handleViewportResize)
 })
@@ -708,7 +723,7 @@ const formSize = ref(undefined)
 
     <!-- 卡片视图 - 使用铃铛图标插槽 -->
     <template #card-view>
-      <n-spin :show="loading">
+      <n-spin :show="showLoading">
         <CardGrid class="device-card-grid">
           <div v-for="item in dataList" :key="item.id">
             <DevCardItem
@@ -764,12 +779,12 @@ const formSize = ref(undefined)
           :scroll-x="tableScrollX"
           :row-key="rowKey"
           :row-props="rowProps"
-          :loading="loading"
+          :loading="showLoading"
           :columns="generatedColumns"
           :data="dataList"
         >
           <template #empty>
-            <NEmpty size="small" :description="$t('common.noData')" />
+            <NEmpty v-if="!loading" size="small" :description="$t('common.noData')" />
           </template>
         </NDataTable>
       </n-scrollbar>
@@ -777,7 +792,7 @@ const formSize = ref(undefined)
 
     <!-- 地图视图 -->
     <template #map-view>
-      <n-spin class="map-view-spin" :show="loading">
+      <n-spin class="map-view-spin" :show="showLoading">
         <div class="map-view-container">
           <TencentMap :devices="dataList" />
         </div>

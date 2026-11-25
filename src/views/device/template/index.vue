@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, h, onActivated, onMounted, reactive, ref } from 'vue'
+import { computed, h, onActivated, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { useDelayedListLoading } from '@/hooks/common/delayed-list-loading'
 import { useRouter } from 'vue-router'
 import {
   NButton,
@@ -35,6 +36,7 @@ import { EMPTY_NATIVE_RESOURCES, normalizeNativeProfile } from '@/views/device/t
 
 const router = useRouter()
 const loading = ref(false)
+const showLoading = useDelayedListLoading(loading)
 const creating = ref(false)
 const createVisible = ref(false)
 const rows = ref<ModelSummary[]>([])
@@ -201,6 +203,9 @@ const columns = computed(() => [
   }
 ])
 onMounted(() => void load())
+onUnmounted(() => {
+  listSequence += 1
+})
 let hasActivated = false
 onActivated(() => {
   if (hasActivated) void load()
@@ -249,7 +254,7 @@ onActivated(() => {
         </div>
       </template>
       <template #card-view>
-        <NSpin :show="loading">
+        <NSpin :show="showLoading">
           <div v-if="rows.length === 0 && !loading" class="empty-state">
             <NEmpty size="huge" :description="$t('common.nodata')" />
           </div>
@@ -296,10 +301,14 @@ onActivated(() => {
         <NDataTable
           :columns="columns"
           :data="rows"
-          :loading="loading"
+          :loading="showLoading"
           :pagination="false"
           :row-key="(row: ModelSummary) => row.modelID"
-        />
+        >
+          <template #empty>
+            <NEmpty v-if="!loading" size="small" :description="$t('common.nodata')" />
+          </template>
+        </NDataTable>
       </template>
       <template #footer>
         <NPagination

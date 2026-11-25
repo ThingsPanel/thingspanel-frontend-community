@@ -622,7 +622,8 @@ const setServiceParams = () => {
 }
 
 onBeforeMount(async () => {
-  await Promise.all([fetchFirstLevelOptions(), loadGroupOptions()])
+  if (selectedGroupScope.value === 'group') void loadGroupOptions()
+  await fetchFirstLevelOptions()
   if (queryOfServiceIdentifier.value || queryOfServiceAccessId.value) setServiceParams()
 })
 
@@ -887,7 +888,10 @@ const handleFilterReset = () => {
 
 const toggleGroupPanel = () => {
   groupPanelVisible.value = !groupPanelVisible.value
-  if (groupPanelVisible.value) void loadDeviceGroupCounts()
+  if (groupPanelVisible.value) {
+    if (!groupTreeLoading.value) void loadGroupOptions()
+    void loadDeviceGroupCounts()
+  }
 }
 </script>
 
@@ -961,6 +965,7 @@ const toggleGroupPanel = () => {
       <main class="device-manage-content">
         <data-table-page
           ref="tablePageRef"
+          refresh-on-activate
           page-title="设备管理"
           page-count-label="个设备"
           :fetch-data="fetchData"

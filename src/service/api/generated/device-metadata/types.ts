@@ -633,7 +633,7 @@ export interface paths {
     }
     /**
      * 分组列表和父级选择器
-     * @description 分组列表和父级选择器
+     * @description 支持按页读取分组。启用 summaryOnly 时，仅返回分页所需的基础信息。
      */
     get: operations['listDeviceGroups']
     put?: never
@@ -5520,6 +5520,8 @@ export interface operations {
         pageSize?: components['parameters']['PageSize']
         parentId?: components['schemas']['Id']
         rootOnly?: boolean
+        /** @description 为 true 时跳过路径和成员统计。path 为空，pathComplete 为 false，成员计数字段为未计算的默认值。 */
+        summaryOnly?: boolean
         search?: string
         sort?: 'sortOrder' | '-sortOrder' | 'name' | '-name'
       }

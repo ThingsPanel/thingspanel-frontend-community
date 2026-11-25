@@ -6288,6 +6288,14 @@
           }
         },
         {
+          "description": "为 true 时跳过路径和成员统计。path 为空，pathComplete 为 false，成员计数字段为未计算的默认值。",
+          "in": "query",
+          "name": "summaryOnly",
+          "schema": {
+            "type": "boolean"
+          }
+        },
+        {
           "in": "query",
           "name": "search",
           "schema": {

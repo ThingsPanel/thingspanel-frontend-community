@@ -29,6 +29,7 @@ export interface DeviceGroupListQuery {
   pageSize: number
   parentId?: string
   rootOnly?: boolean
+  summaryOnly?: boolean
   search?: string
 }
 

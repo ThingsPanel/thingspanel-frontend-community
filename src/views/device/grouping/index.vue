@@ -1,5 +1,6 @@
 <script lang="tsx" setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onActivated, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useDelayedListLoading } from '@/hooks/common/delayed-list-loading'
 // Import UI components from Naive UI
 import { useRouter } from 'vue-router'
 import { NButton, NCard, NDataTable, NEmpty, NIcon, NInput, NPagination } from 'naive-ui'
@@ -34,6 +35,7 @@ const searchValue = ref('')
 type DeviceGroupTableRow = DeviceGroup & { created_at: DeviceGroup['createdAt'] }
 const data = ref<DeviceGroupTableRow[]>([])
 const loading = ref(false)
+const showLoading = useDelayedListLoading(loading)
 const currentPage = ref(1)
 const pageSize = 10
 const totalPages = ref(0)
@@ -82,6 +84,7 @@ const getDevice = async () => {
       page: currentPage.value,
       pageSize,
       rootOnly: true,
+      summaryOnly: true,
       search: searchValue.value.trim() || undefined
     })
     if (requestSequence !== listRequestSequence.value) return
@@ -172,7 +175,16 @@ const showModal = () => {
     the_modal.value.showModal = true
   }
 }
-onMounted(getDevice) // Fetch device groups on component mount
+onMounted(getDevice)
+let hasActivated = false
+onActivated(() => {
+  if (hasActivated) void getDevice()
+  hasActivated = true
+})
+onUnmounted(() => {
+  debouncedSearch.cancel()
+  listRequestSequence.value += 1
+})
 </script>
 
 <template>
@@ -246,10 +258,10 @@ onMounted(getDevice) // Fetch device groups on component mount
           :row-key="row => row.id"
           :columns="columns"
           :data="data"
-          :loading="loading"
+          :loading="showLoading"
         >
           <template #empty>
-            <NEmpty size="small" :description="$t('common.noData')" />
+            <NEmpty v-if="!loading" size="small" :description="$t('common.noData')" />
           </template>
         </NDataTable>
         <!-- Pagination component -->

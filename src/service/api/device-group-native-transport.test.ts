@@ -42,13 +42,16 @@ function makeClient(fetcher: DeviceGroupNativeOptions['fetch'] = async () => new
   return { client, seen }
 }
 
-test('list uses native camelCase pagination and rootOnly semantics', async () => {
+test('list sends pagination and opts in to the summary view', async () => {
   const page = { items: [group], page: 2, pageSize: 10, total: 11 }
   const { client, seen } = makeClient(
     async () => new Response(JSON.stringify({ data: page, meta: { requestId: 'r1' } }))
   )
-  assert.deepEqual(await client.list({ page: 2, pageSize: 10, rootOnly: true, search: 'a & b' }), page)
-  assert.equal(seen[0].path, '/api/v2/device-groups?page=2&pageSize=10&rootOnly=true&search=a+%26+b')
+  assert.deepEqual(
+    await client.list({ page: 2, pageSize: 10, rootOnly: true, summaryOnly: true, search: 'a & b' }),
+    page
+  )
+  assert.equal(seen[0].path, '/api/v2/device-groups?page=2&pageSize=10&rootOnly=true&summaryOnly=true&search=a+%26+b')
   const headers = new Headers(seen[0].init.headers)
   assert.equal(headers.get('Authorization'), 'Bearer secret-token')
   assert.equal(headers.get('Accept-Language'), 'zh-CN')
