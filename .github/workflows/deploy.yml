@@ -64,7 +64,7 @@ jobs:
           path: frontend-${{ github.sha }}.tar.gz
           retention-days: 3
       - name: Configure authenticated SSH
-        if: github.event_name == 'workflow_dispatch' && inputs.deploy_to_test
+        if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || inputs.deploy_to_test)
         env:
           DEPLOY_KEY: ${{ secrets.C_SSH_KEY }}
         run: |
@@ -72,9 +72,17 @@ jobs:
           test -n "$DEPLOY_KEY"
           umask 077
           printf '%s\n' "$DEPLOY_KEY" > "$RUNNER_TEMP/community-deploy-key"
-          ssh -i "$RUNNER_TEMP/community-deploy-key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=deploy/community-test/known_hosts root@47.92.253.145 'install -d -m 700 /opt/tp-community-actions/incoming'
+          ssh -i "$RUNNER_TEMP/community-deploy-key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=deploy/community-test/known_hosts root@47.92.253.145 '
+            set -eu
+            code=$(curl -sS --max-time 15 -o /dev/null -w "%{http_code}" -X POST -H "Host: c.thingspanel.cn" http://127.0.0.1/api/v2/device-status-summaries)
+            if [ "$code" != 401 ]; then
+              echo "Device status summaries proxy is not ready (HTTP $code)" >&2
+              exit 1
+            fi
+            install -d -m 700 /opt/tp-community-actions/incoming
+          '
       - name: Upload and atomically deploy frontend
-        if: github.event_name == 'workflow_dispatch' && inputs.deploy_to_test
+        if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || inputs.deploy_to_test)
         run: |
           set -euo pipefail
           args=(-i "$RUNNER_TEMP/community-deploy-key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=deploy/community-test/known_hosts)
