@@ -48,7 +48,7 @@ vi.mock('naive-ui', async () => {
         )
     }
   })
-  return { NButton: Button, NSpace: Slot, NDrawer: Slot, NDrawerContent: Slot }
+  return { NTag: Slot, NButton: Button, NSpace: Slot, NDrawer: Slot, NDrawerContent: Slot }
 })
 
 const ButtonStub = defineComponent({
@@ -280,6 +280,25 @@ describe('notification plugin registration page', () => {
     wrapper.unmount()
   })
 
+  it.each([
+    ['unknown', 'No check result'],
+    ['healthy', 'Healthy'],
+    ['unconfigured', 'Configuration required'],
+    ['unhealthy', 'Unhealthy']
+  ])('renders the registered health value %s independently of enablement', async (health, label) => {
+    const plugin = {
+      id: 'registration-1',
+      pluginId: 'fixture.smtp',
+      enabled: true,
+      health,
+      manifest: { name: 'SMTP', channels: ['email'], capabilities: { deliveryReceipts: false } }
+    }
+    requestMock.mockResolvedValue({ status: 200, data: envelope({ items: [plugin] }) })
+    const wrapper = mount(NotificationPlugins, { global: { stubs } })
+    await flushPromises()
+    expect(wrapper.text()).toContain(label)
+    wrapper.unmount()
+  })
   it('selects tenants by account, resolves a revoked grant beyond the current page, and opens the same tenant channels', async () => {
     const plugin = {
       id: 'registration-1',

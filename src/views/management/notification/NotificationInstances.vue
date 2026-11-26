@@ -280,6 +280,25 @@ function setSchemaDefaults(config: Record<string, unknown>) {
   })
 }
 
+function startOfficialChannel(plugin: NotificationPlugin) {
+  openCreate()
+  selectedPluginId.value = plugin.id
+  formName.value =
+    plugin.pluginId === 'thingspanel.smtp' ? tx('邮箱通知', 'Email notifications') : tx('App 推送', 'App push')
+}
+function fieldLabel(name: string, schema: SchemaField) {
+  if (selectedPlugin.value?.pluginId === 'thingspanel.smtp') {
+    const fields: Record<string, string> = {
+      host: tx('邮件服务器', 'Mail server'),
+      port: tx('端口', 'Port'),
+      from_email: tx('发件邮箱', 'Sender email'),
+      from_password: tx('邮箱授权码或密码', 'App password or password'),
+      ssl: tx('使用隐式 TLS', 'Use implicit TLS')
+    }
+    if (fields[name]) return fields[name]
+  }
+  return schema.title || name
+}
 function openCreate() {
   if (!canEditAccounts.value) return
   clearSecretsAndEditor()
@@ -818,6 +837,24 @@ onMounted(loadInstances)
           }}
         </div>
         <NSpace>
+          <template v-if="canEditAccounts && !loading">
+            <NButton
+              v-for="plugin in plugins.filter(
+                p =>
+                  p.enabled &&
+                  ['thingspanel.smtp', 'thingspanel.unipush'].includes(p.pluginId) &&
+                  !instances.some(i => i.pluginRegistrationId === p.id)
+              )"
+              :key="plugin.id"
+              @click="startOfficialChannel(plugin)"
+            >
+              {{
+                plugin.pluginId === 'thingspanel.smtp'
+                  ? tx('配置邮箱', 'Set up email')
+                  : tx('配置 App 推送', 'Set up App push')
+              }}
+            </NButton>
+          </template>
           <NButton @click="loadInstances">{{ tx('刷新', 'Refresh') }}</NButton>
           <NButton
             v-if="canEditAccounts"
@@ -945,7 +982,10 @@ onMounted(loadInstances)
           {{ localFieldErrors.pluginRegistrationId || validationErrorForField('pluginRegistrationId')?.reason }}
         </div>
       </NFormItem>
-      <NFormItem v-if="editorMode === 'create' && selectedPlugin" :label="tx('渠道', 'Channel')">
+      <NFormItem
+        v-if="editorMode === 'create' && selectedPlugin && selectedPlugin.manifest.channels.length > 1"
+        :label="tx('渠道', 'Channel')"
+      >
         <NSelect
           v-model:value="selectedChannel"
           :disabled="instanceSaveReadOnly"
@@ -981,7 +1021,7 @@ onMounted(loadInstances)
             )
           }}
         </NAlert>
-        <NFormItem v-for="[name, schema] in schemaFields" :key="name" :label="schema.title || name" :path="name">
+        <NFormItem v-for="[name, schema] in schemaFields" :key="name" :label="fieldLabel(name, schema)" :path="name">
           <NInput
             v-if="secretFields.includes(name)"
             v-model:value="secretDraft[name]"
@@ -1012,7 +1052,7 @@ onMounted(loadInstances)
             :value="Boolean(configValues[name])"
             :disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name)"
             :aria-disabled="instanceSaveReadOnly || isIdentityFieldReadOnly(name) ? 'true' : undefined"
-            :aria-label="schema.title || name"
+            :aria-label="fieldLabel(name, schema)"
             :aria-invalid="localFieldErrors[name] || validationErrorForField(name) ? 'true' : undefined"
             :aria-describedby="
               localFieldErrors[name]
@@ -1105,7 +1145,11 @@ onMounted(loadInstances)
           </NCheckboxGroup>
         </NFormItem>
         <NFormItem
-          v-if="editorMode === 'create'"
+          v-if="
+            editorMode === 'create' &&
+            selectedPlugin &&
+            !['thingspanel.smtp', 'thingspanel.unipush'].includes(selectedPlugin.pluginId)
+          "
           :label="tx('服务账号标识（JSON）', 'Provider account identity (JSON)')"
         >
           <NInput

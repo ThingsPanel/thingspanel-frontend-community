@@ -314,7 +314,7 @@
   "card.operationGuideAdmin.guideItems.createTenant.title": "New Tenant",
   "card.operationGuideAdmin.guideItems.createTenant.description": "Tenant configuration and creation, manage platform users and permissions",
   "card.operationGuideAdmin.guideItems.configureNotification.title": "Configure Notification",
-  "card.operationGuideAdmin.guideItems.configureNotification.description": "Email and SMS notifications, configure system event alert methods",
+  "card.operationGuideAdmin.guideItems.configureNotification.description": "Manage notification channels for each tenant",
   "card.operationGuideAdmin.guideItems.configurePlugin.title": "Configure Plugin",
   "card.operationGuideAdmin.guideItems.configurePlugin.description": "Protocol access and third-party access, manage device connection methods",
   "card.tenantCount.title": "Tenant Count",

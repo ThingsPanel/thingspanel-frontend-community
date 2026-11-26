@@ -240,6 +240,45 @@ describe('notification instance page submit boundaries', () => {
     }
   })
 
+  it('prepares the authorized App channel without asking for a provider identity', async () => {
+    api.listPlugins.mockResolvedValue({
+      data: {
+        items: [
+          {
+            ...plugin,
+            pluginId: 'thingspanel.unipush',
+            manifest: {
+              ...plugin.manifest,
+              channels: ['im'],
+              configSchema: { type: 'object', properties: {} },
+              secretFields: []
+            }
+          }
+        ]
+      }
+    })
+    api.listInstances.mockResolvedValue({ data: { items: [], total: 0 } })
+    const wrapper = mount(NotificationInstances, { props: { targetTenantId: 'fixture-tenant' }, global: { stubs } })
+    await flushPromises()
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Set up App push')!
+      .trigger('click')
+    await flushPromises()
+    expect((wrapper.get('input[aria-label="Channel name"]').element as HTMLInputElement).value).toBe('App push')
+    expect(wrapper.find('[aria-label="Provider account identity (JSON)"]').exists()).toBe(false)
+    await wrapper
+      .findAll('button')
+      .find(button => button.text() === 'Save')!
+      .trigger('click')
+    await flushPromises()
+    expect(api.createInstance).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'App push', channel: 'im', config: {} }),
+      'fixture-idempotency-key',
+      'fixture-tenant'
+    )
+    wrapper.unmount()
+  })
   it('validates configuration on the real form without saving or sending', async () => {
     const wrapper = mount(NotificationInstances, {
       props: { targetTenantId: 'fixture-tenant' },

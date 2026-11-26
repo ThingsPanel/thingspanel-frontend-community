@@ -85,7 +85,7 @@ export interface PluginView {
     capabilities: { deliveryReceipts: boolean }
   }
   enabled: boolean
-  health: 'unknown' | 'healthy' | 'unhealthy'
+  health: 'unknown' | 'healthy' | 'unhealthy' | 'unconfigured'
   version: number
 }
 

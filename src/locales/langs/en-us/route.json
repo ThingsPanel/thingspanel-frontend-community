@@ -116,7 +116,7 @@
   "route.alarm_notification-group": "Notification policies",
   "route.alarm_notification-record": "Notification Record",
   "route.walarm_arning-message": "Warning Message",
-  "route.management_notification": "Notification  Configuration",
+  "route.management_notification": "Notification channels",
   "route.irrigation": "Irrigation",
   "route.irrigation_time": "Irrigation Time",
   "route.irrigation_group": "Irrigation Group",
