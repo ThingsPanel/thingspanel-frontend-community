@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DataTableColumns } from 'naive-ui'
-import { NButton, NSpace } from 'naive-ui'
+import { NButton, NSpace, NTag } from 'naive-ui'
 import { useAuthStore } from '@/store/modules/auth'
 import {
   getNotificationUiCapabilities,
@@ -20,6 +20,8 @@ import type * as NotificationV2 from '@/service/api/notification-v2.types'
 import dayjs from 'dayjs'
 import { useNotificationTenants } from '@/views/management/notification/tenant-directory'
 
+const props = defineProps<{ channelOverview?: boolean }>()
+const setupPlugin = ref('')
 const emit = defineEmits<{ configureTenant: [tenantId: string] }>()
 const tenantDirectory = useNotificationTenants()
 const { tenants: tenantOptions, byId: tenantsById, loading: tenantsLoading, failed: tenantsFailed } = tenantDirectory
@@ -33,6 +35,29 @@ function notificationErrorMessage(error: unknown, zhFallback: string, enFallback
 }
 const capabilities = computed(() => getNotificationUiCapabilities())
 const rows = ref<NotificationPlugin[]>([])
+const directoryLoaded = ref(false)
+const expectedPlugin = ref('')
+const officialPlugins = computed(() => [
+  { id: 'thingspanel.smtp', label: tx('邮箱通知', 'Email notifications') },
+  { id: 'thingspanel.unipush', label: tx('App 推送', 'App push') }
+])
+function healthLabel(health: NotificationPlugin['health']) {
+  if (health === 'unconfigured') return tx('待配置', 'Configuration required')
+  if (health === 'healthy') return tx('正常', 'Healthy')
+  if (health === 'unhealthy') return tx('异常', 'Unhealthy')
+  return tx('暂无检测结果', 'No check result')
+}
+function pluginName(id: string, name: string) {
+  return officialPlugins.value.find(plugin => plugin.id === id)?.label ?? name
+}
+const missingPlugins = computed(() =>
+  officialPlugins.value.filter(plugin => !rows.value.some(row => row.pluginId === plugin.id))
+)
+function openRegistration(id = '') {
+  clearDraft()
+  expectedPlugin.value = id
+  modal.value = true
+}
 const loading = ref(false)
 const modal = ref(false)
 const reading = ref(false)
@@ -95,6 +120,7 @@ function clearGrantState() {
 
 const unregisterCleanup = registerNotificationSessionCleanup(() => {
   rows.value = []
+  directoryLoaded.value = false
   clearDraft()
   clearGrantState()
   pageSuccessText.value = ''
@@ -121,9 +147,13 @@ onBeforeUnmount(() => grantController.value?.abort())
 async function load() {
   const generation = ++viewGeneration.value
   loading.value = true
+  directoryLoaded.value = false
   try {
     const response = await notificationV2.listPlugins()
-    if (generation === viewGeneration.value) rows.value = response.data.items
+    if (generation === viewGeneration.value) {
+      rows.value = response.data.items
+      directoryLoaded.value = true
+    }
   } catch (error) {
     if (generation === viewGeneration.value)
       errorText.value = notificationErrorMessage(error, '无法读取通知插件。', 'Could not load notification plugins.')
@@ -450,6 +480,10 @@ async function readManifest() {
     const rawText = new TextDecoder('utf-8', { fatal: true }).decode(manifestBytes)
     const value = JSON.parse(rawText)
     const mapped = parseManifest(value)
+    if (expectedPlugin.value && mapped.pluginId !== expectedPlugin.value) {
+      errorText.value = tx('服务清单与所选插件不匹配。', 'The service manifest does not match the selected plugin.')
+      return
+    }
     manifestDigest.value = `sha256:${Array.from(new Uint8Array(digestBytes), byte => byte.toString(16).padStart(2, '0')).join('')}`
     manifest.value = mapped
     successText.value = tx(
@@ -526,7 +560,12 @@ async function toggle(row: NotificationPlugin) {
 }
 
 const columns: DataTableColumns<NotificationPlugin> = [
-  { title: tx('名称', 'Name'), key: 'name', minWidth: 150, render: row => row.manifest.name },
+  {
+    title: tx('名称', 'Name'),
+    key: 'name',
+    minWidth: 150,
+    render: row => pluginName(row.pluginId, row.manifest.name)
+  },
   { title: 'pluginId', key: 'pluginId', minWidth: 180, ellipsis: { tooltip: true } },
   { title: tx('版本', 'Version'), key: 'pluginVersion', width: 110 },
   { title: tx('渠道', 'Channels'), key: 'channels', minWidth: 160, render: row => row.manifest.channels.join(', ') },
@@ -536,7 +575,7 @@ const columns: DataTableColumns<NotificationPlugin> = [
     width: 100,
     render: row => (row.manifest.capabilities.deliveryReceipts ? tx('支持', 'Supported') : tx('不支持', 'Unsupported'))
   },
-  { title: tx('健康状态', 'Health'), key: 'health', width: 110, render: row => row.health },
+  { title: tx('健康状态', 'Health'), key: 'health', width: 110, render: row => healthLabel(row.health) },
   {
     title: tx('启用', 'Enabled'),
     key: 'enabled',
@@ -549,7 +588,22 @@ const columns: DataTableColumns<NotificationPlugin> = [
     width: 240,
     render: row => (
       <NSpace>
-        <NButton size="small" disabled={!capabilities.value.canManagePlugins} onClick={() => toggle(row)}>
+        {props.channelOverview && officialPlugins.value.some(plugin => plugin.id === row.pluginId) && (
+          <NButton
+            size="small"
+            onClick={() => {
+              setupPlugin.value = row.pluginId
+            }}
+          >
+            {tx('部署设置', 'Deployment settings')}
+          </NButton>
+        )}
+        <NButton
+          v-show={!props.channelOverview}
+          size="small"
+          disabled={!capabilities.value.canManagePlugins}
+          onClick={() => toggle(row)}
+        >
           {row.enabled ? tx('停用', 'Disable') : tx('启用', 'Enable')}
         </NButton>
         <NButton size="small" disabled={!capabilities.value.canManagePlugins} onClick={() => openGrantDrawer(row)}>
@@ -567,16 +621,83 @@ onMounted(load)
   <NCard :bordered="false">
     <div class="mb-12px flex items-center justify-between gap-12px">
       <div>
-        {{ tx('通知插件', 'Notification plugins') }}
+        {{ channelOverview ? tx('通知渠道', 'Notification channels') : tx('通知插件', 'Notification plugins') }}
       </div>
-      <NButton v-if="capabilities.canManagePlugins" type="primary" @click="modal = true">
+      <NButton v-if="channelOverview" :loading="loading" @click="load">{{ tx('重新检测', 'Check again') }}</NButton>
+      <NButton v-else-if="capabilities.canManagePlugins" type="primary" @click="openRegistration()">
         {{ tx('登记通知插件', 'Register notification plugin') }}
       </NButton>
     </div>
     <NAlert v-if="pageSuccessText" type="success" class="mb-12px">{{ pageSuccessText }}</NAlert>
     <NAlert v-if="errorText" type="error" class="mb-12px">{{ errorText }}</NAlert>
-    <NDataTable :columns="columns" :data="rows" :loading="loading" :row-key="row => row.id" :scroll-x="1050" />
+    <div
+      v-if="directoryLoaded && capabilities.canManagePlugins && missingPlugins.length"
+      class="mb-12px flex flex-wrap gap-12px"
+    >
+      <div v-for="plugin in missingPlugins" :key="plugin.id" class="flex items-center gap-12px">
+        <span>{{ plugin.label }}</span>
+        <NTag size="small">{{ tx('未登记', 'Not registered') }}</NTag>
+        <NButton size="small" @click="openRegistration(plugin.id)">{{ tx('登记', 'Register') }}</NButton>
+      </div>
+    </div>
+    <NDataTable
+      v-if="!directoryLoaded || rows.length || !missingPlugins.length"
+      :columns="
+        channelOverview
+          ? columns.filter(
+              column => 'key' in column && ['name', 'health', 'enabled', 'actions'].includes(String(column.key))
+            )
+          : columns
+      "
+      :data="rows"
+      :loading="loading"
+      :row-key="row => row.id"
+      :scroll-x="channelOverview ? 600 : 1050"
+    />
   </NCard>
+
+  <NModal
+    :show="Boolean(setupPlugin)"
+    preset="card"
+    class="w-560px max-w-95vw"
+    :title="tx('部署设置', 'Deployment settings')"
+    @update:show="setupPlugin = ''"
+  >
+    <template v-if="setupPlugin === 'thingspanel.smtp'">
+      <p>
+        {{
+          tx(
+            '在安装目录的 .env 中设置允许连接的邮件服务器和端口，例如：',
+            'Set the permitted mail server and port in the installation .env file, for example:'
+          )
+        }}
+      </p>
+      <code>TP_SMTP_ALLOWED_SERVERS=smtp.163.com:465</code>
+      <p>
+        {{
+          tx(
+            '应用 Docker 配置后，在租户渠道填写发件邮箱和授权码。',
+            'Apply the Docker configuration, then enter the sender address and password in the tenant channel.'
+          )
+        }}
+      </p>
+    </template>
+    <template v-else>
+      <p>
+        {{
+          tx(
+            '在安装目录的 .env 中设置 UniPush 云函数地址和调用凭据，然后应用 Docker 配置。',
+            'Set the UniPush function URL and service credential in the installation .env file, then apply the Docker configuration.'
+          )
+        }}
+      </p>
+      <code>
+        TP_UNIPUSH_ENDPOINT
+        <br />
+        TP_UNIPUSH_CLOUD_TOKEN
+      </code>
+    </template>
+  </NModal>
 
   <NModal
     v-model:show="modal"
@@ -646,7 +767,7 @@ onMounted(load)
     <NDrawerContent
       :title="
         grantPlugin
-          ? `${grantPlugin.manifest.name} · ${tx('租户授权', 'Tenant grants')}`
+          ? `${pluginName(grantPlugin.pluginId, grantPlugin.manifest.name)} · ${tx('租户授权', 'Tenant grants')}`
           : tx('租户授权', 'Tenant grants')
       "
       :closable="!pendingGrant && !grantLookupLoading"

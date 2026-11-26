@@ -1,6 +1,8 @@
 <!-- eslint-disable require-atomic-updates -->
 <script setup lang="tsx">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { getNotificationUiCapabilities } from '@/service/api/notification-v2'
 import { NButton, NEmpty, NPopconfirm, NSpace, NTag } from 'naive-ui'
 import { delRegisterService, getServices } from '@/service/api/plugin'
 import { $t } from '@/locales'
@@ -8,8 +10,14 @@ import { tableThemeOverrides } from '@/utils/table-theme'
 import { useI18n } from 'vue-i18n'
 import serviceConfigModal from './components/serviceConfigModal.vue'
 import serviceModal from './components/serviceModal.vue'
+import NotificationAvailablePlugins from '@/views/alarm/notification-group/NotificationAvailablePlugins.vue'
 import NotificationPlugins from './NotificationPlugins.vue'
 import InstallPlugins from './InstallPlugins.vue'
+const router = useRouter()
+const capabilities = computed(() => getNotificationUiCapabilities())
+function configureTenant(tenant: string) {
+  return router.push({ path: '/management/notification', query: { tenant } })
+}
 const { locale } = useI18n()
 const tx = (zh: string, en: string) => (locale.value.toLowerCase().startsWith('zh') ? zh : en)
 const serviceModalRef = ref<any>(null)
@@ -212,8 +220,9 @@ getList()
     <NTabPane name="install" :tab="tx('插件安装', 'Plugin install')">
       <InstallPlugins />
     </NTabPane>
-    <NTabPane name="notification" :tab="tx('通知插件', 'Notification plugins')">
-      <NotificationPlugins />
+    <NTabPane v-if="capabilities.canRead" name="notification" :tab="tx('通知插件', 'Notification plugins')">
+      <NotificationPlugins v-if="capabilities.canManagePlugins" @configure-tenant="configureTenant" />
+      <NotificationAvailablePlugins v-else />
     </NTabPane>
   </NTabs>
 </template>

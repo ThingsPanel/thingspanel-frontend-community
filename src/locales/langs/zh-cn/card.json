@@ -310,7 +310,7 @@
   "card.operationGuideAdmin.guideItems.createTenant.title": "新建租户",
   "card.operationGuideAdmin.guideItems.createTenant.description": "租户配置和租户创建, 管理平台用户及权限",
   "card.operationGuideAdmin.guideItems.configureNotification.title": "配置通知",
-  "card.operationGuideAdmin.guideItems.configureNotification.description": "邮件和短信通知, 设置系统事件提醒方式",
+  "card.operationGuideAdmin.guideItems.configureNotification.description": "按租户配置通知渠道",
   "card.operationGuideAdmin.guideItems.configurePlugin.title": "配置插件",
   "card.operationGuideAdmin.guideItems.configurePlugin.description": "协议接入和三方接入, 管理设备连接方式",
   "card.tenantCount.title": "租户数量",
