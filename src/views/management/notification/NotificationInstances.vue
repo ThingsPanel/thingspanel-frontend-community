@@ -299,6 +299,21 @@ function fieldLabel(name: string, schema: SchemaField) {
   }
   return schema.title || name
 }
+const smtpPreset = ref('custom')
+watch(selectedPluginId, () => {
+  smtpPreset.value = 'custom'
+})
+function selectSmtpPreset(host: string) {
+  smtpPreset.value = host
+  if (host !== 'custom') Object.assign(configValues.value, { host, port: 465, ssl: true })
+}
+const visibleSchemaFields = computed(() =>
+  editorMode.value === 'create' &&
+  selectedPlugin.value?.pluginId === 'thingspanel.smtp' &&
+  smtpPreset.value !== 'custom'
+    ? schemaFields.value.filter(([name]) => !['host', 'port', 'ssl'].includes(name))
+    : schemaFields.value
+)
 function openCreate() {
   if (!canEditAccounts.value) return
   clearSecretsAndEditor()
@@ -1021,7 +1036,27 @@ onMounted(loadInstances)
             )
           }}
         </NAlert>
-        <NFormItem v-for="[name, schema] in schemaFields" :key="name" :label="fieldLabel(name, schema)" :path="name">
+        <NFormItem
+          v-if="editorMode === 'create' && selectedPlugin.pluginId === 'thingspanel.smtp'"
+          :label="tx('邮箱服务商', 'Email provider')"
+        >
+          <NSelect
+            :value="smtpPreset"
+            :disabled="instanceSaveReadOnly"
+            :options="[
+              { label: tx('163 邮箱', '163 Mail'), value: 'smtp.163.com' },
+              { label: tx('QQ 邮箱', 'QQ Mail'), value: 'smtp.qq.com' },
+              { label: tx('自定义 SMTP', 'Custom SMTP'), value: 'custom' }
+            ]"
+            @update:value="selectSmtpPreset"
+          />
+        </NFormItem>
+        <NFormItem
+          v-for="[name, schema] in visibleSchemaFields"
+          :key="name"
+          :label="fieldLabel(name, schema)"
+          :path="name"
+        >
           <NInput
             v-if="secretFields.includes(name)"
             v-model:value="secretDraft[name]"
