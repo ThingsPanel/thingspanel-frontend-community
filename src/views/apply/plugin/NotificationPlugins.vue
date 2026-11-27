@@ -20,6 +20,8 @@ import type * as NotificationV2 from '@/service/api/notification-v2.types'
 import dayjs from 'dayjs'
 import { useNotificationTenants } from '@/views/management/notification/tenant-directory'
 
+import ProviderSettings from './ProviderSettings.vue'
+
 const props = defineProps<{ channelOverview?: boolean }>()
 const setupPlugin = ref('')
 const emit = defineEmits<{ configureTenant: [tenantId: string] }>()
@@ -119,6 +121,7 @@ function clearGrantState() {
 }
 
 const unregisterCleanup = registerNotificationSessionCleanup(() => {
+  setupPlugin.value = ''
   rows.value = []
   directoryLoaded.value = false
   clearDraft()
@@ -595,7 +598,7 @@ const columns: DataTableColumns<NotificationPlugin> = [
               setupPlugin.value = row.pluginId
             }}
           >
-            {tx('部署设置', 'Deployment settings')}
+            {tx('配置服务', 'Configure service')}
           </NButton>
         )}
         <NButton
@@ -656,48 +659,13 @@ onMounted(load)
     />
   </NCard>
 
-  <NModal
-    :show="Boolean(setupPlugin)"
-    preset="card"
-    class="w-560px max-w-95vw"
-    :title="tx('部署设置', 'Deployment settings')"
-    @update:show="setupPlugin = ''"
-  >
-    <template v-if="setupPlugin === 'thingspanel.smtp'">
-      <p>
-        {{
-          tx(
-            '在安装目录的 .env 中设置允许连接的邮件服务器和端口，例如：',
-            'Set the permitted mail server and port in the installation .env file, for example:'
-          )
-        }}
-      </p>
-      <code>TP_SMTP_ALLOWED_SERVERS=smtp.163.com:465</code>
-      <p>
-        {{
-          tx(
-            '应用 Docker 配置后，在租户渠道填写发件邮箱和授权码。',
-            'Apply the Docker configuration, then enter the sender address and password in the tenant channel.'
-          )
-        }}
-      </p>
-    </template>
-    <template v-else>
-      <p>
-        {{
-          tx(
-            '在安装目录的 .env 中设置 UniPush 云函数地址和调用凭据，然后应用 Docker 配置。',
-            'Set the UniPush function URL and service credential in the installation .env file, then apply the Docker configuration.'
-          )
-        }}
-      </p>
-      <code>
-        TP_UNIPUSH_ENDPOINT
-        <br />
-        TP_UNIPUSH_CLOUD_TOKEN
-      </code>
-    </template>
-  </NModal>
+  <ProviderSettings
+    v-if="setupPlugin"
+    :key="setupPlugin"
+    :plugin="setupPlugin"
+    @close="setupPlugin = ''"
+    @saved="load"
+  />
 
   <NModal
     v-model:show="modal"

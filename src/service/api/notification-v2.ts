@@ -516,7 +516,26 @@ function instanceCollectionPath(targetTenantId?: string) {
   return `/api/v2/platform/notification-tenants/${encodeURIComponent(targetTenantId)}/notification-instances`
 }
 
+interface ProviderSettings {
+  address: string
+  version: number
+  hasSecret: boolean
+}
+
 export const notificationV2 = {
+  providerSettings(id: string) {
+    return send<ProviderSettings>(
+      { method: 'GET', url: `/api/v2/notification-plugins/${encodeURIComponent(id)}/settings` },
+      [200]
+    )
+  },
+  saveProviderSettings(id: string, data: { address: string; version: number; secret?: string }) {
+    return send<ProviderSettings>(
+      { method: 'PUT', url: `/api/v2/notification-plugins/${encodeURIComponent(id)}/settings`, data },
+      [200],
+      true
+    )
+  },
   listPlugins() {
     return send<{ items: NotificationPlugin[] }>({ method: 'GET', url: '/api/v2/notification-plugins' }, [200])
   },
